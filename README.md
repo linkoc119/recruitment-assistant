@@ -70,14 +70,20 @@ The system is structured into 4 core functional pillars:
 - **Two-Stage Multi-Factor Evaluation**:
   - **Stage 1 — Hard Knockout Filter**: Validates mandatory qualifications. Disqualified candidates are preserved in the system but routed below a visual demarcation line on the leaderboard.
   - **Stage 2 — Multi-Component Scoring**:
-    $$\text{total\_score} = 0.55 \times \text{skill} + 0.30 \times \text{experience} + 0.15 \times \text{education}$$
-    *(Or $0.45 \times \text{skill} + 0.25 \times \text{exp} + 0.10 \times \text{edu} + 0.20 \times \text{semantic}$ when semantic embeddings are active).*
+    ```text
+    total_score = 0.55 * skill + 0.30 * experience + 0.15 * education
+    ```
+    *(Or `0.45 * skill + 0.25 * exp + 0.10 * edu + 0.20 * semantic` when semantic embeddings are active).*
 - **Sub-Component Score Formulas**:
   - **Skill Score**:
-    $$\text{skill\_score} = \frac{\sum (\text{weight}_i \times \text{match\_level}_i)}{\sum \text{weight}_i} \times 100$$
-    *(where $\text{match\_level}$ is 1.0 for Full Match, 0.5 for Partial Match, and 0.0 for Missing).*
+    ```text
+    skill_score = Σ(weight_i × match_level_i) / Σ(weight_i) × 100
+    ```
+    *(where `match_level` is 1.0 for Full Match, 0.5 for Partial Match, and 0.0 for Missing).*
   - **Experience Score**:
-    $$\text{experience\_score} = \min\left(\frac{\text{candidates.years\_experience}}{\text{min\_years}}, 1.25\right) \times 80$$
+    ```text
+    experience_score = min(candidates.years_experience / min_years, 1.25) × 80
+    ```
   - **Education Score**: Lookup conversion mapped from `candidates.highest_degree`.
 - **Explainable Audit Details (`screening_details`)**:
   - Each evaluated criterion stores its match status (`matched`, `partial`, `missing`), points contributed, and exact verbatim **evidence quotation** extracted from the CV.
