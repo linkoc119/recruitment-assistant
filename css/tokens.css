@@ -1,45 +1,49 @@
-/* Classical — design-system tokens and component classes. Copied from system_design/styles.css without modifying tokens. */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&display=swap');
+/* Bảng token màu — tông LinkedIn Recruiter: xanh #0A66C2 làm màu tương tác,
+   charcoal #1B1F23 cho vùng tối, nền xám lạnh ngả xanh #EEF2F7, mặt thẻ trắng.
+   Tím #7A54C0 dành riêng cho tín hiệu AI (Semantic Matching, giải thích của AI). */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lora:wght@400;600&display=swap');
 
 :root {
-  --color-bg: #f3f2f2;
-  --color-surface: #eae9e9;
-  --color-text: #201f1d;
-  --color-accent: #b68235;
-  --color-accent-2: #ac803e;
-  --color-divider: color-mix(in srgb, #201f1d 16%, transparent);
+  --color-bg: #eef2f7;
+  --color-surface: #ffffff;
+  --color-text: #1b1f23;
+  --color-accent: #0a66c2;
+  --color-accent-2: #7a54c0;
+  --color-divider: #dbe3ed;
 
-  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
-     same step of any role matches the others in visual value. */
-  --color-neutral-100: #f8f4f4;
-  --color-neutral-200: #eae7e7;
-  --color-neutral-300: #d7d3d3;
-  --color-neutral-400: #bab6b6;
-  --color-neutral-500: #9b9797;
-  --color-neutral-600: #7d7979;
-  --color-neutral-700: #605d5d;
-  --color-neutral-800: #444141;
-  --color-neutral-900: #2d2b2b;
+  /* Thang xám lạnh ngả xanh — cùng nhiệt độ màu với accent #0a66c2,
+     dùng cho chữ phụ, viền và nền bảng. */
+  --color-neutral-100: #f5f8fb;
+  --color-neutral-200: #e8eef5;
+  --color-neutral-300: #d6dfea;
+  --color-neutral-400: #b6c2d1;
+  --color-neutral-500: #96a3b4;
+  --color-neutral-600: #778495;
+  --color-neutral-700: #5b6777;
+  --color-neutral-800: #414b58;
+  --color-neutral-900: #28303a;
 
-  --color-accent-100: #fff3e4;
-  --color-accent-200: #ffe3bf;
-  --color-accent-300: #facb8d;
-  --color-accent-400: #e1ad66;
-  --color-accent-500: #c28d41;
-  --color-accent-600: #a06f24;
-  --color-accent-700: #7d5411;
-  --color-accent-800: #5a3b0a;
-  --color-accent-900: #3a270d;
+  /* Thang xanh LinkedIn — bậc 600 là màu tương tác chuẩn. */
+  --color-accent-100: #eaf2fb;
+  --color-accent-200: #cfe2f7;
+  --color-accent-300: #a6c8ee;
+  --color-accent-400: #75a8e0;
+  --color-accent-500: #3d86d1;
+  --color-accent-600: #0a66c2;
+  --color-accent-700: #0b4f95;
+  --color-accent-800: #0a3a6e;
+  --color-accent-900: #09223b;
 
-  --color-accent-2-100: #fff3e4;
-  --color-accent-2-200: #ffe3be;
-  --color-accent-2-300: #f5cd96;
-  --color-accent-2-400: #dbaf70;
-  --color-accent-2-500: #bc8f4e;
-  --color-accent-2-600: #9b7232;
-  --color-accent-2-700: #79561f;
-  --color-accent-2-800: #573d14;
-  --color-accent-2-900: #382810;
+  /* Thang tím — chỉ dùng cho phần do AI sinh ra, không dùng làm màu tương tác. */
+  --color-accent-2-100: #f3eefc;
+  --color-accent-2-200: #e3d8f7;
+  --color-accent-2-300: #cbb8ef;
+  --color-accent-2-400: #ae92e2;
+  --color-accent-2-500: #9273d4;
+  --color-accent-2-600: #7a54c0;
+  --color-accent-2-700: #5f3f9c;
+  --color-accent-2-800: #472e76;
+  --color-accent-2-900: #2f1f4d;
 
   --font-heading: "Cormorant Garamond", system-ui, sans-serif;
   --font-heading-weight: 600;
@@ -58,9 +62,9 @@
 
   /* Elevation — derived from the ground: soft ink-tinted shadows on a
      light theme, a hairline edge + ambient darkness on a dark one. */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent);
-  --shadow-md: 0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent);
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #1b1f23 12%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #1b1f23 14%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #1b1f23 18%, transparent);
 }
 
 body {
@@ -70,7 +74,7 @@ body {
 }
 h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
 
-.plate{filter:sepia(0.22) saturate(0.82) contrast(1.05);box-sizing:border-box;
+.plate{box-sizing:border-box;
   border:6px solid var(--color-surface);outline:1px solid var(--color-divider)}
 
 /* ══════════════════════════════════════════════════════════════════════════

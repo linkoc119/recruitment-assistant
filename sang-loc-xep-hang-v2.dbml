@@ -1,0 +1,263 @@
+// =====================================================================
+// Sàng lọc & xếp hạng CV theo JD — phạm vi tối giản
+// 8 bảng, chỉ giữ đúng những gì cần để chấm điểm và xếp hạng
+// Dán vào https://dbdiagram.io/d
+// =====================================================================
+
+Project sang_loc_xep_hang {
+  database_type: 'PostgreSQL'
+  Note: '''
+  Một vòng đời duy nhất: JD sinh ra tiêu chí, CV sinh ra kỹ năng,
+  hệ thống đối chiếu hai bên và trả về điểm kèm lý do.
+  '''
+}
+
+// ---------------------------------------------------------------- ENUM
+Enum job_status {
+  draft  [note: 'Đang soạn, chưa nhận CV']
+  open   [note: 'Đang mở nhận hồ sơ']
+  closed [note: 'Đã đóng']
+}
+
+Enum requirement_kind {
+  skill
+  experience
+  education
+}
+
+Enum requirement_type {
+  mandatory [note: 'Thiếu là trượt lọc cứng']
+  preferred [note: 'Chỉ cộng điểm']
+}
+
+Enum screening_status {
+  scoring     [note: 'Đang chấm']
+  scored      [note: 'Đã có điểm, chờ quyết định']
+  shortlisted
+  rejected
+}
+
+Enum match_status {
+  matched
+  partial
+  missing
+}
+
+// ------------------------------------------------ TỪ ĐIỂN KỸ NĂNG
+Table skills {
+  id       bigint       [pk, increment]
+  name     varchar(100) [not null, unique, note: 'Tên chuẩn: React, Spring Boot']
+  category varchar(50)
+
+  Note: 'Cầu nối giữa tiêu chí JD và kỹ năng trong CV. Không có bảng này thì không so khớp được.'
+}
+
+// ----------------------------------------------- PHÍA JD: TIÊU CHÍ
+Table jobs {
+  id           bigint       [pk, increment]
+  title        varchar(200) [not null]
+  level        varchar(50)  [note: 'junior / middle / senior']
+  jd_raw_text  text         [note: 'JD gốc, giữ lại để đối chiếu khi tiêu chí sai']
+  jd_parsed_at timestamptz
+  status       job_status   [not null, default: 'draft', note: 'Phục vụ chức năng mở, đóng vị trí']
+  created_at   timestamptz  [not null, default: `now()`]
+
+  Indexes {
+    (status, created_at) [name: 'ix_jobs_status']
+  }
+
+  Note: '''
+  Sao chép vị trí = nhân bản một dòng jobs kèm toàn bộ job_requirements của nó.
+  Không có cột min_years_exp. Số năm kinh nghiệm yêu cầu nằm ở
+  job_requirements.min_years với kind = experience, để chỉ có một
+  nguồn sự thật duy nhất cho thuật toán chấm điểm.
+  '''
+}
+
+Table job_requirements {
+  id        bigint           [pk, increment]
+  job_id    bigint           [not null]
+  kind      requirement_kind [not null, default: 'skill']
+  skill_id  bigint           [note: 'NULL với tiêu chí kinh nghiệm hoặc học vấn']
+  label     varchar(255)     [not null, note: 'Chữ hiển thị: "3 năm kinh nghiệm backend"']
+  req_type  requirement_type [not null, default: 'preferred']
+  weight    decimal(4,2)     [not null, default: 1.00, note: 'Nhà tuyển dụng tự chỉnh, > 0']
+  min_years decimal(3,1)
+
+  Indexes {
+    (job_id, req_type) [name: 'ix_req_job']
+  }
+  Note: 'Toàn bộ điểm số tính từ bảng này. Sửa trọng số ở đây là đổi thứ hạng.'
+}
+
+// ----------------------------------------------- PHÍA CV: KỸ NĂNG
+Table candidates {
+  id               bigint       [pk, increment]
+  full_name        varchar(150) [not null]
+  email            varchar(150) [unique]
+  phone            varchar(30)
+  years_experience decimal(3,1) [note: 'Tổng số năm, dùng cho experience matching']
+  highest_degree   varchar(50)
+  created_at       timestamptz  [not null, default: `now()`]
+}
+
+Table resumes {
+  id           bigint       [pk, increment]
+  candidate_id bigint       [not null]
+  file_name    varchar(255) [not null]
+  file_path    varchar(500) [not null]
+  file_hash    char(64)     [not null, unique, note: 'SHA-256, chặn CV trùng lặp ngay khi tải lên']
+  version      smallint     [not null, default: 1, note: 'Ứng viên nộp CV mới thì tăng version, không ghi đè bản cũ']
+  raw_text     text         [note: 'Toàn văn, dùng để trích bằng chứng']
+  parsed_at    timestamptz
+
+  Indexes {
+    (candidate_id, version) [unique, name: 'ux_resume_version']
+  }
+  Note: 'Một ứng viên có nhiều bản CV. Mỗi lần chấm điểm luôn gắn với một bản cụ thể.'
+}
+
+Table resume_skills {
+  id         bigint       [pk, increment]
+  resume_id  bigint       [not null]
+  skill_id   bigint       [note: 'NULL nếu không map được về kỹ năng chuẩn']
+  raw_text   varchar(100) [not null, note: 'Giữ nguyên chữ trong CV']
+  years      decimal(3,1)
+  evidence   text         [note: 'Trích đoạn chứng minh']
+  confidence decimal(4,3)
+
+  Indexes {
+    (resume_id, skill_id) [unique]
+  }
+}
+
+// ----------------------------------------- KẾT QUẢ: ĐIỂM & XẾP HẠNG
+Table screenings {
+  id               bigint           [pk, increment]
+  job_id           bigint           [not null]
+  resume_id        bigint           [not null]
+  total_score      decimal(5,2)     [not null, note: 'Thang 0 đến 100']
+  skill_score      decimal(5,2)
+  experience_score decimal(5,2)
+  education_score  decimal(5,2)
+  semantic_score   decimal(5,2)     [note: 'Độ tương đồng ngữ nghĩa giữa toàn văn CV và JD. NULL nếu chưa bật Semantic Matching.']
+  passed_mandatory boolean          [not null, default: true, note: 'Trượt thì xếp xuống nhóm riêng, không xoá khỏi bảng']
+  rank_in_job      integer
+  summary          text             [note: '2 đến 3 câu tóm tắt lý do']
+  status           screening_status [not null, default: 'scoring']
+  scored_round     smallint         [not null, default: 1, note: 'Lần chấm thứ mấy cho cặp vị trí và CV này']
+  is_latest        boolean          [not null, default: true, note: 'Bảng xếp hạng chỉ đọc dòng có is_latest = true']
+  model_version    varchar(50)
+  scored_at        timestamptz      [not null, default: `now()`]
+
+  Indexes {
+    (job_id, resume_id, scored_round)                  [unique, name: 'ux_screening_round']
+    (job_id, is_latest, passed_mandatory, total_score) [name: 'ix_ranking', note: 'Index phục vụ đúng truy vấn bảng xếp hạng']
+  }
+  Note: '''
+  Bảng nối nhiều-nhiều giữa vị trí và CV.
+  Điểm không thuộc về CV mà thuộc về cặp (CV, vị trí):
+  cùng một CV chấm với JD backend được 92, chấm với JD data được 41.
+
+  Chấm lại khi tiêu chí thay đổi: đặt is_latest = false cho các dòng cũ,
+  rồi chèn dòng mới với scored_round tăng thêm 1. Bản cũ được giữ nguyên
+  để phục vụ chức năng lịch sử chấm điểm.
+  '''
+}
+
+Table screening_details {
+  id                 bigint       [pk, increment]
+  screening_id       bigint       [not null]
+  job_requirement_id bigint       [not null]
+  status             match_status [not null]
+  matched_skill_id   bigint
+  score_contribution decimal(5,2)
+  evidence           text         [note: 'Trích đoạn CV làm bằng chứng']
+
+  Indexes {
+    screening_id
+  }
+  Note: 'Thứ làm cho con số đáng tin. Giao diện "kỹ năng còn thiếu" đọc thẳng từ đây.'
+}
+
+// ==================================================== QUAN HỆ
+Ref: job_requirements.job_id   > jobs.id       [delete: cascade]
+Ref: job_requirements.skill_id > skills.id     [delete: set null]
+
+Ref: resumes.candidate_id      > candidates.id [delete: cascade]
+Ref: resume_skills.resume_id   > resumes.id    [delete: cascade]
+Ref: resume_skills.skill_id    > skills.id     [delete: set null]
+
+Ref: screenings.job_id         > jobs.id       [delete: cascade]
+Ref: screenings.resume_id      > resumes.id    [delete: restrict]
+
+Ref: screening_details.screening_id       > screenings.id       [delete: cascade]
+Ref: screening_details.job_requirement_id > job_requirements.id [delete: cascade]
+Ref: screening_details.matched_skill_id   > skills.id           [delete: set null]
+
+// ==================================================== NHÓM BẢNG
+TableGroup phia_jd [note: 'Yêu cầu công việc'] {
+  jobs
+  job_requirements
+}
+
+TableGroup phia_cv [note: 'Ứng viên và dữ liệu trích xuất'] {
+  candidates
+  resumes
+  resume_skills
+}
+
+TableGroup ket_qua [note: 'Đối chiếu, chấm điểm, xếp hạng'] {
+  screenings
+  screening_details
+}
+
+// ==================================================== DỮ LIỆU MẪU
+Records skills(id, name, category) {
+  1, 'Java', 'backend'
+  2, 'Spring Boot', 'backend'
+  3, 'PostgreSQL', 'database'
+  4, 'Kubernetes', 'devops'
+}
+
+Records jobs(id, title, level, status) {
+  1, 'Senior Backend Engineer', 'senior', 'open'
+}
+
+Records job_requirements(id, job_id, kind, skill_id, label, req_type, weight, min_years) {
+  1, 1, 'skill', 1, 'Java', 'mandatory', 3.0, null
+  2, 1, 'skill', 2, 'Spring Boot', 'mandatory', 2.5, null
+  3, 1, 'skill', 3, 'PostgreSQL', 'mandatory', 2.0, null
+  4, 1, 'skill', 4, 'Kubernetes', 'preferred', 1.5, null
+  5, 1, 'experience', null, '3 năm kinh nghiệm backend', 'mandatory', 2.0, 3.0
+}
+
+Records candidates(id, full_name, email, years_experience) {
+  1, 'Nguyễn Văn An', 'an.nv@email.com', 5.3
+  2, 'Bùi Thanh Hà', 'ha.bt@email.com', 2.0
+}
+
+Records resumes(id, candidate_id, file_name, version) {
+  1, 1, 'nguyen-van-an-cv.pdf', 1
+  2, 2, 'bui-thanh-ha.docx', 1
+}
+
+Records resume_skills(id, resume_id, skill_id, raw_text, years) {
+  1, 1, 1, 'Java 17', 5.3
+  2, 1, 2, 'Spring Boot', 4.0
+  3, 1, 3, 'PostgreSQL', 3.5
+  4, 2, 1, 'Java', 2.0
+}
+
+Records screenings(id, job_id, resume_id, scored_round, is_latest, total_score, skill_score, experience_score, semantic_score, passed_mandatory, rank_in_job, status) {
+  1, 1, 1, 1, false, 84.0, 82.0, 96.0, 85.0, true, 3, 'scored'
+  2, 1, 1, 2, true, 92.0, 94.0, 96.0, 88.0, true, 1, 'shortlisted'
+  3, 1, 2, 1, true, 54.0, 48.0, 53.0, 61.0, false, 7, 'rejected'
+}
+
+Records screening_details(id, screening_id, job_requirement_id, status, score_contribution, evidence) {
+  1, 2, 1, 'matched', 3.0, 'Java 17, hệ thống thanh toán tại FPT Software'
+  2, 2, 2, 'matched', 2.5, 'Xây dựng hệ thống thanh toán bằng Spring Boot'
+  3, 2, 4, 'missing', 0.0, 'Không tìm thấy, có Docker và GitLab CI'
+  4, 3, 2, 'missing', 0.0, 'Không tìm thấy trong CV'
+}

@@ -31,6 +31,21 @@ The system architecture is derived from a 7-branch recruitment mindmap, isolatin
 ### System Mindmap Diagram
 ![System Mindmap](docs/mindmap.png)
 
+### Use Case Diagram — Screening & Ranking
+
+The deep-dive function is modelled below. `«include»` marks steps that always run as part of
+the base use case; `«extend»` marks optional branches the recruiter may invoke from the ranking
+table. Purple ellipses are steps executed by the AI actor rather than a human.
+
+![Use Case Diagram](docs/use-case-diagram.png)
+
+| Actor | Role |
+| :--- | :--- |
+| **Nhà tuyển dụng** (Recruiter) | Primary actor — creates the requisition, sets criteria & weights, uploads CVs, triggers screening and rescoring, reads the ranking. |
+| **Trưởng bộ phận** (Hiring Manager) | Reviews the ranking and approves/rejects the shortlist. |
+| **Hệ thống AI** (AI Engine) | Secondary actor — CV parsing & extraction, the 4 sub-scores, evidence and explanation generation. |
+| **Quản trị hệ thống** (Administrator) | Maintains the normalized skill dictionary the criteria matching depends on. |
+
 ### Functional Scope Matrix
 
 | Mindmap Module | In-Scope Features (Implemented) | Deliberately Out-of-Scope |
@@ -102,7 +117,74 @@ The system is structured into 4 core functional pillars:
 
 ---
 
-## 4. How to Run (Zero Dependencies / Zero Setup)
+## 4. Database Schema (ERD)
+
+The persistence layer is an 8-table normalised relational schema. It separates the **job side** (`jobs` → `job_requirements`), the **candidate side** (`candidates` → `resumes` → `resume_skills`), and the **evaluation side** (`screenings` → `screening_details`), with `skills` acting as the shared controlled vocabulary that makes matching deterministic.
+
+![Database ERD](docs/database-design-erd.png)
+
+| Table | Role in the screening pipeline |
+|---|---|
+| `skills` | Canonical skill dictionary + alias normalisation (`Postgres` → `PostgreSQL`), so scoring never compares raw strings |
+| `jobs` | Job position and its JD text |
+| `job_requirements` | One row per criterion: weight, mandatory flag, link to a canonical skill |
+| `candidates` | Candidate identity (deduplicated by email) |
+| `resumes` | An uploaded CV file + its parsed/extracted payload |
+| `resume_skills` | Skills extracted from a CV, with years of experience and evidence span |
+| `screenings` | One scoring run of one CV against one job: 4 sub-scores, total, pass/fail, `scored_round`, `is_latest` |
+| `screening_details` | Per-criterion breakdown: matched skill, contribution to the total, evidence quote — this table is what makes the ranking explainable |
+
+Two design decisions are load-bearing:
+
+- **`scored_round` + `is_latest`** — rescoring never overwrites history. A new round is inserted and the previous one is flagged `is_latest = FALSE`, which is what enables the side-by-side round comparison in §3.4.
+- **`screening_details` stores evidence, not just numbers** — every point a candidate earns is traceable to a quoted span in their CV, satisfying the explainability requirement.
+
+---
+
+## 5. User Interface — Screen-by-Screen
+
+Seven screens, driven by a hash router, following the recruiter's actual path: define the job → set criteria → upload CVs → let the AI score → read the ranking → inspect one candidate → recalibrate and rescore.
+
+### 5.1 Vị trí tuyển dụng — Job Positions (`#vi-tri`)
+Entry point. Lists open positions with their CV counts and screening status, so the recruiter picks a job before anything else happens.
+
+![Screen 1 — Job positions](docs/screenshots/01-job-positions.png)
+
+### 5.2 JD & Tiêu chí — JD & Criteria (`#tieu-chi`)
+The JD on the left, the extracted criteria on the right. Each criterion carries a **weight** and a **Bắt buộc / Ưu tiên** (mandatory / preferred) flag — these two fields alone determine both the score and who falls below the divider.
+
+![Screen 2 — JD and criteria](docs/screenshots/02-jd-criteria.png)
+
+### 5.3 Chọn & Tải CV — Upload CVs (`#tai-cv`)
+Batch selection of the CVs to screen (42 in the sample dataset), with per-file parse status before the scoring run is launched.
+
+![Screen 3 — Upload CVs](docs/screenshots/03-upload-cv.png)
+
+### 5.4 Tiến trình AI — AI Progress (`#tien-trinh`)
+The scoring run made visible: per-stage progress (parsing → extraction → matching → scoring) instead of an opaque spinner, so a long batch stays legible.
+
+![Screen 4 — AI progress](docs/screenshots/04-ai-progress.png)
+
+### 5.5 Kết quả & Xếp hạng — Ranking (`#ket-qua`)
+The core deliverable. Exactly six columns; sub-scores live in the expandable row, never in the header table. Candidates who fail a mandatory criterion are **not dropped** — they stay ranked below a divider, still fully actionable, because "failed" is a recruiter's judgement call, not the system's.
+
+![Screen 5 — Ranking](docs/screenshots/05-ranking.png)
+
+### 5.6 Chi tiết ứng viên — Candidate Detail (`#chi-tiet/:id`)
+Per-criterion accountability: status, weight, contribution to the total, and the quoted evidence from the CV — with the original CV rendered alongside for verification.
+
+![Screen 6 — Candidate detail](docs/screenshots/06-candidate-detail.png)
+
+### 5.7 Sửa tiêu chí & Chấm lại — Rescore (`#chinh-tieu-chi`)
+What-if recalibration: change weights or promote a criterion to mandatory, rescore, and compare the new round against the previous one to see exactly which rankings moved and why.
+
+![Screen 7 — Rescore and compare](docs/screenshots/07-rescore.png)
+
+> **Colour is never the only signal.** Every state in these screens is carried by colour *and* an icon *and* a text label (and, for scores, bar length), so the interface stays readable for colour-blind users and in greyscale print.
+
+---
+
+## 6. How to Run (Zero Dependencies / Zero Setup)
 
 The application is completely standalone and requires **no Node.js build steps, no package installations, and no compiler configuration**.
 
@@ -128,13 +210,13 @@ Open your browser and navigate to: **`http://localhost:8080`**
 
 ---
 
-## 5. Repository Structure
+## 7. Repository Structure
 
 ```
 recruitment-assistant/
 ├── index.html                   # Single-Page Application shell with hash router & modals
 ├── README.md                    # System documentation, mindmap & architectural specifications
-├── thiet-ke-sang-loc-cv-v2.md   # Original Vietnamese database & UI/UX design specification
+├── sang-loc-xep-hang-v2.dbml    # DBML source of the 8-table relational schema
 ├── css/
 │   ├── tokens.css               # Design system variables (colors, typography, spacing)
 │   └── app.css                  # Application layouts, responsive tables & animations
@@ -143,7 +225,17 @@ recruitment-assistant/
 │   └── app.js                   # In-memory reactive state manager, router & screen renderers
 └── docs/
     ├── mindmap.png              # 7-branch recruitment system mindmap
-    └── database-design-erd.png  # 8-table relational database architecture diagram
+    ├── use-case-diagram.svg     # UML use case diagram — screening & ranking (source)
+    ├── use-case-diagram.png     # UML use case diagram — rendered
+    ├── database-design-erd.png  # 8-table relational database architecture diagram
+    └── screenshots/             # Captures of all 7 UI screens (embedded in §5)
+        ├── 01-job-positions.png
+        ├── 02-jd-criteria.png
+        ├── 03-upload-cv.png
+        ├── 04-ai-progress.png
+        ├── 05-ranking.png
+        ├── 06-candidate-detail.png
+        └── 07-rescore.png
 ```
 
 ---

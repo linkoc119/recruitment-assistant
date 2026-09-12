@@ -53,7 +53,7 @@
     <div class="sidebar-footer">
       <div>Vị trí đang sàng lọc</div>
       <strong>Backend Developer · Senior</strong>
-      <div style="margin-top:4px;color:#8d867b">42 CV · 11/09/2026</div>
+      <div style="margin-top:4px;color:#7c848c">42 CV · 11/09/2026</div>
     </div>
   </aside>
 
@@ -151,7 +151,7 @@
 
 <!-- MODAL SHORTLIST -->
 <div class="dialog-backdrop" id="modalShortlist" style="display:none;z-index:900">
-  <div class="dialog" style="background:#fbfaf9;max-width:440px">
+  <div class="dialog" style="background:var(--color-surface);max-width:440px">
     <div class="dialog-title" style="font-size:20px">Đưa vào Shortlist?</div>
     <div class="dialog-body" style="padding:4px 0">
       <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--color-divider)">
@@ -167,7 +167,7 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-top:12px">
         <div>
           <div style="font-size:11.5px;color:var(--color-neutral-700)">Yêu cầu bắt buộc</div>
-          <div id="modalSlPass" style="font-size:13px;font-weight:600;margin-top:2px;color:#255a39">✓ Đạt toàn bộ 5 tiêu chí</div>
+          <div id="modalSlPass" style="font-size:13px;font-weight:600;margin-top:2px;color:var(--color-pass)">✓ Đạt toàn bộ 5 tiêu chí</div>
         </div>
         <div>
           <div style="font-size:11.5px;color:var(--color-neutral-700)">Đánh giá AI</div>
@@ -184,25 +184,25 @@
 
 <!-- MODAL LOẠI ỨNG VIÊN -->
 <div class="dialog-backdrop" id="modalReject" style="display:none;z-index:900">
-  <div class="dialog" style="background:#fbfaf9;max-width:440px">
-    <div class="dialog-title" style="font-size:20px;color:#7d231e">Loại ứng viên khỏi vị trí này?</div>
+  <div class="dialog" style="background:var(--color-surface);max-width:440px">
+    <div class="dialog-title" style="font-size:20px;color:var(--color-fail)">Loại ứng viên khỏi vị trí này?</div>
     <div class="dialog-body" style="padding:6px 0">
       <span id="modalRejName" style="font-weight:600;color:var(--color-text)">Nguyễn Văn An</span> sẽ chuyển sang trạng thái đã loại khỏi vị trí này. Điểm số và đối chiếu tiêu chí vẫn được giữ trong hồ sơ lưu trữ.
     </div>
     <div class="dialog-actions">
       <button type="button" class="btn btn-secondary" id="btnCancelReject">Huỷ</button>
-      <button type="button" class="btn btn-secondary" id="btnConfirmReject" style="color:#7d231e;border-color:#7d231e;font-weight:600">Xác nhận Loại</button>
+      <button type="button" class="btn btn-secondary" id="btnConfirmReject" style="color:var(--color-fail);border-color:var(--color-fail);font-weight:600">Xác nhận Loại</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL CHẤM LẠI TOÀN BỘ (DÙNG CHO MÀN 7) -->
 <div class="dialog-backdrop" id="modalRescore" style="display:none;z-index:900">
-  <div class="dialog" style="background:#fbfaf9;max-width:500px">
+  <div class="dialog" style="background:var(--color-surface);max-width:500px">
     <div class="dialog-title" style="font-size:20px">Chấm lại toàn bộ 42 CV?</div>
     <div class="dialog-body" style="padding:6px 0">
       <div style="font-size:12px;color:var(--color-neutral-700);margin-bottom:6px">Thay đổi sẽ áp dụng:</div>
-      <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:10px;background:#fff;font-size:12.5px;line-height:1.6">
+      <div style="border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:10px;background:var(--color-neutral-100);font-size:12.5px;line-height:1.6">
         <div>• <strong>Docker</strong>: Chuyển từ Ưu tiên sang <strong>Bắt buộc</strong> (Trọng số 8 → 14)</div>
         <div>• Chuẩn hoá trọng số các kỹ năng khác để tổng đạt 100</div>
         <div>• 42 CV sẽ được AI đánh giá lại theo bộ tiêu chí mới</div>

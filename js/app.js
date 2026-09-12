@@ -417,7 +417,7 @@ function renderScreen5() {
     if (!q && appState.filter === 'all' && !isRound2) {
       html += `
         <tr>
-          <td colspan="6" style="background: #f7f5f2; color: var(--color-neutral-700); font-size: 12.5px; padding: 10px 16px; border-bottom: 1px solid var(--color-divider);">
+          <td colspan="6" style="background: var(--color-neutral-100); color: var(--color-neutral-700); font-size: 12.5px; padding: 10px 16px; border-bottom: 1px solid var(--color-divider);">
             Còn <strong>25 ứng viên</strong> đạt yêu cầu bắt buộc ở các thứ hạng tiếp theo (7–31).
           </td>
         </tr>
@@ -514,7 +514,7 @@ function renderCandidateRow(cand, isPassed) {
           </div>
         ` : ''}
         ${isRejected ? `
-          <span class="tag" style="background:#fbeeed;color:#7d231e;border:1px solid #e5cbc9;margin-top:4px;">Đã loại</span>
+          <span class="tag" style="background:var(--color-fail-bg);color:var(--color-fail);border:1px solid var(--color-fail-border);margin-top:4px;">Đã loại</span>
         ` : ''}
       </td>
 
@@ -522,11 +522,11 @@ function renderCandidateRow(cand, isPassed) {
       <td>
         <div class="score-wrapper">
           <div class="score-number-row">
-            <span class="score-num" style="color: ${isPassed ? 'var(--color-accent-700)' : '#7d231e'}">${cand.score}</span>
+            <span class="score-num" style="color: ${isPassed ? 'var(--color-accent-700)' : 'var(--color-fail)'}">${cand.score}</span>
             <span class="score-max">/ 100</span>
           </div>
           <div class="score-bar-bg">
-            <div class="score-bar-fill" style="width: ${cand.score}%; background: ${isPassed ? 'var(--color-accent-600)' : '#7d231e'};"></div>
+            <div class="score-bar-fill" style="width: ${cand.score}%; background: ${isPassed ? 'var(--color-accent-600)' : 'var(--color-fail)'};"></div>
           </div>
         </div>
       </td>
@@ -567,7 +567,7 @@ function renderCandidateRow(cand, isPassed) {
             ${isShortlisted ? '★ Shortlist' : (isPassed ? 'Shortlist' : 'Vẫn shortlist')}
           </button>
 
-          <button type="button" class="btn btn-secondary btn-action" style="color: #7d231e;" onclick="openRejectModal(${cand.id})" ${isRejected ? 'disabled' : ''}>
+          <button type="button" class="btn btn-secondary btn-action" style="color: var(--color-fail);" onclick="openRejectModal(${cand.id})" ${isRejected ? 'disabled' : ''}>
             Loại
           </button>
         </div>
@@ -605,8 +605,8 @@ function renderCandidateRow(cand, isPassed) {
               </div>
 
               <div class="sub-score-row">
-                <span class="sub-score-label" style="font-weight: 600; color: var(--color-accent-800);">Semantic Matching</span>
-                <div class="sub-score-bar-bg"><div class="sub-score-bar-fill" style="width: ${cand.comps.semantic}%; background: var(--color-accent-600);"></div></div>
+                <span class="sub-score-label" style="font-weight: 600; color: var(--color-accent-2-800);">Semantic Matching</span>
+                <div class="sub-score-bar-bg"><div class="sub-score-bar-fill" style="width: ${cand.comps.semantic}%; background: var(--color-ai);"></div></div>
                 <span class="sub-score-val" style="color: var(--color-accent-800);">${cand.comps.semantic}</span>
               </div>
             </div>
@@ -690,10 +690,10 @@ function openShortlistModal(id) {
   const passEl = document.getElementById('modalSlPass');
   if (cand.passMandatory) {
     passEl.textContent = '✓ Đạt toàn bộ 5 tiêu chí';
-    passEl.style.color = '#255a39';
+    passEl.style.color = 'var(--color-pass)';
   } else {
     passEl.textContent = '✕ Không đạt bắt buộc — vẫn shortlist được';
-    passEl.style.color = '#7d231e';
+    passEl.style.color = 'var(--color-fail)';
   }
 
   document.getElementById('modalSlGrade').textContent = cand.grade || 'Phù hợp';
@@ -883,7 +883,7 @@ function renderScreen1() {
                 ${jobs.map(job => {
                   const isCurrent = job.isScreening;
                   return `
-                    <tr style="${isCurrent ? 'background: #fffcf8;' : ''}">
+                    <tr style="${isCurrent ? 'background: #f7fafd;' : ''}">
                       <td style="padding-left: 18px;">
                         <span style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--color-text);">
                           ${escapeHtml(job.title)}
@@ -892,25 +892,25 @@ function renderScreen1() {
                       </td>
                       <td style="color: var(--color-text);">${escapeHtml(job.level)}</td>
                       <td style="color: var(--color-text);">${escapeHtml(job.city)}</td>
-                      <td style="text-align: right; font-family: var(--font-heading); font-size: 18px; font-weight: 700; font-feature-settings: 'tnum';">
+                      <td style="text-align: right; font-family: var(--font-sans); font-size: 15px; font-weight: 700; font-feature-settings: 'tnum' 1;">
                         ${job.cvCount}
                       </td>
-                      <td style="text-align: right; font-family: var(--font-heading); font-size: 18px; font-weight: 700; font-feature-settings: 'tnum'; color: ${job.shortlistCount > 0 ? 'var(--color-shortlist)' : 'var(--color-neutral-600)'};">
+                      <td style="text-align: right; font-family: var(--font-sans); font-size: 15px; font-weight: 700; font-feature-settings: 'tnum' 1; color: ${job.shortlistCount > 0 ? 'var(--color-shortlist)' : 'var(--color-neutral-600)'};">
                         ${job.shortlistCount}
                       </td>
                       <td>
                         <span class="tag tag-neutral" style="font-weight: 500;">${escapeHtml(job.status)}</span>
                       </td>
-                      <td style="font-size: 12.5px; color: var(--color-neutral-700); font-feature-settings: 'tnum';">
+                      <td style="font-size: 12.5px; color: var(--color-neutral-700); font-feature-settings: 'lnum' 1, 'tnum' 1;">
                         ${escapeHtml(job.lastScreened)}
                       </td>
                       <td style="text-align: right; padding-right: 18px;">
                         ${isCurrent ? `
-                          <button type="button" class="btn btn-primary" onclick="navigateTo('#ket-qua')" style="font-size: 12.5px; padding: 5px 12px; font-weight: 600;">
+                          <button type="button" class="btn btn-primary" onclick="navigateTo('#ket-qua')" style="font-size: 12.5px; padding: 5px 12px; font-weight: 600; white-space: nowrap;">
                             Xem kết quả (42 CV) →
                           </button>
                         ` : `
-                          <button type="button" class="btn btn-secondary" onclick="alert('Chức năng sàng lọc cho vị trí này sẽ khả dụng ở phiên bản mở rộng.')" style="font-size: 12.5px; padding: 5px 12px;">
+                          <button type="button" class="btn btn-secondary" onclick="alert('Chức năng sàng lọc cho vị trí này sẽ khả dụng ở phiên bản mở rộng.')" style="font-size: 12.5px; padding: 5px 12px; white-space: nowrap;">
                             Bắt đầu sàng lọc
                           </button>
                         `}
@@ -992,7 +992,7 @@ function renderScreen2() {
               Có kinh nghiệm đóng gói ứng dụng và tự động hoá triển khai bằng <strong>Docker</strong>; từng làm việc thực tế với hạ tầng đám mây <strong>AWS</strong> (EC2, S3, RDS); sử dụng thành thạo <strong>PostgreSQL</strong> ở quy mô sản phẩm chịu tải lớn; am hiểu và ứng dụng <strong>Redis</strong> cho bộ nhớ đệm (caching) hoặc hàng đợi tác vụ nền (background task queues).
             </p>
 
-            <div style="margin-top: 20px; padding: 12px 14px; background: #f7f5f2; border-radius: var(--radius-sm); border-left: 3px solid var(--color-accent); font-size: 12.5px; line-height: 1.6; color: var(--color-neutral-800);">
+            <div style="margin-top: 20px; padding: 12px 14px; background: var(--color-neutral-100); border-radius: var(--radius-sm); border-left: 3px solid var(--color-accent); font-size: 12.5px; line-height: 1.6; color: var(--color-neutral-800);">
               💡 Hệ thống AI Recruitment Assistant đã tự động bóc tách <strong>${critList.length} tiêu chí đo lường được</strong> từ văn bản JD này. Bạn có thể xem lại cấu trúc tiêu chí bên cột phải.
             </div>
           </div>
@@ -1032,7 +1032,7 @@ function renderScreen2() {
                     <div style="height: 100%; width: ${(c.weight / 22) * 100}%; background: var(--color-accent-600);"></div>
                   </div>
 
-                  <div style="width: 44px; text-align: right; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--color-accent-800);">
+                  <div style="width: 44px; text-align: right; font-family: var(--font-sans); font-size: 15px; font-weight: 700; font-feature-settings: 'tnum' 1; color: var(--color-accent-800);">
                     ${c.weight}%
                   </div>
                 </div>
@@ -1062,7 +1062,7 @@ function renderScreen2() {
                     <div style="height: 100%; width: ${(c.weight / 22) * 100}%; background: var(--color-neutral-600);"></div>
                   </div>
 
-                  <div style="width: 44px; text-align: right; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--color-neutral-800);">
+                  <div style="width: 44px; text-align: right; font-family: var(--font-sans); font-size: 15px; font-weight: 700; font-feature-settings: 'tnum' 1; color: var(--color-neutral-800);">
                     ${c.weight}%
                   </div>
                 </div>
@@ -1112,7 +1112,7 @@ function renderScreen3() {
     <div style="max-width: 1140px; margin: 0 auto;">
 
       <!-- KHU VỰC KÉO THẢ TẢI FILE CV (DROPZONE) -->
-      <div style="border: 2px dashed var(--color-neutral-400); border-radius: var(--radius-md); background: #fbfaf9; padding: 36px 24px; text-align: center; margin-bottom: 24px;">
+      <div style="border: 2px dashed var(--color-neutral-400); border-radius: var(--radius-md); background: var(--color-surface); padding: 36px 24px; text-align: center; margin-bottom: 24px;">
         <div style="width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%; background: var(--color-accent-100); color: var(--color-accent-700); display: grid; place-items: center;">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
         </div>
@@ -1180,7 +1180,7 @@ function renderScreen3() {
           <!-- Bảng cuộn danh sách 42 file -->
           <div class="ranking-table-card" style="max-height: 520px; overflow-y: auto;">
             <table class="table" style="min-width: 820px; font-size: 13px;">
-              <thead style="position: sticky; top: 0; z-index: 10; background: #f7f5f2;">
+              <thead style="position: sticky; top: 0; z-index: 10; background: var(--color-neutral-100);">
                 <tr>
                   <th style="padding-left: 18px; width: 44px;">STT</th>
                   <th>Tên tệp</th>
@@ -1191,34 +1191,34 @@ function renderScreen3() {
               </thead>
               <tbody>
                 ${filteredList.map((f, index) => {
-                  let statusColor = '#255a39';
-                  let statusBg = '#eef4ef';
-                  let statusBorder = '#cadcd0';
+                  let statusColor = 'var(--color-pass)';
+                  let statusBg = 'var(--color-pass-bg)';
+                  let statusBorder = 'var(--color-pass-border)';
 
                   if (f.status === 'parsing') {
                     statusColor = 'var(--color-accent-800)';
-                    statusBg = '#fff3e4';
+                    statusBg = 'var(--color-accent-100)';
                     statusBorder = 'var(--color-accent-300)';
                   } else if (f.status === 'duplicate') {
-                    statusColor = '#8a5808';
-                    statusBg = '#fdf8ec';
-                    statusBorder = '#edd9a8';
+                    statusColor = 'var(--color-warn)';
+                    statusBg = 'var(--color-warn-bg)';
+                    statusBorder = 'var(--color-warn-border)';
                   } else if (f.status === 'error') {
-                    statusColor = '#7d231e';
-                    statusBg = '#fbeeed';
-                    statusBorder = '#e5cbc9';
+                    statusColor = 'var(--color-fail)';
+                    statusBg = 'var(--color-fail-bg)';
+                    statusBorder = 'var(--color-fail-border)';
                   }
 
                   return `
                     <tr>
-                      <td style="padding-left: 18px; font-family: var(--font-heading); font-size: 15px; color: var(--color-neutral-700);">${f.id}</td>
+                      <td style="padding-left: 18px; font-family: var(--font-sans); font-size: 12.5px; font-feature-settings: 'tnum' 1; color: var(--color-neutral-700);">${f.id}</td>
                       <td>
                         <span style="font-weight: 600; color: var(--color-text);">${escapeHtml(f.file)}</span>
                       </td>
                       <td>
                         ${f.candidate !== '—' ? `<strong>${escapeHtml(f.candidate)}</strong>` : '<span style="color:var(--color-neutral-600)">—</span>'}
                       </td>
-                      <td style="color: var(--color-neutral-700); font-size: 12px; font-feature-settings: 'tnum';">
+                      <td style="color: var(--color-neutral-700); font-size: 12px; font-feature-settings: 'lnum' 1, 'tnum' 1;">
                         ${escapeHtml(f.uploadTime)}
                       </td>
                       <td style="padding-right: 18px;">
@@ -1235,14 +1235,14 @@ function renderScreen3() {
                           ` : ''}
 
                           ${f.retry ? `
-                            <button type="button" class="btn btn-ghost" onclick="alert('Đang chạy lại OCR cho tệp này...')" style="font-size: 11.5px; padding: 2px 6px; color: #7d231e; text-decoration: underline;">
+                            <button type="button" class="btn btn-ghost" onclick="alert('Đang chạy lại OCR cho tệp này...')" style="font-size: 11.5px; padding: 2px 6px; color: var(--color-fail); text-decoration: underline;">
                               Thử lại
                             </button>
                           ` : ''}
                         </div>
 
                         ${f.note ? `
-                          <div style="font-size: 11.5px; color: ${f.status === 'error' ? '#7d231e' : 'var(--color-neutral-800)'}; margin-top: 4px; line-height: 1.4;">
+                          <div style="font-size: 11.5px; color: ${f.status === 'error' ? 'var(--color-fail)' : 'var(--color-neutral-800)'}; margin-top: 4px; line-height: 1.4;">
                             ${escapeHtml(f.note)}
                           </div>
                         ` : ''}
@@ -1255,18 +1255,18 @@ function renderScreen3() {
           </div>
 
           <!-- THANH TỔNG KẾT & NÚT BẮT ĐẦU AI SCREENING -->
-          <div style="display: flex; align-items: center; gap: 20px; padding: 16px 20px; background: #fbfaf9; border: 1px solid var(--color-divider); border-top: 0; border-radius: 0 0 var(--radius-md) var(--radius-md); flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 20px; padding: 16px 20px; background: var(--color-surface); border: 1px solid var(--color-divider); border-top: 0; border-radius: 0 0 var(--radius-md) var(--radius-md); flex-wrap: wrap;">
             <div>
               <span style="font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: var(--color-text); margin-right: 4px;">${allCvs.length}</span>
               <span style="font-size: 13px;">CV đã sẵn sàng</span>
             </div>
 
             <div style="font-size: 13px; color: var(--color-neutral-700);">
-              <span style="font-weight: 600; color: #8a5808;">1</span> trùng lặp (đã gộp)
+              <span style="font-weight: 600; color: var(--color-warn);">1</span> trùng lặp (đã gộp)
             </div>
 
             <div style="font-size: 13px; color: var(--color-neutral-700);">
-              <span style="font-weight: 600; color: #7d231e;">1</span> cần bổ sung OCR
+              <span style="font-weight: 600; color: var(--color-fail);">1</span> cần bổ sung OCR
             </div>
 
             <div style="margin-left: auto;">
@@ -1304,7 +1304,7 @@ function renderScreen4() {
   let kicker = 'Đã hoàn tất';
   let subtitle = 'Hoàn tất lúc 14:06 · Thời gian xử lý: 4 phút 12 giây';
   let pct = 100;
-  let barColor = '#255a39';
+  let barColor = 'var(--color-pass)';
   let isErr = false;
   let isDone = true;
   let isRunning = false;
@@ -1321,7 +1321,7 @@ function renderScreen4() {
     if (isDone) {
       kicker = 'Đã hoàn tất sàng lọc';
       subtitle = 'Hoàn tất lúc 14:06 · 42 CV đã được phân tích đầy đủ';
-      barColor = '#255a39';
+      barColor = 'var(--color-pass)';
       doneUpTo = 6;
       activeStep = -1;
     } else {
@@ -1350,7 +1350,7 @@ function renderScreen4() {
     isErr = false;
     kicker = 'Đã hoàn tất toàn bộ';
     subtitle = 'Hoàn tất lúc 14:06 · Thời gian xử lý: 4 phút 12 giây';
-    barColor = '#255a39';
+    barColor = 'var(--color-pass)';
     doneUpTo = 6;
     activeStep = -1;
   } else if (mode === 'error') {
@@ -1361,7 +1361,7 @@ function renderScreen4() {
     isErr = true;
     kicker = 'Tạm dừng giữa quá trình';
     subtitle = 'Dừng lúc 13:58 · Phát hiện 2 file lỗi phân tích văn bản';
-    barColor = '#9b2c26';
+    barColor = '#c2512f';
     doneUpTo = 4;
     activeStep = -1;
   }
@@ -1385,7 +1385,7 @@ function renderScreen4() {
 
     if (isStepDone) {
       icon = '✓';
-      iconColor = '#255a39';
+      iconColor = 'var(--color-pass)';
       note = 'xong';
       opacity = '1';
     } else if (isStepActive) {
@@ -1405,22 +1405,22 @@ function renderScreen4() {
   if (isDone) {
     stats = [
       { label: 'Tổng số CV đã chấm', val: '42', color: 'var(--color-text)' },
-      { label: 'Đạt yêu cầu bắt buộc', val: '31', color: '#255a39' },
-      { label: 'Không đạt bắt buộc', val: '11', color: '#7d231e' },
+      { label: 'Đạt yêu cầu bắt buộc', val: '31', color: 'var(--color-pass)' },
+      { label: 'Không đạt bắt buộc', val: '11', color: 'var(--color-fail)' },
       { label: 'Đề xuất Shortlist', val: '8', color: 'var(--color-shortlist)' }
     ];
   } else if (isErr) {
     stats = [
       { label: 'CV đã hoàn tất', val: '27', color: 'var(--color-text)' },
-      { label: 'File lỗi phân tích', val: '2', color: '#7d231e' },
+      { label: 'File lỗi phân tích', val: '2', color: 'var(--color-fail)' },
       { label: 'Hồ sơ chờ xử lý', val: '13', color: 'var(--color-neutral-700)' }
     ];
   } else {
     const p = Math.round(count * 0.74);
     stats = [
       { label: 'CV đã chấm', val: count.toString(), color: 'var(--color-text)' },
-      { label: 'Tạm thời đạt bắt buộc', val: p.toString(), color: '#255a39' },
-      { label: 'Tạm thời không đạt', val: (count - p).toString(), color: '#7d231e' }
+      { label: 'Tạm thời đạt bắt buộc', val: p.toString(), color: 'var(--color-pass)' },
+      { label: 'Tạm thời không đạt', val: (count - p).toString(), color: 'var(--color-fail)' }
     ];
   }
 
@@ -1518,7 +1518,7 @@ function renderScreen4() {
               ${stats.map(st => `
                 <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--color-divider);">
                   <span style="font-size: 13px; color: var(--color-text);">${escapeHtml(st.label)}</span>
-                  <span style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: ${st.color}; font-feature-settings: 'tnum';">
+                  <span style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: ${st.color}; font-feature-settings: 'lnum' 1, 'tnum' 1;">
                     ${st.val}
                   </span>
                 </div>
@@ -1530,12 +1530,12 @@ function renderScreen4() {
 
         <!-- Hộp cảnh báo nếu có lỗi -->
         ${isErr ? `
-          <div style="margin-top: 24px; border: 1px solid #9b2c26; border-left: 4px solid #9b2c26; border-radius: var(--radius-md); padding: 14px 18px; background: #fdf6f5; animation: fadeIn 0.2s ease;">
-            <div style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: #7d231e;">
+          <div style="margin-top: 24px; border: 1px solid #c2512f; border-left: 4px solid #c2512f; border-radius: var(--radius-md); padding: 14px 18px; background: #fdf3f0; animation: fadeIn 0.2s ease;">
+            <div style="font-family: var(--font-heading); font-size: 17px; font-weight: 700; color: var(--color-fail);">
               Có lỗi xảy ra trong quá trình bóc tách văn bản
             </div>
             <div style="font-size: 13px; color: var(--color-text); margin-top: 4px; line-height: 1.5;">
-              Hệ thống đã chấm xong 27 trong 42 CV. Hai file là bản scan hình ảnh không có lớp ký tự searchable (`cv-scan-0917.pdf`). 13 CV còn lại đang tạm dừng.
+              Hệ thống đã chấm xong 27 trong 42 CV. Hai file là bản scan hình ảnh không có lớp ký tự searchable (<code>cv-scan-0917.pdf</code>). 13 CV còn lại đang tạm dừng.
             </div>
           </div>
         ` : ''}
@@ -1656,7 +1656,7 @@ function renderScreen6() {
         <div style="min-width: 240px;">
           <h2 style="margin: 0 0 4px; font-size: 28px;">${escapeHtml(an.name)}</h2>
           <div style="font-size: 13.5px; color: var(--color-neutral-700);">${escapeHtml(an.targetJob)}</div>
-          <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #255a39; background: #eef4ef; border: 1px solid #cadcd0; padding: 4px 10px; border-radius: var(--radius-sm);">
+          <div style="margin-top: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--color-pass); background: var(--color-pass-bg); border: 1px solid var(--color-pass-border); padding: 4px 10px; border-radius: var(--radius-sm);">
             ✓ Đạt toàn bộ 5 yêu cầu bắt buộc
           </div>
         </div>
@@ -1681,7 +1681,7 @@ function renderScreen6() {
             ← Quay lại danh sách
           </button>
           
-          <button type="button" class="btn btn-secondary" style="color: #7d231e;" onclick="openRejectModal(1)" ${isRejected ? 'disabled' : ''}>
+          <button type="button" class="btn btn-secondary" style="color: var(--color-fail);" onclick="openRejectModal(1)" ${isRejected ? 'disabled' : ''}>
             ${isRejected ? 'Đã loại' : 'Loại ứng viên'}
           </button>
 
@@ -1698,9 +1698,9 @@ function renderScreen6() {
         <div class="detail-panel">
 
           <!-- Khối 1: Giải thích của AI -->
-          <div class="card-panel highlight-border">
-            <div class="panel-title" style="display: flex; align-items: center; gap: 8px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-700)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+          <div class="card-panel ai-panel">
+            <div class="panel-title" style="display: flex; align-items: center; gap: 8px; color: var(--color-accent-2-800);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-ai)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
               Giải thích của AI
             </div>
             <p style="margin: 0; font-size: 13.5px; line-height: 1.7; text-align: justify; color: var(--color-text);">
@@ -1714,11 +1714,11 @@ function renderScreen6() {
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
               ${an.comps.map(c => `
                 <div style="display: flex; align-items: center; gap: 14px;">
-                  <span style="font-size: 13px; width: 150px; font-weight: ${c.label === 'Semantic Matching' ? '600' : '400'}; color: ${c.label === 'Semantic Matching' ? 'var(--color-accent-800)' : 'var(--color-text)'};">${escapeHtml(c.label)}</span>
+                  <span style="font-size: 13px; width: 150px; font-weight: ${c.label === 'Semantic Matching' ? '600' : '400'}; color: ${c.label === 'Semantic Matching' ? 'var(--color-accent-2-800)' : 'var(--color-text)'};">${escapeHtml(c.label)}</span>
                   <div style="flex: 1; height: 7px; background: var(--color-neutral-300); border-radius: 2px; overflow: hidden;">
-                    <div style="height: 100%; width: ${c.barW}; background: ${c.label === 'Semantic Matching' ? 'var(--color-accent-600)' : 'var(--color-neutral-800)'};"></div>
+                    <div style="height: 100%; width: ${c.barW}; background: ${c.label === 'Semantic Matching' ? 'var(--color-ai)' : 'var(--color-neutral-800)'};"></div>
                   </div>
-                  <span style="font-family: var(--font-heading); font-size: 18px; font-weight: 700; width: 32px; text-align: right; color: ${c.label === 'Semantic Matching' ? 'var(--color-accent-800)' : 'var(--color-text)'};">${c.val}</span>
+                  <span style="font-family: var(--font-sans); font-size: 15px; font-weight: 700; font-feature-settings: 'tnum' 1; width: 32px; text-align: right; color: ${c.label === 'Semantic Matching' ? 'var(--color-accent-2-800)' : 'var(--color-text)'};">${c.val}</span>
                 </div>
               `).join('')}
             </div>
@@ -1737,12 +1737,12 @@ function renderScreen6() {
               <table class="req-table">
                 <thead>
                   <tr>
-                    <th style="padding-left: 20px;">Yêu cầu</th>
-                    <th>Loại</th>
-                    <th>Trạng thái</th>
-                    <th style="text-align: right;">Trọng số</th>
-                    <th style="text-align: right;">Đóng góp</th>
-                    <th style="padding-right: 20px; width: 220px;">Bằng chứng</th>
+                    <th style="padding-left: 20px; width: 19%;">Yêu cầu</th>
+                    <th style="width: 12%;">Loại</th>
+                    <th style="width: 11%; white-space: nowrap;">Trạng thái</th>
+                    <th style="width: 9%; text-align: right; white-space: nowrap;">Trọng số</th>
+                    <th style="width: 9%; text-align: right; white-space: nowrap;">Đóng góp</th>
+                    <th style="padding-right: 20px; width: 40%;">Bằng chứng</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1750,20 +1750,20 @@ function renderScreen6() {
                     const isKeyActive = q.key && activeKey === q.key;
                     const isMissing = q.contribution === 0;
                     return `
-                      <tr style="${isKeyActive ? 'background: #fff4e5;' : ''}">
+                      <tr style="${isKeyActive ? 'background: var(--color-accent-100);' : ''}">
                         <td style="padding-left: 20px; font-weight: 500;">${escapeHtml(q.req)}</td>
                         <td>
-                          <span class="tag" style="background: ${q.type === 'Bắt buộc' ? 'var(--color-accent-100)' : 'var(--color-neutral-100)'}; color: ${q.type === 'Bắt buộc' ? 'var(--color-accent-800)' : 'var(--color-neutral-800)'}; border: 1px solid ${q.type === 'Bắt buộc' ? 'var(--color-accent-400)' : 'var(--color-neutral-300)'}; font-weight: 500;">
+                          <span class="tag" style="background: ${q.type === 'Bắt buộc' ? 'var(--color-accent-100)' : 'var(--color-neutral-100)'}; color: ${q.type === 'Bắt buộc' ? 'var(--color-accent-800)' : 'var(--color-neutral-800)'}; border: 1px solid ${q.type === 'Bắt buộc' ? 'var(--color-accent-400)' : 'var(--color-neutral-300)'}; font-weight: 500; white-space: nowrap;">
                             ${escapeHtml(q.type)}
                           </span>
                         </td>
                         <td>
-                          <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 600; color: ${isMissing ? '#7d231e' : '#255a39'};">
+                          <span style="display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 12.5px; font-weight: 600; color: ${isMissing ? 'var(--color-fail)' : 'var(--color-pass)'};">
                             ${q.statusIcon} ${escapeHtml(q.status)}
                           </span>
                         </td>
                         <td style="text-align: right; color: var(--color-neutral-700); font-weight: 500;">${q.weight}</td>
-                        <td style="text-align: right; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: ${isMissing ? '#7d231e' : 'var(--color-text)'};">${q.contribution}</td>
+                        <td style="text-align: right; font-family: var(--font-sans); font-size: 15px; font-weight: 700; font-feature-settings: 'tnum' 1; color: ${isMissing ? 'var(--color-fail)' : 'var(--color-text)'};">${q.contribution}</td>
                         <td style="padding-right: 20px;">
                           ${q.key ? `
                             <div style="display: flex; align-items: baseline; gap: 6px;">
@@ -1775,19 +1775,19 @@ function renderScreen6() {
                               </button>
                             </div>
                             ${isKeyActive ? `
-                              <div style="margin-top: 6px; border-left: 3px solid var(--color-accent); padding: 6px 8px; background: #fff3e4; font-size: 12px; line-height: 1.5; color: var(--color-accent-900); animation: fadeIn 0.15s ease;">
+                              <div style="margin-top: 6px; border-left: 3px solid var(--color-accent); padding: 6px 8px; background: var(--color-accent-100); font-size: 12px; line-height: 1.5; color: var(--color-accent-900); animation: fadeIn 0.15s ease;">
                                 ${escapeHtml(q.evidence)}
                               </div>
                             ` : ''}
                           ` : `
-                            <span style="font-size: 12px; color: #7d231e; font-style: italic;">${escapeHtml(q.evidence)}</span>
+                            <span style="font-size: 12px; color: var(--color-fail); font-style: italic;">${escapeHtml(q.evidence)}</span>
                           `}
                         </td>
                       </tr>
                     `;
                   }).join('')}
                   <!-- Hàng tổng kết -->
-                  <tr style="background: #f7f5f2; font-weight: 700;">
+                  <tr style="background: var(--color-neutral-100); font-weight: 700;">
                     <td colspan="3" style="padding-left: 20px; font-family: var(--font-heading); font-size: 16px;">Tổng cộng</td>
                     <td style="text-align: right; font-size: 13px; color: var(--color-neutral-700);">100</td>
                     <td style="text-align: right; font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-700);">${an.score}</td>
@@ -1835,7 +1835,7 @@ function renderScreen6() {
         <div class="cv-preview-wrapper">
           <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px;">
             <div style="display: flex; align-items: baseline; gap: 8px;">
-              <h3 style="margin: 0; font-size: 18px;">CV gốc</h3>
+              <h3 style="margin: 0; font-size: 18px; white-space: nowrap;">CV gốc</h3>
               <span style="font-size: 12px; color: var(--color-neutral-700);">nguyen-van-an-backend.pdf · Trang 1 / 2</span>
             </div>
             <button type="button" class="btn btn-ghost" style="font-size: 12px;" onclick="alert('Đang tải file nguyen-van-an-backend.pdf...')">
@@ -1957,13 +1957,13 @@ function renderScreen7() {
             ${critList.map((c, index) => {
               const isDocker = c.id === 'docker';
               return `
-                <tr style="${isDocker && c.type === 'mandatory' ? 'background: #fff5e8;' : ''}">
+                <tr style="${isDocker && c.type === 'mandatory' ? 'background: var(--color-warn-bg);' : ''}">
                   <td style="padding-left: 18px; font-weight: 500;">
                     ${escapeHtml(c.label)}
-                    ${isDocker && c.type === 'mandatory' ? '<span class="tag" style="background:#fbeeed;color:#7d231e;border:1px solid #e5cbc9;margin-left:6px;font-size:10px;">Mới đổi bắt buộc</span>' : ''}
+                    ${isDocker && c.type === 'mandatory' ? '<span class="tag" style="background:var(--color-fail-bg);color:var(--color-fail);border:1px solid var(--color-fail-border);margin-left:6px;font-size:10px;">Mới đổi bắt buộc</span>' : ''}
                   </td>
                   <td>
-                    <select class="input" style="min-height: 32px; padding: 3px 8px; font-size: 12.5px; border-color: ${c.type === 'mandatory' ? 'var(--color-accent-600)' : 'var(--color-divider)'}; color: ${c.type === 'mandatory' ? 'var(--color-accent-800)' : 'var(--color-text)'}; font-weight: ${c.type === 'mandatory' ? '600' : '400'}; background: #fff;" onchange="onCritTypeChange(${index}, this.value)">
+                    <select class="input" style="min-height: 32px; min-width: 172px; padding: 3px 8px; font-size: 12.5px; border-color: ${c.type === 'mandatory' ? 'var(--color-accent-600)' : 'var(--color-divider)'}; color: ${c.type === 'mandatory' ? 'var(--color-accent-800)' : 'var(--color-text)'}; font-weight: ${c.type === 'mandatory' ? '600' : '400'}; background: #fff;" onchange="onCritTypeChange(${index}, this.value)">
                       <option value="mandatory" ${c.type === 'mandatory' ? 'selected' : ''}>Bắt buộc (Quyết định)</option>
                       <option value="preferred" ${c.type === 'preferred' ? 'selected' : ''}>Ưu tiên (Cộng điểm)</option>
                     </select>
@@ -1971,14 +1971,14 @@ function renderScreen7() {
                   <td>
                     <div style="display: flex; align-items: center; gap: 12px;">
                       <input type="range" min="0" max="30" step="1" value="${c.weight}" oninput="onCritWeightChange(${index}, this.value)" style="flex: 1; accent-color: var(--color-accent-600); cursor: pointer;">
-                      <span style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; width: 36px; text-align: right; color: var(--color-accent-800);">${c.weight}</span>
+                      <span style="font-family: var(--font-sans); font-size: 16px; font-weight: 700; font-feature-settings: 'tnum' 1; width: 36px; text-align: right; color: var(--color-accent-800);">${c.weight}</span>
                     </div>
                   </td>
                   <td style="font-size: 12.5px; color: var(--color-neutral-700);">
                     ${c.minYears ? `≥ ${c.minYears} năm` : '—'}
                   </td>
                   <td style="text-align: right; padding-right: 18px;">
-                    <button type="button" class="btn btn-ghost" onclick="resetCritRow(${index})" style="font-size: 12px; color: #7d231e; padding: 2px 6px;">
+                    <button type="button" class="btn btn-ghost" onclick="resetCritRow(${index})" style="font-size: 12px; color: var(--color-fail); padding: 2px 6px;">
                       Xoá
                     </button>
                   </td>
@@ -1989,18 +1989,18 @@ function renderScreen7() {
         </table>
 
         <!-- THANH TỔNG TRỌNG SỐ & HÀNH ĐỘNG -->
-        <div style="display: flex; align-items: center; gap: 18px; padding: 14px 18px; border-top: 1px solid var(--color-divider); background: #f7f5f2; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 18px; padding: 14px 18px; border-top: 1px solid var(--color-divider); background: var(--color-neutral-100); flex-wrap: wrap;">
           <button type="button" class="btn btn-secondary" onclick="addCustomCriteria()" style="font-size: 12.5px;">+ Thêm tiêu chí</button>
 
           <div style="font-size: 13.5px;">
             Tổng trọng số: 
-            <span style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin: 0 4px; color: ${totalW === 100 ? '#255a39' : '#7d231e'};">
+            <span style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; margin: 0 4px; color: ${totalW === 100 ? 'var(--color-pass)' : 'var(--color-fail)'};">
               ${totalW}
             </span>
             <span style="color: var(--color-neutral-700);">/ 100</span>
           </div>
 
-          <div style="font-size: 12.5px; color: ${totalW === 100 ? '#255a39' : '#7d231e'}; font-weight: 500;">
+          <div style="font-size: 12.5px; color: ${totalW === 100 ? 'var(--color-pass)' : 'var(--color-fail)'}; font-weight: 500;">
             ${totalW === 100 ? '✓ Đã cân bằng đúng 100' : (totalW > 100 ? `! Vượt ${totalW - 100} điểm, vui lòng giảm bớt` : `! Còn thiếu ${100 - totalW} điểm để đạt 100`)}
           </div>
 
@@ -2031,27 +2031,27 @@ function renderScreen7() {
         <div class="card-panel">
           <div style="font-size: 12px; color: var(--color-neutral-700);">Vòng 1 · ${comp.round1.time} · ${comp.round1.desc}</div>
           <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 6px;">
-            <span style="font-family: var(--font-heading); font-size: 34px; font-weight: 700; color: #255a39;">${comp.round1.passed}</span>
+            <span style="font-family: var(--font-heading); font-size: 34px; font-weight: 700; color: var(--color-pass);">${comp.round1.passed}</span>
             <span style="font-size: 13px; color: var(--color-neutral-700);">đạt yêu cầu bắt buộc / ${comp.round1.total}</span>
           </div>
           <div style="font-size: 12px; color: var(--color-neutral-700); margin-top: 4px;">Vòng 1 được lưu trữ nguyên bản, có thể xem lại bất cứ lúc nào.</div>
         </div>
 
         <!-- Vòng 2 -->
-        <div class="card-panel highlight-border" style="border-color: #9b2c26; background: #fffdfc;">
-          <div style="font-size: 12px; color: #7d231e; font-weight: 600;">Vòng 2 · ${comp.round2.time} · ${comp.round2.desc}</div>
+        <div class="card-panel highlight-border" style="border-color: #c2512f; background: #fffbfa;">
+          <div style="font-size: 12px; color: var(--color-fail); font-weight: 600;">Vòng 2 · ${comp.round2.time} · ${comp.round2.desc}</div>
           <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 6px;">
-            <span style="font-family: var(--font-heading); font-size: 34px; font-weight: 700; color: #7d231e;">${comp.round2.passed}</span>
+            <span style="font-family: var(--font-heading); font-size: 34px; font-weight: 700; color: var(--color-fail);">${comp.round2.passed}</span>
             <span style="font-size: 13px; color: var(--color-neutral-700);">đạt yêu cầu bắt buộc / ${comp.round2.total}</span>
           </div>
-          <div style="font-size: 12.5px; color: #7d231e; margin-top: 4px; font-weight: 600;">${comp.round2.shiftNote}</div>
+          <div style="font-size: 12.5px; color: var(--color-fail); margin-top: 4px; font-weight: 600;">${comp.round2.shiftNote}</div>
         </div>
 
       </div>
 
       <!-- KHỐI CẢNH BÁO: TRƯỜNG HỢP NGUYỄN VĂN AN -->
-      <div style="border: 2px solid #9b2c26; border-radius: var(--radius-md); background: #fdf6f5; padding: 20px 22px; margin-bottom: 22px; animation: fadeIn 0.2s ease;">
-        <div style="font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: #7d231e; font-weight: 700;">Trường hợp biến động đáng chú ý nhất</div>
+      <div style="border: 2px solid #c2512f; border-radius: var(--radius-md); background: #fdf3f0; padding: 20px 22px; margin-bottom: 22px; animation: fadeIn 0.2s ease;">
+        <div style="font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-fail); font-weight: 700;">Trường hợp biến động đáng chú ý nhất</div>
         
         <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: center; margin-top: 10px;">
           <div style="min-width: 190px;">
@@ -2064,7 +2064,7 @@ function renderScreen7() {
             <div>
               <div style="font-size: 11px; color: var(--color-neutral-700);">Vòng 1</div>
               <div style="font-family: var(--font-heading); font-size: 36px; font-weight: 700; line-height: 1; color: var(--color-text);">${comp.notableCandidate.r1Score}</div>
-              <div style="font-size: 12px; color: #255a39; font-weight: 600;">${comp.notableCandidate.r1Rank}</div>
+              <div style="font-size: 12px; color: var(--color-pass); font-weight: 600;">${comp.notableCandidate.r1Rank}</div>
             </div>
 
             <div style="font-size: 22px; color: var(--color-neutral-500);">→</div>
@@ -2072,12 +2072,12 @@ function renderScreen7() {
             <!-- Vòng 2 -->
             <div>
               <div style="font-size: 11px; color: var(--color-neutral-700);">Vòng 2</div>
-              <div style="font-family: var(--font-heading); font-size: 36px; font-weight: 700; line-height: 1; color: #7d231e;">${comp.notableCandidate.r2Score}</div>
-              <div style="font-size: 12px; color: #7d231e; font-weight: 600;">${comp.notableCandidate.r2Rank}</div>
+              <div style="font-family: var(--font-heading); font-size: 36px; font-weight: 700; line-height: 1; color: var(--color-fail);">${comp.notableCandidate.r2Score}</div>
+              <div style="font-size: 12px; color: var(--color-fail); font-weight: 600;">${comp.notableCandidate.r2Rank}</div>
             </div>
 
-            <div style="border-left: 1px solid #e5cbc9; padding-left: 18px; max-width: 440px;">
-              <div style="font-size: 13px; line-height: 1.6; color: #444141;">
+            <div style="border-left: 1px solid var(--color-fail-border); padding-left: 18px; max-width: 440px;">
+              <div style="font-size: 13px; line-height: 1.6; color: var(--color-neutral-800);">
                 ${comp.notableCandidate.reason}
               </div>
             </div>
@@ -2100,15 +2100,15 @@ function renderScreen7() {
           </thead>
           <tbody>
             ${comp.candidatesDiff.map(c => `
-              <tr style="${c.failedNow ? 'background: #fff8f7;' : ''}">
+              <tr style="${c.failedNow ? 'background: #fdf3f0;' : ''}">
                 <td style="padding-left: 18px;">
                   <span style="font-weight: 600; font-size: 14px; color: var(--color-text);">${escapeHtml(c.name)}</span>
                   <div style="font-size: 11.5px; color: var(--color-neutral-700);">${escapeHtml(c.ranks)}</div>
                 </td>
-                <td style="text-align: right; font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: var(--color-neutral-700);">${c.r1}</td>
-                <td style="text-align: right; font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: ${c.failedNow ? '#7d231e' : 'var(--color-text)'};">${c.r2}</td>
-                <td style="text-align: right; font-weight: 700; color: ${c.delta.startsWith('+') ? '#255a39' : '#7d231e'};">${c.delta}</td>
-                <td style="font-size: 12.5px; font-weight: 600; color: ${c.failedNow ? '#7d231e' : '#255a39'}; white-space: nowrap;">
+                <td style="text-align: right; font-family: var(--font-sans); font-size: 16px; font-weight: 700; font-feature-settings: 'tnum' 1; color: var(--color-neutral-700);">${c.r1}</td>
+                <td style="text-align: right; font-family: var(--font-sans); font-size: 16px; font-weight: 700; font-feature-settings: 'tnum' 1; color: ${c.failedNow ? 'var(--color-fail)' : 'var(--color-text)'};">${c.r2}</td>
+                <td style="text-align: right; font-weight: 700; color: ${c.delta.startsWith('+') ? 'var(--color-pass)' : 'var(--color-fail)'};">${c.delta}</td>
+                <td style="font-size: 12.5px; font-weight: 600; color: ${c.failedNow ? 'var(--color-fail)' : 'var(--color-pass)'}; white-space: nowrap;">
                   ${escapeHtml(c.passStatus)}
                 </td>
                 <td style="font-size: 12.5px; color: var(--color-text); padding-right: 18px;">${escapeHtml(c.reason)}</td>

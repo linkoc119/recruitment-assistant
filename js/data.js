@@ -373,7 +373,7 @@ const RECRUITMENT_DATA = {
       { text: "Nguyễn Văn An", type: "title", key: null },
       { text: "Senior Backend Developer · Hà Nội · an.nv@email.com · 0912 345 678", type: "meta", key: null },
       { text: "Kinh nghiệm làm việc", type: "heading", key: null },
-      { text: "FPT Software — Backend Developer · 06/2021 – nay", type: "subhead", key: null },
+      { text: "FPT Software — Backend Developer · 09/2023 – nay", type: "subhead", key: null },
       { text: "Ba năm phát triển bằng Python cho nhóm nền tảng thanh toán, phụ trách các dịch vụ xử lý giao dịch.", type: "paragraph", key: "py" },
       { text: "Xây dựng REST API bằng FastAPI cho hệ thống thanh toán, phục vụ trung bình 1,2 triệu yêu cầu mỗi ngày.", type: "paragraph", key: "fa" },
       { text: "Thiết kế API nội bộ phục vụ ba nhóm sản phẩm, kèm tài liệu và bộ kiểm thử hợp đồng.", type: "paragraph", key: "rest" },

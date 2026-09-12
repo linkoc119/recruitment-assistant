@@ -6,25 +6,34 @@
   --font-heading: "Cormorant Garamond", Georgia, serif;
   --font-body: var(--font-sans);
 
-  /* Màu xanh mực cho trạng thái Shortlist theo chỉ đạo của người dùng */
-  --color-shortlist: #1B3A63;
-  --color-shortlist-bg: #eef3f9;
-  --color-shortlist-border: #a4bedc;
-  --color-shortlist-hover: #132a48;
+  /* Shortlist — hành động quyết định, dùng xanh LinkedIn tô đặc.
+     Không chỉ dựa vào màu: luôn kèm biểu tượng ✓ và chữ "Shortlist". */
+  --color-shortlist: #0a66c2;
+  --color-shortlist-bg: #eaf2fb;
+  --color-shortlist-border: #a6c8ee;
+  --color-shortlist-hover: #004182;
 
-  /* Màu ngữ cảnh cho trạng thái đạt / không đạt (Đảm bảo độ tương phản cao) */
-  --color-pass: #255a39;
-  --color-pass-bg: #eef4ef;
-  --color-pass-border: #cadcd0;
+  /* Màu ngữ cảnh cho trạng thái đạt / không đạt (đảm bảo độ tương phản cao) */
+  --color-pass: #0b7b50;
+  --color-pass-bg: #e7f4ee;
+  --color-pass-border: #b6ddca;
 
-  --color-fail: #7d231e;
-  --color-fail-bg: #fbeeed;
-  --color-fail-border: #e5cbc9;
+  --color-fail: #b24020;
+  --color-fail-bg: #fbeeea;
+  --color-fail-border: #edcbc0;
 
-  --color-warn: #966113;
-  --color-warn-bg: #fdf5e8;
-  --color-warn-border: #ebd3a8;
-}
+  --color-warn: #915907;
+  --color-warn-bg: #fdf4e6;
+  --color-warn-border: #ecd7ac;
+
+  /* Tím — dành riêng cho phần do AI sinh ra (Semantic Matching, giải thích) */
+  --color-ai: #7a54c0;
+  --color-ai-bg: #f3eefc;
+  --color-ai-border: #cbb8ef;
+
+  /* Vùng tối: sidebar và các nút nhấn mạnh */
+  --color-dark: #1b1f23;
+  --color-dark-hover: #282e33;
 
 @keyframes pulseDot { 
   0%, 100% { opacity: 0.35; transform: scale(0.9); } 
@@ -60,8 +69,8 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 /* Sidebar */
 .app-sidebar {
   flex: 0 0 216px;
-  background: #191817;
-  color: #ece7df;
+  background: var(--color-dark);
+  color: #e6e9ec;
   padding: 22px 0 24px;
   display: flex;
   flex-direction: column;
@@ -77,14 +86,14 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 .brand-title {
   font-size: 19px;
   line-height: 1.15;
-  color: #f6f1e9;
+  color: #ffffff;
   letter-spacing: -0.01em;
 }
 
 .brand-subtitle {
   font-size: 11px;
   letter-spacing: 0.05em;
-  color: #8d867b;
+  color: #939ba3;
   margin-top: 5px;
 }
 
@@ -99,7 +108,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   gap: 10px;
   padding: 10px 18px;
   font-size: 13px;
-  color: #b6ada0;
+  color: #a6aeb6;
   border-left: 3px solid transparent;
   cursor: pointer;
   text-decoration: none;
@@ -108,13 +117,13 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .nav-item:hover {
-  color: #f6f1e9;
-  background: #232120;
+  color: #ffffff;
+  background: var(--color-dark-hover);
 }
 
 .nav-item.active {
-  color: #f6f1e9;
-  background: #232120;
+  color: #ffffff;
+  background: var(--color-dark-hover);
   border-left-color: var(--color-accent);
   font-weight: 600;
 }
@@ -123,12 +132,12 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   margin-top: auto;
   padding: 0 18px;
   font-size: 11px;
-  color: #6f6862;
+  color: #7c848c;
   line-height: 1.5;
 }
 
 .sidebar-footer strong {
-  color: #c8bfb1;
+  color: #c9d0d7;
   display: block;
 }
 
@@ -147,7 +156,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   align-items: center;
   gap: 16px;
   padding: 12px 24px;
-  background: #fbfaf9;
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-divider);
 }
 
@@ -214,7 +223,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   display: flex;
   align-items: stretch;
   gap: 0;
-  background: #fbfaf9;
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-divider);
   padding: 0 24px;
   overflow-x: auto;
@@ -248,8 +257,9 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .demo-rail-btn .num {
-  font-family: var(--font-heading);
-  font-size: 14px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
   color: var(--color-accent-700);
 }
 
@@ -284,16 +294,16 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .metric-card {
-  background: #fbfaf9;
+  background: var(--color-surface);
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
   padding: 14px 16px;
   border-top: 3px solid var(--color-neutral-400);
 }
 
-.metric-card.pass { border-top-color: #255a39; }
+.metric-card.pass { border-top-color: var(--color-pass); }
 .metric-card.shortlist { border-top-color: var(--color-shortlist); }
-.metric-card.fail { border-top-color: #7d231e; }
+.metric-card.fail { border-top-color: var(--color-fail); }
 
 .metric-card-label {
   font-size: 12px;
@@ -312,13 +322,13 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   font-family: var(--font-heading);
   font-size: 36px;
   line-height: 1;
-  font-feature-settings: 'tnum';
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
   font-weight: 700;
 }
 
-.metric-card.pass .metric-card-val { color: #255a39; }
+.metric-card.pass .metric-card-val { color: var(--color-pass); }
 .metric-card.shortlist .metric-card-val { color: var(--color-shortlist); }
-.metric-card.fail .metric-card-val { color: #7d231e; }
+.metric-card.fail .metric-card-val { color: var(--color-fail); }
 
 .metric-card-unit {
   font-size: 12px;
@@ -327,7 +337,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 
 /* Bảng xếp hạng 6 cột — Đảm bảo KHÔNG tràn ngang ở 1440px */
 .ranking-table-card {
-  background: #fbfaf9;
+  background: var(--color-surface);
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -344,12 +354,12 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 .ranking-table col.col-rank { width: 56px; }
 .ranking-table col.col-candidate { width: 220px; }
 .ranking-table col.col-score { width: 145px; }
-.ranking-table col.col-skills { width: auto; min-width: 320px; }
+.ranking-table col.col-skills { width: auto; min-width: 288px; }
 .ranking-table col.col-mandatory { width: 125px; }
-.ranking-table col.col-actions { width: 185px; }
+.ranking-table col.col-actions { width: 240px; }
 
 .ranking-table th {
-  background: #f7f5f2;
+  background: var(--color-neutral-100);
   font-size: 11px;
   font-weight: 600;
   text-transform: none;
@@ -372,7 +382,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 
 .ranking-table tr.row-rejected {
   opacity: 0.6;
-  background: #f4f2f0;
+  background: var(--color-neutral-200);
 }
 
 /* Ô Hạng */
@@ -401,8 +411,8 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .rank-number {
-  font-family: var(--font-heading);
-  font-size: 21px;
+  font-family: var(--font-sans);
+  font-size: 17px;
   line-height: 1;
   font-weight: 700;
 }
@@ -461,7 +471,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   font-size: 28px;
   line-height: 1;
   font-weight: 700;
-  font-feature-settings: 'tnum';
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
 }
 
 .score-max {
@@ -506,8 +516,8 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   gap: 2px;
 }
 
-.skills-group-label.match { color: #255a39; }
-.skills-group-label.miss { color: #7d231e; }
+.skills-group-label.match { color: var(--color-pass); }
+.skills-group-label.miss { color: var(--color-fail); }
 
 .skill-chip {
   display: inline-flex;
@@ -519,15 +529,15 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .skill-chip.match {
-  background: #eef4ef;
-  color: #255a39;
-  border: 1px solid #cadcd0;
+  background: var(--color-pass-bg);
+  color: var(--color-pass);
+  border: 1px solid var(--color-pass-border);
 }
 
 .skill-chip.miss {
-  background: #fbeeed;
-  color: #7d231e;
-  border: 1px solid #e5cbc9;
+  background: var(--color-fail-bg);
+  color: var(--color-fail);
+  border: 1px solid var(--color-fail-border);
 }
 
 .skill-more-badge {
@@ -569,7 +579,9 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 
 .btn-action {
   font-size: 11.5px;
-  padding: 4px 8px;
+  padding: 4px 7px;
+  font-weight: 600;
+  font-family: var(--font-sans);
   line-height: 1.2;
   cursor: pointer;
   border-radius: var(--radius-sm);
@@ -599,7 +611,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 
 .mandatory-divider-box {
   border-top: 2px solid var(--color-neutral-800);
-  background: #f1eeea;
+  background: var(--color-neutral-200);
   padding: 10px 14px;
 }
 
@@ -618,7 +630,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 
 /* Dòng mở rộng (Accordion) */
 .expand-row td {
-  background: #f6f3ee;
+  background: var(--color-neutral-100);
   padding: 12px 18px 16px 54px !important;
   border-bottom: 1px solid var(--color-divider);
 }
@@ -665,10 +677,13 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   background: var(--color-neutral-800);
 }
 
+/* Semantic Matching do AI sinh — tô tím để tách khỏi ba điểm tính bằng quy tắc */
+.sub-score-row.ai .sub-score-bar-fill { background: var(--color-ai); }
+
 .sub-score-val {
-  font-family: var(--font-heading);
-  font-size: 16px;
-  font-feature-settings: 'tnum';
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
   font-weight: 700;
   width: 28px;
   text-align: right;
@@ -685,9 +700,9 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 /* Responsive Breakpoints */
 @media (max-width: 1280px) {
   .ranking-table col.col-candidate { width: 190px; }
-  .ranking-table col.col-skills { min-width: 260px; }
+  .ranking-table col.col-skills { min-width: 248px; }
   .ranking-table col.col-score { width: 130px; }
-  .ranking-table col.col-actions { width: 170px; }
+  .ranking-table col.col-actions { width: 212px; }
 }
 
 /* ========================================================
@@ -698,7 +713,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   align-items: flex-start;
   gap: 24px;
   flex-wrap: wrap;
-  background: #fbfaf9;
+  background: var(--color-surface);
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
   padding: 20px 24px;
@@ -715,14 +730,14 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   font-family: var(--font-heading);
   font-size: 64px;
   line-height: 0.9;
-  font-feature-settings: 'tnum';
+  font-feature-settings: 'lnum' 1, 'tnum' 1;
   font-weight: 700;
   color: var(--color-accent-700);
 }
 
 .detail-content-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
   gap: 26px;
   align-items: start;
 }
@@ -734,7 +749,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .card-panel {
-  background: #fbfaf9;
+  background: var(--color-surface);
   border: 1px solid var(--color-divider);
   border-radius: var(--radius-md);
   padding: 18px 20px;
@@ -754,6 +769,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 
 .req-table {
   width: 100%;
+  table-layout: fixed;   /* cột chia theo tỉ lệ cố định để ellipsis cột Bằng chứng ăn đúng */
   border-collapse: collapse;
   font-size: 12.5px;
 }
@@ -765,7 +781,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   padding: 8px 10px;
   border-bottom: 1px solid var(--color-divider);
   text-align: left;
-  background: #f7f5f2;
+  background: var(--color-neutral-100);
 }
 
 .req-table td {
@@ -792,7 +808,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   padding: 36px 40px;
   font-size: 13px;
   line-height: 1.65;
-  color: #2b2927;
+  color: var(--color-neutral-900);
   max-height: calc(100vh - 120px);
   overflow-y: auto;
 }
@@ -806,9 +822,9 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 }
 
 .cv-line.highlighted {
-  background: #ffe3bf;
-  border-left-color: var(--color-accent-600);
-  box-shadow: 0 0 0 1px #facb8d;
+  background: var(--color-accent-100);
+  border-left-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent-300);
 }
 
 .cv-line.title {
@@ -816,7 +832,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   font-size: 26px;
   font-weight: 700;
   line-height: 1.1;
-  color: #191817;
+  color: var(--color-text);
   padding-left: 0;
   margin-bottom: 2px;
 }
@@ -832,7 +848,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   font-family: var(--font-heading);
   font-size: 17px;
   font-weight: 600;
-  color: #191817;
+  color: var(--color-text);
   margin-top: 18px;
   margin-bottom: 6px;
   padding-left: 0;
@@ -842,7 +858,7 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
 .cv-line.subhead {
   font-weight: 600;
   font-size: 13.5px;
-  color: #2d2b2b;
+  color: var(--color-neutral-900);
   margin-top: 8px;
 }
 
@@ -934,4 +950,77 @@ h1, h2, h3, h4, .screen-title, .score-num, .dialog-title, .brand-title {
   .cv-paper {
     padding: 20px 18px;
   }
+}
+
+/* ========================================================
+   LỚP THÀNH PHẦN THEO TÔNG LINKEDIN RECRUITER
+   Nút chính tô đặc màu xanh thương hiệu, nút phụ viền xám
+   trên nền trắng — giống mẫu giao diện tham chiếu.
+   ======================================================== */
+
+.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--color-shortlist-hover);
+  border-color: var(--color-shortlist-hover);
+  color: #ffffff;
+}
+
+.btn-primary:active {
+  background: var(--color-accent-900);
+  border-color: var(--color-accent-900);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-neutral-400);
+  color: var(--color-neutral-900);
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: var(--color-neutral-100);
+  border-color: var(--color-neutral-600);
+}
+
+.btn-ghost { font-family: var(--font-sans); font-weight: 600; }
+
+/* Liên kết trong nội dung dùng xanh tương tác */
+a { color: var(--color-accent); }
+
+/* Khối do AI sinh — nền tím rất nhạt, tách khỏi phần dữ liệu tính bằng quy tắc */
+.ai-panel {
+  background: var(--color-ai-bg);
+  border: 1px solid var(--color-ai-border);
+  border-left: 3px solid var(--color-ai);
+}
+
+/* --------------------------------------------------------
+   CHỮ SỐ: Cormorant Garamond mặc định dùng dạng số cổ điển,
+   khiến "1" trông như chữ I và "11" đọc thành "II". Ép về
+   dạng số thẳng hàng, bề rộng cố định để bảng số đọc được.
+   -------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6,
+.screen-title, .brand-title, .dialog-title,
+.score-num, .metric-card-val, .rank-number, .detail-score-val,
+.sub-score-val, .panel-title, .demo-rail-btn .num,
+.cv-line.title, .cv-line.heading,
+.expand-card-title, .mandatory-divider-title,
+[style*="--font-heading"] {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+/* Số trong bảng dày (trọng số, đóng góp, số thứ tự) đọc bằng font sans
+   để quét mắt nhanh; chỉ con số hiển thị lớn mới giữ dáng serif. */
+.req-table td, .ranking-table td .skills-cell,
+.mandatory-badge, .skill-chip, .tag {
+  font-variant-numeric: lining-nums tabular-nums;
 }
