@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2340" height="2230" viewBox="0 0 2340 2230" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
+<title id="title">Component View: Sàng lọc CV theo JD — Screening Backend</title>
+<desc id="desc">Kiến trúc đề xuất cho phân hệ sàng lọc và xếp hạng CV theo JD. Chưa triển khai backend hoặc AI. Các quan hệ được kiểm tra khớp nguồn Mermaid trong tài liệu đi kèm.</desc>
+<defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
+<rect width="100%" height="100%" fill="white"/>
+<rect x="50" y="40" width="1790" height="1990" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="68" y="1991" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="68" dy="0">Sàng lọc và xếp hạng CV theo JD</tspan></text>
+<text x="68" y="2015" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="68" dy="0">[Software System]</tspan></text>
+<rect x="80" y="330" width="1730" height="1290" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="98" y="1581" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Screening Backend</tspan></text>
+<text x="98" y="1605" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="98" dy="0">[Container: Python/FastAPI]</tspan></text>
+<polyline data-from="WEB" data-to="HTTP" points="940,270 940,400" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="HTTP" data-to="CRIT" points="790,590 290,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="HTTP" data-to="CV" points="875,590 710,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="HTTP" data-to="RUN" points="1005,590 1130,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="HTTP" data-to="REVIEW" points="1090,590 1550,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="CV" points="980,865 860,865" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="CRIT" data-to="EXTRACT" points="290,945 290,1110" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="CRIT" data-to="DATA" points="140,895 105,895 105,1360 670,1360 670,1440 700,1440" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="CV" data-to="DATA" points="650,945 650,1490 700,1490" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="EXTRACT" points="980,915 920,915 920,1010 400,1010 400,1110" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="SCORE" points="1130,945 1130,1110" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="DATA" points="1280,915 1330,915 1330,1370 980,1370 980,1400" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="REVIEW" data-to="DATA" points="1550,945 1550,1505 1060,1505" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="EXTRACT" data-to="AI" points="440,1210 475,1210 475,1335 1870,1335 1870,1210 1910,1210" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="DATA" data-to="DB" points="795,1590 600,1770" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="DATA" data-to="FILES" points="965,1590 1330,1770" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<g id="WEB"><title>WEB · Web App</title><rect x="760" y="65" width="360" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 760 94 H 1120" stroke="#146ac4" stroke-width="5"/><circle cx="777" cy="79" r="6" fill="#146ac4"/><circle cx="797" cy="79" r="6" fill="#146ac4"/><circle cx="817" cy="79" r="6" fill="#146ac4"/></g>
+<text x="940" y="130" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="940" dy="0">Web App</tspan></text>
+<text x="940" y="157" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[Container: HTML/CSS/JavaScript]</tspan></text>
+<text x="940" y="191" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">Gửi lệnh, hiển thị kết quả</tspan><tspan x="940" dy="25">và theo dõi tác vụ.</tspan></text>
+<g id="HTTP"><title>HTTP · API Controllers</title><rect x="760" y="400" width="360" height="190" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="745" y="418" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="745" y="448" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="940" y="446" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="940" dy="0">API Controllers</tspan></text>
+<text x="940" y="473" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[Component: FastAPI routers]</tspan></text>
+<text x="940" y="507" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">Kiểm tra request và phiên bản;</tspan><tspan x="940" dy="25">định tuyến, trả phản hồi HTTP.</tspan></text>
+<g id="CRIT"><title>CRIT · Criteria Service</title><rect x="140" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="125" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="125" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="290" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="290" dy="0">Criteria Service</tspan></text>
+<text x="290" y="813" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Component: Python]</tspan></text>
+<text x="290" y="847" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Quản lý JD; duyệt và</tspan><tspan x="290" dy="25">đóng băng bộ tiêu chí.</tspan></text>
+<g id="CV"><title>CV · Resume Service</title><rect x="560" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="545" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="545" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="710" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="710" dy="0">Resume Service</tspan></text>
+<text x="710" y="813" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Component: Python/PDF-DOCX parser]</tspan></text>
+<text x="710" y="847" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Quản lý file, hash, phiên bản</tspan><tspan x="710" dy="25">và văn bản CV.</tspan></text>
+<g id="RUN"><title>RUN · Screening Coordinator</title><rect x="980" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="965" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="965" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="1130" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1130" dy="0">Screening</tspan><tspan x="1130" dy="30.72">Coordinator</tspan></text>
+<text x="1130" y="843.72" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">[Component: Python async tasks]</tspan></text>
+<text x="1130" y="877.72" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">Tác vụ bền vững, retry</tspan><tspan x="1130" dy="25">và công bố vòng chấm.</tspan></text>
+<g id="REVIEW"><title>REVIEW · Ranking and Review Service</title><rect x="1400" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="1385" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="1385" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="1550" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1550" dy="0">Ranking and</tspan><tspan x="1550" dy="30.72">Review Service</tspan></text>
+<text x="1550" y="843.72" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1550" dy="0">[Component: Python]</tspan></text>
+<text x="1550" y="877.72" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1550" dy="0">Xếp hạng, bằng chứng,</tspan><tspan x="1550" dy="25">quyết định và so sánh.</tspan></text>
+<g id="EXTRACT"><title>EXTRACT · Extraction Adapter</title><rect x="140" y="1110" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="125" y="1128" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="125" y="1158" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="290" y="1156" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="290" dy="0">Extraction Adapter</tspan></text>
+<text x="290" y="1183" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Component: Python HTTP client]</tspan></text>
+<text x="290" y="1217" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Gọi AI; kiểm tra schema</tspan><tspan x="290" dy="25">và bằng chứng nguồn.</tspan></text>
+<g id="SCORE"><title>SCORE · Scoring Engine</title><rect x="980" y="1110" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="965" y="1128" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="965" y="1158" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="1130" y="1156" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1130" dy="0">Scoring Engine</tspan></text>
+<text x="1130" y="1183" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">[Component: Python domain module]</tspan></text>
+<text x="1130" y="1217" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">Lọc bắt buộc, tính điểm</tspan><tspan x="1130" dy="25">và đóng góp từng tiêu chí.</tspan></text>
+<g id="DATA"><title>DATA · Repositories</title><rect x="700" y="1400" width="360" height="190" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="685" y="1418" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="685" y="1448" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="880" y="1446" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="880" dy="0">Repositories</tspan></text>
+<text x="880" y="1473" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="880" dy="0">[Component: Python SQL/S3 clients]</tspan></text>
+<text x="880" y="1507" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="880" dy="0">Truy cập dữ liệu, file</tspan><tspan x="880" dy="25">và ranh giới giao dịch.</tspan></text>
+<g id="DB"><title>DB · Screening Database</title><path d="M 420 1793 L 420 1942 A 180 23 0 0 0 780 1942 L 780 1793 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="600" cy="1793" rx="180" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="600" y="1843" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="600" dy="0">Screening Database</tspan></text>
+<text x="600" y="1870" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="600" dy="0">[Container: PostgreSQL]</tspan></text>
+<text x="600" y="1904" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="600" dy="0">Dữ liệu nghiệp vụ, tác vụ</tspan><tspan x="600" dy="25">và lịch sử các vòng chấm.</tspan></text>
+<g id="FILES"><title>FILES · CV Store</title><path d="M 1150 1793 L 1178 1942 A 152 23 0 0 0 1482 1942 L 1510 1793 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="1330" cy="1793" rx="180" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="1330" y="1843" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1330" dy="0">CV Store</tspan></text>
+<text x="1330" y="1870" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1330" dy="0">[Container: S3-compatible storage]</tspan></text>
+<text x="1330" y="1904" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1330" dy="0">File CV gốc</tspan><tspan x="1330" dy="25">được lưu riêng tư.</tspan></text>
+<g id="AI"><title>AI · Dịch vụ trích xuất AI</title><rect x="1910" y="1110" width="365" height="205" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="2092.5" y="1148" fill="#c71025" font-size="24" font-weight="700" text-anchor="middle"><tspan x="2092.5" dy="0">Dịch vụ trích xuất AI</tspan></text>
+<text x="2092.5" y="1175" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="2092.5" dy="0">[External Software System: HTTPS API]</tspan></text>
+<text x="2092.5" y="1209" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="2092.5" dy="0">Trả dữ liệu JD/CV có cấu trúc</tspan><tspan x="2092.5" dy="25">và vị trí bằng chứng.</tspan></text>
+<rect x="765" y="272" width="350" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="940" y="292" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">Gửi lệnh và truy vấn</tspan></text>
+<text x="940" y="317" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[HTTPS/JSON hoặc multipart]</tspan></text>
+<rect x="182.5" y="625" width="325" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="345" y="645" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="345" dy="0">Trích xuất hoặc lưu tiêu chí</tspan></text>
+<text x="345" y="670" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="345" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="545" y="658" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="680" y="678" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="680" dy="0">Nạp hoặc đọc file CV</tspan></text>
+<text x="680" y="703" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="680" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="975" y="640" width="290" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1120" y="660" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1120" dy="0">Tạo tác vụ, đọc tiến trình</tspan></text>
+<text x="1120" y="685" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1120" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="1355" y="610" width="310" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1510" y="630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1510" dy="0">Đọc kết quả, ghi quyết định</tspan></text>
+<text x="1510" y="655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1510" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="865" y="803" width="110" height="60" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="920" y="823" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">Đọc văn</tspan><tspan x="920" dy="25">bản CV</tspan></text>
+<rect x="172.5" y="1000" width="235" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="290" y="1020" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Trích xuất JD</tspan></text>
+<text x="290" y="1045" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="225" y="1340" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="365" y="1360" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="365" dy="0">Lưu revision tiêu chí</tspan></text>
+<text x="365" y="1385" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="365" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="532.5" y="1205" width="235" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="650" y="1225" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">Lưu file, hash</tspan><tspan x="650" dy="25">và phiên bản CV</tspan></text>
+<text x="650" y="1275" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="472.5" y="985" width="355" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="650" y="1005" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">Trích xuất CV chưa có snapshot</tspan></text>
+<text x="650" y="1030" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="982.5" y="1010" width="295" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1130" y="1030" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">Chấm snapshot theo policy</tspan></text>
+<text x="1130" y="1055" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="1062.5" y="1342" width="315" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1220" y="1362" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1220" dy="0">Tác vụ, snapshot và publish</tspan></text>
+<text x="1220" y="1387" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1220" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="1257.5" y="1480" width="305" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1410" y="1500" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1410" dy="0">Đọc vòng, bằng chứng</tspan><tspan x="1410" dy="25">và ghi quyết định</tspan></text>
+<text x="1410" y="1550" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1410" dy="0">[Gọi hàm nội bộ]</tspan></text>
+<rect x="1485" y="1283" width="310" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1640" y="1303" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1640" dy="0">Trích xuất văn bản JD/CV</tspan></text>
+<text x="1640" y="1328" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1640" dy="0">[HTTPS/JSON]</tspan></text>
+<rect x="500" y="1665" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="635" y="1685" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="635" dy="0">Đọc/ghi và giao dịch</tspan></text>
+<text x="635" y="1710" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="635" dy="0">[SQL/TCP]</tspan></text>
+<rect x="1080" y="1665" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1215" y="1685" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1215" dy="0">Lưu và đọc file CV</tspan></text>
+<text x="1215" y="1710" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1215" dy="0">[HTTPS/S3 API]</tspan></text>
+<text x="30" y="2075" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Component View: Sàng lọc CV theo JD — Screening Backend</tspan></text>
+<text x="30" y="2106" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Kiến trúc đề xuất · Chỉ phân hệ sàng lọc và xếp hạng CV theo JD · Chưa triển khai backend/AI</tspan></text>
+<rect x="30" y="2129" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
+<text x="62" y="2146" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · Người sử dụng</tspan></text>
+<rect x="360" y="2129" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="392" y="2146" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Phần mềm trong phạm vi</tspan></text>
+<rect x="735" y="2129" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
+<text x="767" y="2146" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">Hệ thống bên ngoài</tspan></text>
+<text x="30" y="2178" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Mũi tên nét đứt: quan hệ có hướng; nhãn nêu trách nhiệm và giao thức. Khung lớn: ranh giới hệ thống/container.</tspan></text>
+<text x="30" y="2205" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: mô tả công việc · CV: hồ sơ ứng tuyển · Phong cách trình bày tham khảo các ví dụ C4 của Simon Brown (c4model.com).</tspan></text>
+</svg>

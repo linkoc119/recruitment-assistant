@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="1690" viewBox="0 0 1650 1690" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
+<title id="title">Container View: Sàng lọc và xếp hạng CV theo JD</title>
+<desc id="desc">Kiến trúc đề xuất cho phân hệ sàng lọc và xếp hạng CV theo JD. Chưa triển khai backend hoặc AI. Các quan hệ được kiểm tra khớp nguồn Mermaid trong tài liệu đi kèm.</desc>
+<defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
+<rect width="100%" height="100%" fill="white"/>
+<rect x="55" y="405" width="1135" height="1075" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="73" y="1441" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="73" dy="0">Sàng lọc và xếp hạng CV theo JD</tspan></text>
+<text x="73" y="1465" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="73" dy="0">[Software System]</tspan></text>
+<polyline data-from="REC" data-to="WEB" points="630,335 630,465" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WEB" data-to="API" points="630,675 630,815" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="FILES" points="530,1050 340,1190" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="DB" points="730,1050 930,1190" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="AI" points="810,930 1255,930" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<g id="REC"><title>REC · Nhân viên tuyển dụng</title><rect x="440" y="136" width="380" height="199" rx="59" fill="white" stroke="#2b8205" stroke-width="6"/><circle cx="630" cy="86" r="61" fill="white" stroke="#2b8205" stroke-width="6"/></g>
+<text x="630" y="179" fill="#2b8205" font-size="28" font-weight="700" text-anchor="middle"><tspan x="630" dy="0">Nhân viên tuyển dụng</tspan></text>
+<text x="630" y="206" fill="#2b8205" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Person]</tspan></text>
+<text x="630" y="240" fill="#2b8205" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Duyệt tiêu chí, xem kết quả</tspan><tspan x="630" dy="25">và đưa ra quyết định.</tspan></text>
+<g id="WEB"><title>WEB · Web App</title><rect x="450" y="465" width="360" height="210" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 450 494 H 810" stroke="#146ac4" stroke-width="5"/><circle cx="467" cy="479" r="6" fill="#146ac4"/><circle cx="487" cy="479" r="6" fill="#146ac4"/><circle cx="507" cy="479" r="6" fill="#146ac4"/></g>
+<text x="630" y="530" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="630" dy="0">Web App</tspan></text>
+<text x="630" y="557" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Container: HTML/CSS/JavaScript]</tspan></text>
+<text x="630" y="591" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">7 màn hình nghiệp vụ;</tspan><tspan x="630" dy="25">xem CV và theo dõi tiến trình.</tspan></text>
+<g id="API"><title>API · Screening Backend</title><rect x="450" y="815" width="360" height="235" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 469 833 l 13 9 l -13 9 M 491 853 h 20" fill="none" stroke="#146ac4" stroke-width="4"/></g>
+<text x="630" y="882" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="630" dy="0">Screening Backend</tspan></text>
+<text x="630" y="909" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Container: Python/FastAPI]</tspan></text>
+<text x="630" y="943" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Cung cấp API, điều phối tác vụ,</tspan><tspan x="630" dy="25">chấm điểm và quản lý lịch sử.</tspan></text>
+<g id="FILES"><title>FILES · CV Store</title><path d="M 170 1213 L 198 1357 A 137 23 0 0 0 472 1357 L 500 1213 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="335" cy="1213" rx="165" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="335" y="1263" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="335" dy="0">CV Store</tspan></text>
+<text x="335" y="1290" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="335" dy="0">[Container: S3-compatible storage]</tspan></text>
+<text x="335" y="1324" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="335" dy="0">Lưu file CV gốc</tspan><tspan x="335" dy="25">trong bucket riêng tư.</tspan></text>
+<g id="DB"><title>DB · Screening Database</title><path d="M 770 1213 L 770 1357 A 165 23 0 0 0 1100 1357 L 1100 1213 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="935" cy="1213" rx="165" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="935" y="1263" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="935" dy="0">Screening Database</tspan></text>
+<text x="935" y="1290" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">[Container: PostgreSQL]</tspan></text>
+<text x="935" y="1324" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">Tiêu chí, phiên bản đầu vào,</tspan><tspan x="935" dy="25">tác vụ và kết quả chấm.</tspan></text>
+<g id="AI"><title>AI · Dịch vụ trích xuất AI</title><rect x="1255" y="815" width="350" height="235" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="1430" y="853" fill="#c71025" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1430" dy="0">Dịch vụ trích xuất AI</tspan></text>
+<text x="1430" y="880" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1430" dy="0">[External Software System: HTTPS API]</tspan></text>
+<text x="1430" y="914" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1430" dy="0">Trích xuất dữ liệu JD/CV</tspan><tspan x="1430" dy="25">có cấu trúc và bằng chứng.</tspan></text>
+<rect x="475" y="340" width="310" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="630" y="360" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Thao tác và xem kết quả</tspan></text>
+<text x="630" y="385" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Trình duyệt]</tspan></text>
+<rect x="452.5" y="703" width="355" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="630" y="723" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Gửi lệnh, truy vấn và polling</tspan></text>
+<text x="630" y="748" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[HTTPS/JSON; CV: multipart]</tspan></text>
+<rect x="192.5" y="1080" width="275" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="330" y="1100" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Lưu và đọc file CV</tspan></text>
+<text x="330" y="1125" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[HTTPS/S3 API]</tspan></text>
+<rect x="810" y="1080" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="950" y="1100" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="950" dy="0">Đọc/ghi và giao dịch</tspan></text>
+<text x="950" y="1125" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="950" dy="0">[SQL/TCP]</tspan></text>
+<rect x="857.5" y="835" width="315" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1015" y="855" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1015" dy="0">Gửi văn bản; nhận dữ liệu</tspan><tspan x="1015" dy="25">trích xuất có cấu trúc</tspan></text>
+<text x="1015" y="905" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1015" dy="0">[HTTPS/JSON]</tspan></text>
+<text x="30" y="1525" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Container View: Sàng lọc và xếp hạng CV theo JD</tspan></text>
+<text x="30" y="1556" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Kiến trúc đề xuất · Chỉ phân hệ sàng lọc và xếp hạng CV theo JD · Chưa triển khai backend/AI</tspan></text>
+<rect x="30" y="1579" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
+<text x="62" y="1596" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · Người sử dụng</tspan></text>
+<rect x="360" y="1579" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="392" y="1596" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Phần mềm trong phạm vi</tspan></text>
+<rect x="735" y="1579" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
+<text x="767" y="1596" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">Hệ thống bên ngoài</tspan></text>
+<text x="30" y="1628" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Mũi tên nét đứt: quan hệ có hướng; nhãn nêu trách nhiệm và giao thức. Khung lớn: ranh giới hệ thống/container.</tspan></text>
+<text x="30" y="1655" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: mô tả công việc · CV: hồ sơ ứng tuyển · Phong cách trình bày tham khảo các ví dụ C4 của Simon Brown (c4model.com).</tspan></text>
+</svg>

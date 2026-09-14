@@ -1,8 +1,10 @@
 # AI Recruitment Assistant — Screening & Candidate Ranking System
 
-An intelligent, explainable recruitment assistant designed to automate resume screening and candidate ranking based on Job Descriptions (JD). Built to eliminate human screening fatigue and unconscious bias while maintaining complete transparency through verifiable AI evidence auditing.
+An explainable recruitment assistant concept for resume screening and candidate ranking based on Job Descriptions (JD). It aims to reduce manual screening effort and make results inspectable through evidence; the prototype does not establish real-world AI accuracy or bias reduction.
 
-The system is implemented using pure **HTML5, Vanilla CSS, and ES6 JavaScript** with zero external dependencies, zero build steps, and an in-memory reactive data layer mirroring a production-grade relational database schema.
+The current deliverable is an interactive **HTML5, Vanilla CSS, and ES6 JavaScript prototype**, with zero build steps and sample data held in memory. It does not implement real CV parsing, AI calls, a backend, or database persistence. The relational schema is a design artifact.
+
+> **Architecture documentation:** [C1–C3, arc42, deployment and three sequence diagrams](docs/architecture/README.md) document a **proposed implementation** of the selected JD-based CV screening and ranking workflow. Backend services, API contracts, storage and schema extensions in that documentation are not yet implemented. Feature descriptions below describe the intended workflow and its UI simulation, not verified production capabilities.
 
 ---
 
@@ -48,7 +50,7 @@ table. Purple ellipses are steps executed by the AI actor rather than a human.
 
 ### Functional Scope Matrix
 
-| Mindmap Module | In-Scope Features (Implemented) | Deliberately Out-of-Scope |
+| Mindmap Module | In-Scope Features (Designed / UI Simulation) | Deliberately Out-of-Scope |
 | :--- | :--- | :--- |
 | **1. Job Management** (*Quản lý vị trí*) | Job requisition creation/editing, raw JD ingestion, automated criteria extraction, mandatory vs. preferred rule formulation, opening/closing job positions. | Job cloning / duplication. |
 | **2. CV Management** (*Quản lý CV*) | Bulk multi-file upload, entity & skill extraction, duplicate CV detection (`file_hash` SHA-256), multi-version resume tracking (`version`). | CV repository semantic search across all historical campaigns. |
@@ -119,7 +121,7 @@ The system is structured into 4 core functional pillars:
 
 ## 4. Database Schema (ERD)
 
-The persistence layer is an 8-table normalised relational schema. It separates the **job side** (`jobs` → `job_requirements`), the **candidate side** (`candidates` → `resumes` → `resume_skills`), and the **evaluation side** (`screenings` → `screening_details`), with `skills` acting as the shared controlled vocabulary that makes matching deterministic.
+The database design is an 8-table normalised relational schema, not a connected persistence layer in the current prototype. It separates the **job side** (`jobs` → `job_requirements`), the **candidate side** (`candidates` → `resumes` → `resume_skills`), and the **evaluation side** (`screenings` → `screening_details`), with `skills` acting as the shared controlled vocabulary. The proposed architecture documents additional snapshot and task records needed for a real implementation; these have not been applied to the original DBML.
 
 ![Database ERD](docs/database-design-erd.png)
 
@@ -224,6 +226,7 @@ recruitment-assistant/
 │   ├── data.js                  # Relational mock database (jobs, criteria, 42 CVs, scores)
 │   └── app.js                   # In-memory reactive state manager, router & screen renderers
 └── docs/
+    ├── architecture/            # Proposed C1–C3, arc42, deployment and 3 runtime sequences
     ├── mindmap.png              # 7-branch recruitment system mindmap
     ├── use-case-diagram.svg     # UML use case diagram — screening & ranking (source)
     ├── use-case-diagram.png     # UML use case diagram — rendered
@@ -239,5 +242,19 @@ recruitment-assistant/
 ```
 
 ---
+
+## 8. Architecture — Selected Screening Workflow
+
+The architecture covers JD/criteria, CV ingestion, screening, ranking, evidence review, shortlist/rejection and rescoring. Interview scheduling, offers, HR administration and recruitment-wide reporting remain outside scope.
+
+- [Architecture guide and implementation status](docs/architecture/README.md)
+- [arc42 — all 12 sections](docs/architecture/arc42.md)
+- [C1 — System Context](docs/architecture/c1-context.md)
+- [C2 — Containers](docs/architecture/c2-containers.md)
+- [C3 — Screening Backend Components](docs/architecture/c3-components.md)
+- [Deployment — proposed internal test environment](docs/architecture/deployment.md)
+- [Sequence 1 — JD setup and initial screening](docs/architecture/sequence-01-screening.md)
+- [Sequence 2 — Evidence review and shortlist/rejection](docs/architecture/sequence-02-review.md)
+- [Sequence 3 — Criteria changes and rescoring](docs/architecture/sequence-03-rescore.md)
 
 *Academic Capstone Project — Intelligent Recruitment Screening & Explainable Candidate Ranking System.*
