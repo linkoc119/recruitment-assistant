@@ -291,6 +291,7 @@ All of these are **proposed acceptance criteria**, not test results from the pro
 | Q08 | The user cannot distinguish colours | Status remains understandable through text and icons; the main actions are keyboard-operable | Check in greyscale, plus tab/focus order and control labels |
 | Q09 | Recovery after losing the trial machine | Database, files, and manifest agree; RPO ≤ 24 hours, RTO ≤ 4 hours | Rehearse a restore from the off-server backup |
 | Q10 | Inspect the logs of a failed batch | Request/run/item and the cause are traceable; no raw CV or credentials present | Inspect logs using synthetic marked-identity data |
+| Q11 | Use CV upload, ranking, evidence, and cross-position links | Raw CV content and contact details stay out of URLs, analytics labels, notifications, client-side errors, and persistent browser storage; a resource requested under the wrong position context does not expose data from the other position | Inspect browser storage and captured client telemetry with marked synthetic data; test cross-position context mismatches |
 
 ## 11. Risks and Technical Debt
 

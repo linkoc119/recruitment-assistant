@@ -18,7 +18,7 @@ These UC identifiers are stable for this documentation set and do not correspond
 
 | ID | Use case / participating actor | Preconditions | Successful outcome | Alternate/error flow | User stories |
 |---|---|---|---|---|---|
-| UC-01 | Create position and JD / Recruiter | Position name and JD are available | Original JD is stored with the position | Missing input; save failure | US-01 |
+| UC-01 | Create position and JD / Recruiter | Position name and JD are available | Original JD is stored and the position starts in `draft`; stored lifecycle status is visible/filterable | Missing input; save failure; no lifecycle transition control in v1 | US-01 |
 | UC-02 | Suggest criteria from JD / Recruiter, AI Service | Position has a JD | Unapproved draft criteria are returned | AI failure/unsupported evidence; manual entry through UC-03 | US-02 |
 | UC-03 | Configure and approve criteria / Recruiter | Position exists | A valid approved criteria revision | Validation failure; review suggestions or enter manually | US-03 |
 | UC-04 | Upload CV batch / Recruiter | Position exists | Valid files receive identifiers; duplicates/versions are distinguished | Size/count/format error; duplicate file | US-04, US-05 |

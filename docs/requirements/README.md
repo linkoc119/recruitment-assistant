@@ -56,6 +56,7 @@ Priority **M** means required to accept the v1 workflow; **S** means desirable a
 - **AC-1:** Given a position name and non-empty JD, when I save them, then the system creates an identified position and returns the original JD unchanged.
 - **AC-2:** Given a name or JD containing only whitespace, when I save, then the system identifies the missing field and does not create a screenable position. This validation is proposed for F01.
 - **AC-3:** Given a save failure, when the failure is returned, then the system states that nothing was saved and retains my entered content for retry.
+- **AC-4:** Given stored positions whose lifecycle status is `draft`, `open`, or `closed`, when I view the position list or workspace, then the system displays the stored status and lets me filter the list by it. A new position starts as `draft`; changing lifecycle status is outside v1 and no transition control is presented.
 
 ### US-02 — Suggest Criteria from the JD
 
@@ -210,7 +211,7 @@ These are fixtures to create during test implementation, **not existing CV files
 
 ## 6. Quality requirements and shared acceptance
 
-[Non-functional Requirements](non-functional-requirements.md) retains arc42 IDs Q01–Q10 and groups them under Auditability, Reliability, Performance, Accessibility, Recoverability, and Security. Transactions, leases, queues, retries, polling, and HTTP status codes belong in architecture/API documentation rather than user-story acceptance criteria.
+[Non-functional Requirements](non-functional-requirements.md) retains arc42 IDs Q01–Q11 and groups them under Auditability, Reliability, Performance, Accessibility, Recoverability, and Security. Transactions, leases, queues, retries, polling, and HTTP status codes belong in architecture/API documentation rather than user-story acceptance criteria.
 
 ## 7. Refinement order and Definition of Ready
 

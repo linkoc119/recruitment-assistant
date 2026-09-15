@@ -2,7 +2,7 @@
 
 Version 1.0 · 2026-09-15 · Proposed acceptance targets, not measured prototype results.
 
-The stable identifiers remain Q01–Q10 from [arc42 §10](../architecture/arc42.md#10-quality-requirements). `NFR-*` labels group them by quality attribute and do not replace their IDs.
+The stable identifiers remain Q01–Q11 from [arc42 §10](../architecture/arc42.md#10-quality-requirements). `NFR-*` labels group them by quality attribute and do not replace their IDs.
 
 | Group | ID | Observable requirement and verification | Stories |
 |---|---|---|---|
@@ -16,6 +16,7 @@ The stable identifiers remain Q01–Q10 from [arc42 §10](../architecture/arc42.
 | NFR-UX — Accessibility | Q08 | Status remains understandable without colour and main actions are keyboard-operable; inspect greyscale, labels, focus and tab order. | All interactive stories |
 | NFR-REC — Recoverability | Q09 | A restore keeps database, files and manifest consistent, with RPO ≤ 24 hours and RTO ≤ 4 hours; verify by a restore rehearsal. | Stored data across the workflow |
 | NFR-SEC — Security/observability | Q10 | Failures are traceable by request/run/item and cause while logs contain no raw CV, contact details or credentials; inspect logs with marked synthetic data. | US-02, US-04, US-06–08, US-15 |
+| NFR-SEC — UI data exposure | Q11 | Raw CV content and contact details do not appear in URLs, analytics labels, notifications, client-side error messages, or persistent browser storage; a resource requested under the wrong position context does not expose data from the other position. Verify with marked synthetic data, browser-storage inspection, captured client telemetry, and cross-position context tests. | US-04, US-11, US-12 |
 
 Mechanisms such as database transactions, leases, retry counts, queues, polling, optimistic locking and API status codes are specified in architecture/sequence documents and the future OpenAPI contract.
 

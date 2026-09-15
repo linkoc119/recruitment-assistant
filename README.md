@@ -4,7 +4,7 @@ An explainable recruitment assistant concept for resume screening and candidate 
 
 The current deliverable is an interactive **HTML5, Vanilla CSS, and ES6 JavaScript prototype**, with zero build steps and sample data held in memory. It does not implement real CV parsing, AI calls, a backend, or database persistence. The relational schema is a design artifact.
 
-> **Architecture documentation:** [C1–C3, arc42, deployment and three sequence diagrams](docs/architecture/README.md) document a **proposed implementation** of the selected JD-based CV screening and ranking workflow. Backend services, API contracts, storage and schema extensions in that documentation are not yet implemented. Feature descriptions below describe the intended workflow and its UI simulation, not verified production capabilities.
+> **Design documentation:** [Architecture](docs/architecture/README.md) covers C1–C3, arc42, deployment, and sequence diagrams. [UI/UX design](docs/ui-ux/README.md) covers the target information architecture, screen hierarchy, flows, and screen specifications. Both describe the selected JD-based CV screening and ranking workflow; the current prototype does not yet implement all specified behavior.
 
 ---
 
@@ -67,7 +67,7 @@ A separate hiring-manager approval workflow and a skill-dictionary administratio
 The system is structured into 4 core functional pillars:
 
 ### 3.1 Job Requisition & Criteria Extraction (`jobs`, `job_requirements`)
-- **Job Requisition Management**: Manages campaign status (`draft`, `open`, `closed`), seniority level, location, and tracks recruitment pipeline metrics.
+- **Job Requisition Management**: Manages campaign status (`draft`, `open`, `closed`), seniority level, and tracks recruitment pipeline metrics.
 - **Raw JD Ingestion**: Preserves the original unparsed Job Description (`jd_raw_text`) to allow human auditors to verify criteria extraction accuracy.
 - **AI-Assisted Criteria Extraction**: Automatically parses unstructured JD text into structured requirements categorized into:
   1. **Mandatory Criteria**: Hard knockout rules (e.g., *≥ 4 years Node.js, Microservices experience, Computer Science Degree*). Failure to satisfy any mandatory criterion flags the applicant as disqualified (`passed_mandatory = false`).
