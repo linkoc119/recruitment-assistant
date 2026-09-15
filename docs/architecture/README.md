@@ -14,6 +14,11 @@ It is not a design for the whole recruitment system. Interviews, offers, executi
 
 | Document | Purpose |
 |---|---|
+| [Requirements — INVEST user stories](../requirements/README.md) | F01–F06 translated into 17 user stories, acceptance criteria, fixtures and readiness questions |
+| [Use-case catalog](../requirements/use-cases.md) | 16 use cases aligned with arc42, actors, alternative flows and story traceability |
+| [Business Rules](../requirements/business-rules.md) | Cross-cutting criteria, CV, evidence, scoring, decision and rescore invariants |
+| [Non-functional requirements](../requirements/non-functional-requirements.md) | Q01–Q10 grouped by quality attribute without changing their stable IDs |
+| [Requirements traceability](../requirements/traceability.md) | Feature → story → use case → business rule → quality requirement mapping |
 | [arc42 — 12 sections](arc42.md) | Goals, constraints, structure, operations, decisions, quality, and risks |
 | [C1 — System Context](c1-context.md) | System boundary, users, and the external AI service |
 | [C2 — Container](c2-containers.md) | Web App, Screening Backend, Screening Database, and CV Store |

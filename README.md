@@ -15,7 +15,7 @@ In modern recruitment campaigns, talent acquisition teams often receive hundreds
 This project delivers a **focused, high-impact business workflow** that directly proves the value of AI in recruitment:
 
 ```
-Create Job & Ingest JD ➔ Extract Criteria ➔ Bulk Upload CVs ➔ Multi-Factor AI Scoring ➔ Ranked Leaderboard ➔ Audit Evidence & Shortlist
+Create Job & Ingest JD ➔ Confirm Criteria ➔ Bulk Upload CVs ➔ Deterministic Scoring ➔ Ranked Leaderboard ➔ Audit Evidence & Shortlist
 ```
 
 ### Why this specific workflow?
@@ -35,18 +35,18 @@ The system architecture is derived from a 7-branch recruitment mindmap, isolatin
 
 ### Use Case Diagram — Screening & Ranking
 
-The deep-dive function is modelled below. `«include»` marks steps that always run as part of
-the base use case; `«extend»` marks optional branches the recruiter may invoke from the ranking
-table. Purple ellipses are steps executed by the AI actor rather than a human.
+The use cases below follow the proposed arc42 scope and policy v1. The requirements are documented as [17 INVEST user stories with acceptance criteria](docs/requirements/README.md), with a [use-case catalog and migration from the earlier diagram](docs/requirements/use-cases.md). They describe target behaviour, not verified prototype capabilities.
 
-![Use Case Diagram](docs/use-case-diagram.png)
+![Use Case Diagram](docs/use-case-diagram.svg)
+
+Both Recruiter symbols represent the same actor. AI assists JD/CV extraction; the backend validates evidence and computes skill, experience and education scores. Semantic scoring is not applied in v1. The original mindmap and broad feature descriptions below remain historical context; arc42 and the requirements define the selected implementation scope.
 
 | Actor | Role |
 | :--- | :--- |
-| **Nhà tuyển dụng** (Recruiter) | Primary actor — creates the requisition, sets criteria & weights, uploads CVs, triggers screening and rescoring, reads the ranking. |
-| **Trưởng bộ phận** (Hiring Manager) | Reviews the ranking and approves/rejects the shortlist. |
-| **Hệ thống AI** (AI Engine) | Secondary actor — CV parsing & extraction, the 4 sub-scores, evidence and explanation generation. |
-| **Quản trị hệ thống** (Administrator) | Maintains the normalized skill dictionary the criteria matching depends on. |
+| **Recruiter** | Direct user — creates the JD, approves criteria, uploads CVs, starts screening/rescoring, reviews evidence, shortlists/rejects, and compares historical runs. |
+| **External AI Service** | Supporting actor — extracts JD/CV data with source evidence; does not assign scores or make hiring decisions. |
+
+A separate hiring-manager approval workflow and a skill-dictionary administration screen are outside v1. Skill aliases use versioned configuration inside the system.
 
 ### Functional Scope Matrix
 

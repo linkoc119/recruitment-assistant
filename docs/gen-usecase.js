@@ -1,139 +1,74 @@
-// Sinh sơ đồ use case UML cho chức năng "Sàng lọc & Xếp hạng CV theo JD".
-// Toạ độ mép ellipse được tính bằng giao điểm đường nối hai tâm, nên mũi tên
-// luôn chạm đúng viền thay vì đâm vào trong hình.
+// Proposed screening scope: arc42 -> INVEST stories -> use cases.
+// Run: node docs/gen-usecase.js docs/use-case-diagram.svg
 const fs = require('fs');
-
-const W = 1580, H = 1080;
-const C = {
-  ink: '#1b1f23', muted: '#625f59', line: '#464440',
-  blue: '#0a66c2', blueBg: '#eaf2fb', blueEdge: '#a6c8ee',
-  purple: '#7a54c0', purpleBg: '#f3eefc', purpleEdge: '#cbb8ef',
-  bound: '#bcb8b1', bg: '#ffffff', panel: '#faf9f7'
-};
-
-// ---- danh sách use case: tâm, bán kính, nhãn (mỗi phần tử một dòng), nhóm màu
-const UC = {
-  u1:  { x:470, y:150, rx:152, ry:44, t:['Tạo vị trí tuyển dụng','& mô tả công việc (JD)'], g:'core' },
-  u2:  { x:470, y:285, rx:152, ry:44, t:['Thiết lập tiêu chí','& trọng số chấm điểm'], g:'core' },
-  u3:  { x:470, y:420, rx:152, ry:44, t:['Tải CV ứng viên','lên hệ thống'], g:'core' },
-  u5:  { x:470, y:555, rx:152, ry:44, t:['Chấm điểm & đối sánh','CV với JD'], g:'core' },
-  u9:  { x:470, y:690, rx:152, ry:44, t:['Chỉnh tiêu chí','& chấm lại toàn bộ'], g:'core' },
-  u6:  { x:470, y:825, rx:152, ry:44, t:['Xem bảng xếp hạng','ứng viên'], g:'core' },
-
-  u11: { x:960, y:290, rx:146, ry:40, t:['Chuẩn hoá từ điển','kỹ năng'], g:'sub' },
-  u4:  { x:960, y:400, rx:146, ry:40, t:['Phân tích & trích xuất','dữ liệu từ CV'], g:'ai' },
-  u5a: { x:960, y:500, rx:146, ry:40, t:['Tính 4 điểm thành phần'], g:'ai' },
-  u5b: { x:960, y:590, rx:146, ry:40, t:['Sinh bằng chứng','& giải thích điểm'], g:'ai' },
-  u10: { x:960, y:690, rx:146, ry:40, t:['So sánh hai vòng chấm'], g:'sub' },
-  u7:  { x:960, y:800, rx:146, ry:40, t:['Xem chi tiết ứng viên'], g:'sub' },
-  u8:  { x:960, y:930, rx:146, ry:40, t:['Đưa vào shortlist','/ Loại ứng viên'], g:'sub' }
-};
-
-// ---- tác nhân
-const AC = {
-  rec:   { x:115,  y:420, name:'Nhà tuyển dụng',   sub:'(tác nhân chính)' },
-  mgr:   { x:115,  y:955, name:'Trưởng bộ phận',   sub:'(duyệt shortlist)' },
-  ai:    { x:1440, y:465, name:'Hệ thống AI',      sub:'(tác nhân phụ)', ai:true },
-  admin: { x:1440, y:200, name:'Quản trị hệ thống', sub:'' }
-};
-
-// liên kết tác nhân — use case
-const ASSOC = [
-  ['rec','u1'], ['rec','u2'], ['rec','u3'], ['rec','u5'], ['rec','u9'], ['rec','u6'],
-  ['mgr','u6'], ['mgr','u8'],
-  ['ai','u4'], ['ai','u5a'], ['ai','u5b'],
-  ['admin','u11']
+const path = require('path');
+const output = process.argv[2] || path.join(__dirname, 'use-case-diagram.svg');
+const cases = [
+  ['UC-01', 'Create Position and JD', false],
+  ['UC-02', 'Suggest Criteria from JD', true],
+  ['UC-03', 'Configure and Approve Criteria', false],
+  ['UC-04', 'Upload CV Batch', false],
+  ['UC-05', 'Parse and Extract CV Data', true],
+  ['UC-06', 'Start Screening', false],
+  ['UC-07', 'Track Progress and Failures', false],
+  ['UC-08', 'Evaluate Eligibility and Scores', false],
+  ['UC-09', 'View Ranking', false],
+  ['UC-10', 'Inspect Details and Evidence', false],
+  ['UC-11', 'Shortlist Candidate', false],
+  ['UC-12', 'Reject Candidate', false],
+  ['UC-13', 'Adjust Criteria Revision', false],
+  ['UC-14', 'Rescore the Source CV Set', false],
+  ['UC-15', 'View Screening History', false],
+  ['UC-16', 'Compare Two Runs', false]
 ];
-
-// include: use case gốc ..> use case bắt buộc kèm theo
-const INCL = [['u2','u11'], ['u3','u4'], ['u5','u5a'], ['u5','u5b'], ['u9','u5']];
-// extend: use case mở rộng ..> use case gốc
-const EXT  = [['u10','u9'], ['u7','u6'], ['u8','u6']];
-
-// Giao điểm của tia (từ tâm ellipse hướng tới điểm đích) với viền ellipse.
-function edge(e, tx, ty, pad) {
-  pad = pad || 0;
-  const dx = tx - e.x, dy = ty - e.y;
-  const a = e.rx + pad, b = e.ry + pad;
-  const k = 1 / Math.sqrt((dx * dx) / (a * a) + (dy * dy) / (b * b));
-  return [e.x + dx * k, e.y + dy * k];
+const esc = value => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const o = [
+  '<svg xmlns="http://www.w3.org/2000/svg" width="1640" height="1170" viewBox="0 0 1640 1170" role="img" aria-labelledby="title desc">',
+  '<title id="title">Use Cases — JD-based CV Screening and Ranking</title>',
+  '<desc id="desc">Two use-case groups inside one system. The Recruiter is the direct user; AI only supports JD and CV extraction. Screening runs include the internal evaluation behavior UC-08.</desc>',
+  '<rect width="1640" height="1170" fill="white"/>',
+  '<defs><marker id="include" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="#536779" stroke-width="1.3"/></marker></defs>',
+  '<g font-family="Segoe UI, Arial, sans-serif" fill="#182b3b">',
+  '<text x="820" y="42" text-anchor="middle" font-size="26" font-weight="700">USE CASES — JD-BASED CV SCREENING &amp; RANKING</text>',
+  '<text x="820" y="72" text-anchor="middle" font-size="15" fill="#536779">Proposed design · arc42 policy v1 · 16 use cases / 17 user stories</text>',
+  '<rect x="220" y="108" width="1160" height="942" rx="12" fill="#fafcfe" stroke="#869bad" stroke-width="2"/>',
+  '<text x="800" y="139" text-anchor="middle" font-size="16" font-weight="700">SCREENING SYSTEM — one system boundary</text>',
+  '<line x1="835" y1="158" x2="835" y2="1028" stroke="#d4dfe8" stroke-dasharray="5 7"/>',
+  '<text x="467" y="175" text-anchor="middle" font-size="15">A. Preparation and processing</text>',
+  '<text x="1135" y="175" text-anchor="middle" font-size="15">B. Review and rescoring</text>'
+];
+function actor(x, y, label, note, color) {
+  o.push(`<g stroke="${color}" stroke-width="2.5" fill="none" stroke-linecap="round"><circle cx="${x}" cy="${y}" r="15"/><path d="M${x} ${y+15}v45 m-25 -30h50 M${x} ${y+60}l-22 35 M${x} ${y+60}l22 35"/></g>`);
+  o.push(`<text x="${x}" y="${y+120}" text-anchor="middle" font-size="17" font-weight="700">${label}</text><text x="${x}" y="${y+142}" text-anchor="middle" font-size="12" fill="#536779">${note}</text>`);
 }
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-const o = [];
-o.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" font-family="Segoe UI, Be Vietnam Pro, system-ui, sans-serif">');
-o.push('<defs>');
-o.push('<marker id="arrow" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="' + C.line + '"/></marker>');
-o.push('<marker id="arrowBlue" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="' + C.blue + '"/></marker>');
-o.push('</defs>');
-o.push('<rect width="' + W + '" height="' + H + '" fill="' + C.bg + '"/>');
-
-o.push('<text x="' + (W / 2) + '" y="41" text-anchor="middle" font-size="25" font-weight="700" fill="' + C.ink + '">Sơ đồ Use Case — Sàng lọc &amp; Xếp hạng CV theo JD</text>');
-
-// ranh giới hệ thống
-o.push('<rect x="260" y="70" width="1030" height="960" rx="10" fill="' + C.panel + '" stroke="' + C.bound + '" stroke-width="1.6"/>');
-o.push('<text x="775" y="103" text-anchor="middle" font-size="15" font-weight="700" letter-spacing="1.4" fill="' + C.muted + '">HỆ THỐNG TRỢ LÝ TUYỂN DỤNG</text>');
-
-// đường quan hệ vẽ trước để nằm dưới các hình
-for (const pair of ASSOC) {
-  const A = AC[pair[0]], U = UC[pair[1]];
-  const ay = A.y + 4;
-  const p = edge(U, A.x, ay);
-  o.push('<line x1="' + A.x + '" y1="' + ay + '" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="' + (A.ai ? C.purple : C.line) + '" stroke-width="1.5" opacity="0.72"/>');
-}
-
-function dashed(from, to, label, color, marker) {
-  const F = UC[from], T = UC[to];
-  const p1 = edge(F, T.x, T.y);
-  const p2 = edge(T, F.x, F.y, 5);
-  o.push('<line x1="' + p1[0].toFixed(1) + '" y1="' + p1[1].toFixed(1) + '" x2="' + p2[0].toFixed(1) + '" y2="' + p2[1].toFixed(1) + '" stroke="' + color + '" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#' + marker + ')"/>');
-  const mx = (p1[0] + p2[0]) / 2, my = (p1[1] + p2[1]) / 2;
-  const tw = label.length * 6.4 + 10;
-  o.push('<rect x="' + (mx - tw / 2).toFixed(1) + '" y="' + (my - 10).toFixed(1) + '" width="' + tw.toFixed(1) + '" height="18" rx="3" fill="' + C.panel + '"/>');
-  o.push('<text x="' + mx.toFixed(1) + '" y="' + (my + 3.5).toFixed(1) + '" text-anchor="middle" font-size="11.5" font-style="italic" fill="' + color + '">' + esc(label) + '</text>');
-}
-for (const p of INCL) dashed(p[0], p[1], '«include»', C.line, 'arrow');
-for (const p of EXT)  dashed(p[0], p[1], '«extend»',  C.blue, 'arrowBlue');
-
-// ellipse use case
-for (const k of Object.keys(UC)) {
-  const u = UC[k];
-  const fill = u.g === 'ai' ? C.purpleBg : C.blueBg;
-  const edg  = u.g === 'ai' ? C.purpleEdge : C.blueEdge;
-  const sw   = u.g === 'core' ? 2.2 : 1.4;
-  o.push('<ellipse cx="' + u.x + '" cy="' + u.y + '" rx="' + u.rx + '" ry="' + u.ry + '" fill="' + fill + '" stroke="' + edg + '" stroke-width="' + sw + '"/>');
-  const n = u.t.length, lh = 17, y0 = u.y - ((n - 1) * lh) / 2 + 5;
-  u.t.forEach(function (ln, i) {
-    o.push('<text x="' + u.x + '" y="' + (y0 + i * lh).toFixed(1) + '" text-anchor="middle" font-size="13.5" font-weight="' + (u.g === 'core' ? 600 : 500) + '" fill="' + C.ink + '">' + esc(ln) + '</text>');
-  });
-}
-
-// tác nhân — hình que
-for (const k of Object.keys(AC)) {
-  const a = AC[k], c = a.ai ? C.purple : C.ink;
-  const x = a.x, y = a.y - 46;
-  o.push('<g stroke="' + c + '" stroke-width="2.1" fill="none" stroke-linecap="round">' +
-    '<circle cx="' + x + '" cy="' + y + '" r="13" fill="' + (a.ai ? C.purpleBg : C.blueBg) + '"/>' +
-    '<line x1="' + x + '" y1="' + (y + 13) + '" x2="' + x + '" y2="' + (y + 46) + '"/>' +
-    '<line x1="' + (x - 19) + '" y1="' + (y + 25) + '" x2="' + (x + 19) + '" y2="' + (y + 25) + '"/>' +
-    '<line x1="' + x + '" y1="' + (y + 46) + '" x2="' + (x - 16) + '" y2="' + (y + 71) + '"/>' +
-    '<line x1="' + x + '" y1="' + (y + 46) + '" x2="' + (x + 16) + '" y2="' + (y + 71) + '"/></g>');
-  o.push('<text x="' + x + '" y="' + (y + 93) + '" text-anchor="middle" font-size="14" font-weight="700" fill="' + c + '">' + esc(a.name) + '</text>');
-  if (a.sub) o.push('<text x="' + x + '" y="' + (y + 110) + '" text-anchor="middle" font-size="11.5" fill="' + C.muted + '">' + esc(a.sub) + '</text>');
-}
-
-// chú giải
-const lx = 700, ly = 158;
-o.push('<rect x="' + lx + '" y="' + (ly - 24) + '" width="560" height="60" rx="6" fill="' + C.bg + '" stroke="' + C.bound + '"/>');
-o.push('<ellipse cx="' + (lx + 28) + '" cy="' + (ly - 3) + '" rx="18" ry="9" fill="' + C.blueBg + '" stroke="' + C.blueEdge + '" stroke-width="2.2"/>');
-o.push('<text x="' + (lx + 54) + '" y="' + (ly + 1) + '" font-size="12" fill="' + C.ink + '">Luồng nghiệp vụ chính</text>');
-o.push('<ellipse cx="' + (lx + 250) + '" cy="' + (ly - 3) + '" rx="18" ry="9" fill="' + C.purpleBg + '" stroke="' + C.purpleEdge + '" stroke-width="1.4"/>');
-o.push('<text x="' + (lx + 276) + '" y="' + (ly + 1) + '" font-size="12" fill="' + C.ink + '">Bước do AI thực hiện</text>');
-o.push('<line x1="' + (lx + 14) + '" y1="' + (ly + 22) + '" x2="' + (lx + 44) + '" y2="' + (ly + 22) + '" stroke="' + C.line + '" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrow)"/>');
-o.push('<text x="' + (lx + 54) + '" y="' + (ly + 26) + '" font-size="12" fill="' + C.ink + '">«include» — bắt buộc chạy kèm</text>');
-o.push('<line x1="' + (lx + 300) + '" y1="' + (ly + 22) + '" x2="' + (lx + 330) + '" y2="' + (ly + 22) + '" stroke="' + C.blue + '" stroke-width="1.6" stroke-dasharray="7 5" marker-end="url(#arrowBlue)"/>');
-o.push('<text x="' + (lx + 340) + '" y="' + (ly + 26) + '" font-size="12" fill="' + C.ink + '">«extend» — nhánh tuỳ chọn</text>');
-
-o.push('</svg>');
-fs.writeFileSync(process.argv[2], o.join('\n'), 'utf8');
-console.log('wrote ' + process.argv[2]);
+// The two Recruiter symbols represent the same actor, outside one system boundary.
+actor(105, 515, 'Recruiter', 'Direct user', '#20714a');
+actor(1510, 515, 'Recruiter', 'Same actor as left', '#20714a');
+actor(105, 150, 'AI Service', 'Extraction only', '#7650ad');
+cases.forEach(([id, label, ai], index) => {
+  const left = index < 8;
+  const x = left ? 475 : 1135;
+  const y = 234 + (index % 8) * 106;
+  const internal = id === 'UC-05' || id === 'UC-08';
+  if (!internal) {
+    const startX = left ? 130 : 1485;
+    const endX = left ? x - 205 : x + 205;
+    o.push(`<line x1="${startX}" y1="545" x2="${endX}" y2="${y}" stroke="#88a096" stroke-width="1.3"/>`);
+  }
+  if (ai) {
+    o.push(`<path d="M130 180 V192 H${720 + index*7} V${y} H680" fill="none" stroke="#7650ad" stroke-width="1.7"/>`);
+  }
+  o.push(`<ellipse cx="${x}" cy="${y}" rx="205" ry="39" fill="${ai ? '#f3eefb' : '#eaf3fb'}" stroke="${ai ? '#ab91cc' : '#8cbbdf'}" stroke-width="1.7"/>`);
+  o.push(`<text x="${x}" y="${y-8}" text-anchor="middle" font-size="12" font-weight="700" fill="#536779">${id}${id === 'UC-08' ? ' · Internal behavior' : ''}</text>`);
+  o.push(`<text x="${x}" y="${y+15}" text-anchor="middle" font-size="16">${esc(label)}</text>`);
+});
+o.push('<path d="M680 764 H790 V976 H680" fill="none" stroke="#536779" stroke-width="1.4" stroke-dasharray="6 5" marker-end="url(#include)"/>');
+o.push('<path d="M930 764 H868 V1003 H623" fill="none" stroke="#536779" stroke-width="1.4" stroke-dasharray="6 5" marker-end="url(#include)"/>');
+o.push('<text x="779" y="875" text-anchor="middle" font-size="12" transform="rotate(-90 779 875)">«include»</text>');
+o.push('<text x="887" y="875" text-anchor="middle" font-size="12" transform="rotate(-90 887 875)">«include»</text>');
+o.push('<text x="820" y="1090" text-anchor="middle" font-size="15">AI supports extraction; the backend validates evidence and calculates scores. Semantic scoring is not applied.</text>');
+o.push('<text x="820" y="1120" text-anchor="middle" font-size="14" fill="#536779">Solid: actor association. Dashed «include»: shared evaluation behavior used by both screening flows.</text>');
+o.push('<text x="820" y="1146" text-anchor="middle" font-size="14" fill="#536779">No separate shortlist approver or dictionary-administration screen is in v1 scope.</text>');
+o.push('</g></svg>');
+fs.writeFileSync(output, o.join('\n'), 'utf8');
+console.log(`Wrote ${output} (${cases.length} use cases)`);
