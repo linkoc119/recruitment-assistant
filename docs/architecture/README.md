@@ -52,8 +52,8 @@ The three sequence diagrams are exported with the Mermaid CLI, with their source
 ## Sources and order of precedence
 
 1. This design set is a new architecture proposal for the selected scope; the rules settled in arc42 are the basis for a future implementation.
-2. The database design and UI/UX v2 (internal documents, not included in the repository) together with the [8-table DBML](../../sang-loc-xep-hang-v2.dbml) form the business and data foundation. The data extensions that would be required are listed in arc42 and have **not been applied to the existing DBML/DDL**.
-3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the current prototype has 7 screens and the original data model has 8 tables.
+2. The [13-table DBML](../../sang-loc-xep-hang-v2.dbml), [ERD](../database-design-erd.svg), and [database design](../database-design.md) describe requirements-aligned persistence, snapshots and durable runs. Additional partial indexes and transaction rules are specified for future implementation; no database or migration is deployed.
+3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the current prototype has 7 screens and the current proposed data model has 13 tables.
 4. The [interface code](../../js/app.js) and [sample data](../../js/data.js) are evidence of the current state. The sample scores are not a correctness test suite for the proposed algorithm.
 
 ## Methodological sources

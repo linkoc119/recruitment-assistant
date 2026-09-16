@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2160" viewBox="0 0 1800 2160" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
-<title id="title">Deployment View: Sàng lọc và xếp hạng CV theo JD</title>
-<desc id="desc">Kiến trúc đề xuất cho phân hệ sàng lọc và xếp hạng CV theo JD. Chưa triển khai backend hoặc AI. Các quan hệ được kiểm tra khớp nguồn Mermaid trong tài liệu đi kèm.</desc>
+<title id="title">Deployment View: JD-based CV Screening and Ranking</title>
+<desc id="desc">Proposed architecture for JD-based CV screening and ranking. The backend and AI integration are not implemented. Relationships are verified against the Mermaid source in the accompanying document.</desc>
 <defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
 <rect width="100%" height="100%" fill="white"/>
 <rect x="80" y="30" width="660" height="415" rx="12" fill="white" stroke="#494949" stroke-width="3"/>
-<text x="98" y="406" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Máy nhân viên tuyển dụng</tspan></text>
+<text x="98" y="406" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Recruiter&apos;s computer</tspan></text>
 <text x="98" y="430" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="98" dy="0">[Deployment node]</tspan></text>
 <rect x="110" y="60" width="600" height="285" rx="12" fill="white" stroke="#494949" stroke-width="3" stroke-dasharray="9 7"/>
-<text x="128" y="306" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Trình duyệt</tspan></text>
+<text x="128" y="306" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Web browser</tspan></text>
 <text x="128" y="330" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="128" dy="0">[Execution environment]</tspan></text>
 <rect x="80" y="490" width="1060" height="1090" rx="12" fill="white" stroke="#494949" stroke-width="3"/>
-<text x="98" y="1541" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Máy chủ thử nghiệm nội bộ</tspan></text>
+<text x="98" y="1541" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Internal trial server</tspan></text>
 <text x="98" y="1565" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="98" dy="0">[Deployment node · Linux VM · 4 vCPU / 8 GiB]</tspan></text>
 <rect x="110" y="790" width="620" height="370" rx="12" fill="white" stroke="#494949" stroke-width="3" stroke-dasharray="9 7"/>
 <text x="128" y="1121" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Backend process</tspan></text>
@@ -26,60 +26,60 @@
 <g id="WEB"><title>WEB · Web App instance</title><rect x="150" y="85" width="520" height="170" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 150 114 H 670" stroke="#146ac4" stroke-width="5"/><circle cx="167" cy="99" r="6" fill="#146ac4"/><circle cx="187" cy="99" r="6" fill="#146ac4"/><circle cx="207" cy="99" r="6" fill="#146ac4"/></g>
 <text x="410" y="150" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="410" dy="0">Web App instance</tspan></text>
 <text x="410" y="177" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="410" dy="0">[Container instance: HTML/CSS/JavaScript]</tspan></text>
-<text x="410" y="211" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="410" dy="0">Hiển thị, nhập liệu</tspan><tspan x="410" dy="25">và theo dõi tiến trình.</tspan></text>
+<text x="410" y="211" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="410" dy="0">Displays the interface, accepts input,</tspan><tspan x="410" dy="25">and tracks progress.</tspan></text>
 <g id="EDGE"><title>EDGE · Nginx</title><rect x="140" y="530" width="520" height="200" rx="7" fill="white" stroke="#8a6a12" stroke-width="5"/></g>
 <text x="400" y="568" fill="#8a6a12" font-size="28" font-weight="700" text-anchor="middle"><tspan x="400" dy="0">Nginx</tspan></text>
 <text x="400" y="595" fill="#8a6a12" font-size="14" font-weight="400" text-anchor="middle"><tspan x="400" dy="0">[Infrastructure node: reverse proxy]</tspan></text>
-<text x="400" y="629" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="400" dy="0">HTTPS endpoint; phục vụ static</tspan><tspan x="400" dy="25">files của WEB và chuyển tiếp</tspan><tspan x="400" dy="25">/api tới backend.</tspan></text>
+<text x="400" y="629" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="400" dy="0">HTTPS endpoint; serves WEB files</tspan><tspan x="400" dy="25">and forwards /api requests</tspan><tspan x="400" dy="25">to the backend.</tspan></text>
 <g id="API"><title>API · Screening Backend instance</title><rect x="145" y="820" width="550" height="240" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 164 838 l 13 9 l -13 9 M 186 858 h 20" fill="none" stroke="#146ac4" stroke-width="4"/></g>
 <text x="420" y="887" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="420" dy="0">Screening Backend instance</tspan></text>
 <text x="420" y="914" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">[Container instance: Python/FastAPI]</tspan></text>
-<text x="420" y="948" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">Python/FastAPI, một tiến trình;</tspan><tspan x="420" dy="25">HTTP và bộ điều phối RUN</tspan><tspan x="420" dy="25">chạy cùng ứng dụng.</tspan></text>
+<text x="420" y="948" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">One Python/FastAPI process;</tspan><tspan x="420" dy="25">HTTP and the RUN coordinator</tspan><tspan x="420" dy="25">execute in the same application.</tspan></text>
 <g id="DB"><title>DB · Screening Database instance</title><path d="M 110 1263 L 110 1447 A 230 23 0 0 0 570 1447 L 570 1263 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="340" cy="1263" rx="230" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
 <text x="340" y="1313" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="340" dy="0">Screening Database instance</tspan></text>
 <text x="340" y="1340" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">[Container instance: PostgreSQL]</tspan></text>
-<text x="340" y="1374" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">PostgreSQL · volume riêng;</tspan><tspan x="340" dy="25">cổng 5432 chỉ mở trong</tspan><tspan x="340" dy="25">mạng nội bộ máy chủ.</tspan></text>
+<text x="340" y="1374" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">PostgreSQL · dedicated volume;</tspan><tspan x="340" dy="25">port 5432 is available only on</tspan><tspan x="340" dy="25">the server private network.</tspan></text>
 <g id="FILES"><title>FILES · CV Store instance</title><path d="M 640 1263 L 668 1447 A 202 23 0 0 0 1072 1447 L 1100 1263 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="870" cy="1263" rx="230" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
 <text x="870" y="1313" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="870" dy="0">CV Store instance</tspan></text>
 <text x="870" y="1340" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">[Container instance: S3-compatible storage]</tspan></text>
-<text x="870" y="1374" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">Dịch vụ tương thích S3 ·</tspan><tspan x="870" dy="25">volume riêng; bucket CV</tspan><tspan x="870" dy="25">không công khai.</tspan></text>
-<g id="AI"><title>AI · Dịch vụ trích xuất AI</title><rect x="1320" y="830" width="420" height="240" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
-<text x="1530" y="868" fill="#c71025" font-size="28" font-weight="700" text-anchor="middle"><tspan x="1530" dy="0">Dịch vụ trích xuất AI</tspan></text>
+<text x="870" y="1374" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">S3-compatible service · dedicated volume;</tspan><tspan x="870" dy="25">the CV bucket is private.</tspan></text>
+<g id="AI"><title>AI · AI Extraction Service</title><rect x="1320" y="830" width="420" height="240" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="1530" y="868" fill="#c71025" font-size="28" font-weight="700" text-anchor="middle"><tspan x="1530" dy="0">AI Extraction Service</tspan></text>
 <text x="1530" y="895" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">[External deployment node: HTTPS endpoint]</tspan></text>
-<text x="1530" y="929" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">Do nhà cung cấp vận hành,</tspan><tspan x="1530" dy="25">ngoài phạm vi triển khai này.</tspan></text>
-<g id="BACKUP"><title>BACKUP · Kho backup</title><path d="M 450 1713 L 478 1897 A 232 23 0 0 0 942 1897 L 970 1713 Z" fill="white" stroke="#8a6a12" stroke-width="5"/><ellipse cx="710" cy="1713" rx="260" ry="23" fill="white" stroke="#8a6a12" stroke-width="5"/></g>
-<text x="710" y="1763" fill="#8a6a12" font-size="28" font-weight="700" text-anchor="middle"><tspan x="710" dy="0">Kho backup</tspan></text>
-<text x="710" y="1790" fill="#8a6a12" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Infrastructure node: tách khỏi máy chủ]</tspan></text>
-<text x="710" y="1824" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Bản sao DB và file theo cùng</tspan><tspan x="710" dy="25">mốc dữ liệu; mã hóa và</tspan><tspan x="710" dy="25">giới hạn truy cập.</tspan></text>
+<text x="1530" y="929" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">Operated by a vendor</tspan><tspan x="1530" dy="25">outside this deployment scope.</tspan></text>
+<g id="BACKUP"><title>BACKUP · Backup store</title><path d="M 450 1713 L 478 1897 A 232 23 0 0 0 942 1897 L 970 1713 Z" fill="white" stroke="#8a6a12" stroke-width="5"/><ellipse cx="710" cy="1713" rx="260" ry="23" fill="white" stroke="#8a6a12" stroke-width="5"/></g>
+<text x="710" y="1763" fill="#8a6a12" font-size="28" font-weight="700" text-anchor="middle"><tspan x="710" dy="0">Backup store</tspan></text>
+<text x="710" y="1790" fill="#8a6a12" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Infrastructure node: separate from server]</tspan></text>
+<text x="710" y="1824" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Database and file copies share</tspan><tspan x="710" dy="25">one recovery point; encrypted</tspan><tspan x="710" dy="25">and access restricted.</tspan></text>
 <rect x="790" y="400" width="400" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="990" y="420" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="990" dy="0">Tải static files và gọi /api</tspan></text>
+<text x="990" y="420" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="990" dy="0">Loads static files and calls /api</tspan></text>
 <text x="990" y="445" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="990" dy="0">[HTTPS :443]</tspan></text>
 <rect x="580" y="735" width="400" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="780" y="755" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="780" dy="0">Chuyển tiếp /api tới backend</tspan></text>
+<text x="780" y="755" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="780" dy="0">Forwards /api to backend</tspan></text>
 <text x="780" y="780" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="780" dy="0">[HTTP loopback :8000]</tspan></text>
 <rect x="90" y="1170" width="230" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="205" y="1190" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="205" dy="0">Đọc/ghi và giao dịch</tspan></text>
-<text x="205" y="1215" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="205" dy="0">[SQL/TCP :5432 · mạng riêng]</tspan></text>
+<text x="205" y="1190" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="205" dy="0">Reads/writes and runs transactions</tspan></text>
+<text x="205" y="1215" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="205" dy="0">[SQL/TCP :5432 · private network]</tspan></text>
 <rect x="880" y="1140" width="260" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1010" y="1160" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1010" dy="0">Lưu và đọc file CV</tspan></text>
-<text x="1010" y="1185" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1010" dy="0">[HTTPS/S3 API :443 · mạng riêng]</tspan></text>
+<text x="1010" y="1160" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1010" dy="0">Stores and reads CV files</tspan></text>
+<text x="1010" y="1185" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1010" dy="0">[HTTPS/S3 API :443 · private network]</tspan></text>
 <rect x="745" y="835" width="350" height="81" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="920" y="855" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">Gửi văn bản đã giảm</tspan><tspan x="920" dy="25">thông tin nhận dạng</tspan></text>
+<text x="920" y="855" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">Sends text with reduced</tspan><tspan x="920" dy="25">identifying information</tspan></text>
 <text x="920" y="905" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">[HTTPS :443]</tspan></text>
 <rect x="205" y="1610" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="330" y="1630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Backup theo lịch</tspan></text>
-<text x="330" y="1655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[Kênh mã hóa]</tspan></text>
+<text x="330" y="1630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Scheduled backup</tspan></text>
+<text x="330" y="1655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[Encrypted channel]</tspan></text>
 <rect x="955" y="1610" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1080" y="1630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">Backup theo lịch</tspan></text>
-<text x="1080" y="1655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">[Kênh mã hóa]</tspan></text>
-<text x="30" y="1980" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Deployment View: Sàng lọc và xếp hạng CV theo JD</tspan></text>
-<text x="30" y="2011" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Kiến trúc đề xuất · Chỉ phân hệ sàng lọc và xếp hạng CV theo JD · Chưa triển khai backend/AI</tspan></text>
+<text x="1080" y="1630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">Scheduled backup</tspan></text>
+<text x="1080" y="1655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">[Encrypted channel]</tspan></text>
+<text x="30" y="1980" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Deployment View: JD-based CV Screening and Ranking</tspan></text>
+<text x="30" y="2011" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
 <rect x="30" y="2034" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="62" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Instance của container trong phạm vi</tspan></text>
+<text x="62" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">In-scope container instance</tspan></text>
 <rect x="520" y="2034" width="20" height="20" rx="3" fill="white" stroke="#8a6a12" stroke-width="3"/>
-<text x="552" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="552" dy="0">Hạ tầng vận hành</tspan></text>
+<text x="552" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="552" dy="0">Operational infrastructure</tspan></text>
 <rect x="860" y="2034" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
-<text x="892" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="892" dy="0">Bên ngoài hệ thống</tspan></text>
-<text x="30" y="2083" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Mũi tên nét đứt: chiều khởi tạo kết nối; nhãn nêu trách nhiệm, giao thức và cổng. Khung xám: deployment node; khung xám nét đứt: execution environment.</tspan></text>
-<text x="30" y="2110" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: mô tả công việc · CV: hồ sơ ứng tuyển · Phong cách trình bày tham khảo các ví dụ C4 của Simon Brown (c4model.com).</tspan></text>
+<text x="892" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="892" dy="0">External system</tspan></text>
+<text x="30" y="2083" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: connection initiation direction; labels state responsibility, protocol, and port. Solid grey frame: deployment node; dashed grey frame: execution environment.</tspan></text>
+<text x="30" y="2110" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
 </svg>

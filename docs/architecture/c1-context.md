@@ -15,14 +15,14 @@
 
 ```mermaid
 ---
-title: "C1 — System Context: Sàng lọc CV theo JD — Đề xuất"
+title: "C1 — System Context: CV Screening against a JD — Proposed"
 ---
 flowchart LR
-    REC["REC · Nhân viên tuyển dụng<br/>[Person]<br/>Chốt tiêu chí và quyết định shortlist hoặc loại"]
-    SYS["SYS · Sàng lọc và xếp hạng CV theo JD<br/>[Software System · đề xuất]<br/>Đối chiếu CV với tiêu chí đã duyệt<br/>Cung cấp điểm, bằng chứng và lịch sử vòng chấm"]
-    AI["AI · Dịch vụ trích xuất AI<br/>[External Software System]<br/>Đề xuất dữ liệu có cấu trúc từ văn bản JD/CV<br/>Không quyết định điểm tổng hay shortlist"]
-    REC -->|"Nhập JD, nạp CV, duyệt tiêu chí và yêu cầu chấm"| SYS
-    SYS -->|"Gửi văn bản cần trích xuất và cấu trúc kết quả mong đợi"| AI
+    REC["REC · Recruiter<br/>[Person]<br/>Approves criteria and decides whether to shortlist or reject"]
+    SYS["SYS · JD-based CV Screening and Ranking<br/>[Software System · proposed]<br/>Evaluates CVs against approved criteria<br/>Provides scores, evidence, and screening-run history"]
+    AI["AI · AI Extraction Service<br/>[External Software System]<br/>Proposes structured data from JD and CV text<br/>Does not decide the total score or shortlist"]
+    REC -->|"Enters the JD, uploads CVs, approves criteria, and requests screening"| SYS
+    SYS -->|"Sends text to extract and the expected result structure"| AI
     classDef person fill:#fff,color:#2b8205,stroke:#2b8205,stroke-width:3px
     classDef internal fill:#fff,color:#146ac4,stroke:#146ac4,stroke-width:3px
     classDef external fill:#fff,color:#c71025,stroke:#c71025,stroke-width:3px

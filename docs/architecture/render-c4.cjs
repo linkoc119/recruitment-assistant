@@ -89,15 +89,15 @@ class Diagram {
     if (protocol) this.text(labelX, labelY + lines.length * lineGap, [`[${protocol}]`], { size: 14, color: GRAY, layer: 'labels' });
   }
 
-  footer(y, { items = [[30, GREEN, 'Person · Người sử dụng'], [360, BLUE, 'Phần mềm trong phạm vi'], [735, RED, 'Hệ thống bên ngoài']], note = 'Mũi tên nét đứt: quan hệ có hướng; nhãn nêu trách nhiệm và giao thức. Khung lớn: ranh giới hệ thống/container.' } = {}) {
+  footer(y, { items = [[30, GREEN, 'Person · User'], [360, BLUE, 'Software in scope'], [735, RED, 'External system']], note = 'Dashed arrow: directed relationship; its label states the responsibility and protocol. Large frame: system/container boundary.' } = {}) {
     this.text(30, y, [this.title], { size: 29, color: GRAY, anchor: 'start', layer: 'footer' });
-    this.text(30, y + 31, ['Kiến trúc đề xuất · Chỉ phân hệ sàng lọc và xếp hạng CV theo JD · Chưa triển khai backend/AI'], { size: 18, color: GRAY, anchor: 'start', layer: 'footer' });
+    this.text(30, y + 31, ['Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented'], { size: 18, color: GRAY, anchor: 'start', layer: 'footer' });
     for (const [x, color, label] of items) {
       this.layers.footer.push(`<rect x="${x}" y="${y + 54}" width="20" height="20" rx="3" fill="white" stroke="${color}" stroke-width="3"/>`);
       this.text(x + 32, y + 71, [label], { size: 17, color: GRAY, anchor: 'start', layer: 'footer' });
     }
     this.text(30, y + 103, [note], { size: 17, color: GRAY, anchor: 'start', layer: 'footer' });
-    this.text(30, y + 130, ['JD: mô tả công việc · CV: hồ sơ ứng tuyển · Phong cách trình bày tham khảo các ví dụ C4 của Simon Brown (c4model.com).'], { size: 15, color: GRAY, anchor: 'start', layer: 'footer' });
+    this.text(30, y + 130, ['JD: job description · CV: candidate application file · Presentation style references Simon Brown\'s C4 examples (c4model.com).'], { size: 15, color: GRAY, anchor: 'start', layer: 'footer' });
   }
 
   write() {
@@ -107,7 +107,7 @@ class Diagram {
     const actual = [...this.relations].sort();
     if (JSON.stringify(expected) !== JSON.stringify(actual)) throw new Error(`${this.stem}: relationships differ from Mermaid`);
     for (const edge of actual) for (const id of edge.split('->')) if (!this.ids.has(id)) throw new Error(`Unknown endpoint ${id}`);
-    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" role="img" aria-labelledby="title desc" font-family="${FONT}">\n<title id="title">${esc(this.title)}</title>\n<desc id="desc">Kiến trúc đề xuất cho phân hệ sàng lọc và xếp hạng CV theo JD. Chưa triển khai backend hoặc AI. Các quan hệ được kiểm tra khớp nguồn Mermaid trong tài liệu đi kèm.</desc>\n<defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="${GRAY}"/></marker></defs>\n<rect width="100%" height="100%" fill="white"/>\n${Object.values(this.layers).flat().join('\n')}\n</svg>\n`;
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" role="img" aria-labelledby="title desc" font-family="${FONT}">\n<title id="title">${esc(this.title)}</title>\n<desc id="desc">Proposed architecture for JD-based CV screening and ranking. The backend and AI integration are not implemented. Relationships are verified against the Mermaid source in the accompanying document.</desc>\n<defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="${GRAY}"/></marker></defs>\n<rect width="100%" height="100%" fill="white"/>\n${Object.values(this.layers).flat().join('\n')}\n</svg>\n`;
     fs.writeFileSync(path.join(__dirname, 'diagrams', this.stem + '.svg'), svg);
     console.log(`${this.stem}: ${this.ids.size} nodes, ${actual.length} verified relationships`);
   }
@@ -115,96 +115,96 @@ class Diagram {
 
 // C1: one software system, a person and an external extraction service.
 {
-  const d = new Diagram('c1-context', 1600, 1090, 'System Context View: Sàng lọc và xếp hạng CV theo JD');
-  d.node('REC', 130, 35, 450, 345, ['Nhân viên tuyển dụng'], '[Person]', ['Duyệt tiêu chí, kiểm chứng kết quả', 'và quyết định shortlist hoặc loại.'], 'person', GREEN);
-  d.node('SYS', 130, 585, 450, 250, ['Sàng lọc và xếp hạng CV', 'theo JD'], '[Software System]', ['Đối chiếu CV với tiêu chí đã duyệt;', 'cung cấp điểm, bằng chứng', 'và lịch sử các vòng chấm.']);
-  d.node('AI', 1030, 585, 450, 250, ['Dịch vụ trích xuất AI'], '[External Software System]', ['Trích xuất dữ liệu từ JD và CV,', 'kèm vị trí bằng chứng trong nguồn.', 'Không quyết định điểm hay shortlist.'], 'box', RED);
-  d.edge('REC', 'SYS', [[245,380],[245,585]], 210, 453, ['Nhập JD, nạp CV, duyệt', 'tiêu chí và yêu cầu chấm'], '', 330);
-  d.edge('SYS', 'AI', [[580,655],[1030,655]], 805, 605, ['Gửi văn bản cần trích xuất', 'và cấu trúc kết quả mong đợi'], '', 370);
+  const d = new Diagram('c1-context', 1600, 1090, 'System Context View: JD-based CV Screening and Ranking');
+  d.node('REC', 130, 35, 450, 345, ['Recruiter'], '[Person]', ['Reviews criteria and verifies results', 'and decides to shortlist or reject.'], 'person', GREEN);
+  d.node('SYS', 130, 585, 450, 250, ['JD-based CV Screening', 'and Ranking'], '[Software System]', ['Evaluates CVs against approved criteria;', 'provides scores, evidence,', 'and screening-run history.']);
+  d.node('AI', 1030, 585, 450, 250, ['AI Extraction Service'], '[External Software System]', ['Extracts data from JDs and CVs', 'with source evidence locations.', 'Does not decide scores or shortlists.'], 'box', RED);
+  d.edge('REC', 'SYS', [[245,380],[245,585]], 210, 453, ['Enters JD, uploads CVs, approves', 'criteria, and requests screening'], '', 330);
+  d.edge('SYS', 'AI', [[580,655],[1030,655]], 805, 605, ['Sends text to extract and', 'the expected result structure'], '', 370);
   d.footer(920);
   d.write();
 }
 
 // C2: preserve the four containers chosen in arc42; no extra static-content service.
 {
-  const d = new Diagram('c2-containers', 1650, 1690, 'Container View: Sàng lọc và xếp hạng CV theo JD');
-  d.frame(55, 405, 1135, 1075, 'Sàng lọc và xếp hạng CV theo JD', '[Software System]');
-  d.node('REC', 440, 25, 380, 310, ['Nhân viên tuyển dụng'], '[Person]', ['Duyệt tiêu chí, xem kết quả', 'và đưa ra quyết định.'], 'person', GREEN);
-  d.node('WEB', 450, 465, 360, 210, ['Web App'], '[Container: HTML/CSS/JavaScript]', ['7 màn hình nghiệp vụ;', 'xem CV và theo dõi tiến trình.'], 'browser');
-  d.node('API', 450, 815, 360, 235, ['Screening Backend'], '[Container: Python/FastAPI]', ['Cung cấp API, điều phối tác vụ,', 'chấm điểm và quản lý lịch sử.'], 'backend');
-  d.node('FILES', 170, 1190, 330, 190, ['CV Store'], '[Container: S3-compatible storage]', ['Lưu file CV gốc', 'trong bucket riêng tư.'], 'bucket');
-  d.node('DB', 770, 1190, 330, 190, ['Screening Database'], '[Container: PostgreSQL]', ['Tiêu chí, phiên bản đầu vào,', 'tác vụ và kết quả chấm.'], 'database');
-  d.node('AI', 1255, 815, 350, 235, ['Dịch vụ trích xuất AI'], '[External Software System: HTTPS API]', ['Trích xuất dữ liệu JD/CV', 'có cấu trúc và bằng chứng.'], 'box', RED);
-  d.edge('REC', 'WEB', [[630,335],[630,465]], 630, 360, ['Thao tác và xem kết quả'], 'Trình duyệt', 310);
-  d.edge('WEB', 'API', [[630,675],[630,815]], 630, 723, ['Gửi lệnh, truy vấn và polling'], 'HTTPS/JSON; CV: multipart', 355);
-  d.edge('API', 'FILES', [[530,1050],[340,1190]], 330, 1100, ['Lưu và đọc file CV'], 'HTTPS/S3 API', 275);
-  d.edge('API', 'DB', [[730,1050],[930,1190]], 950, 1100, ['Đọc/ghi và giao dịch'], 'SQL/TCP', 280);
-  d.edge('API', 'AI', [[810,930],[1255,930]], 1015, 855, ['Gửi văn bản; nhận dữ liệu', 'trích xuất có cấu trúc'], 'HTTPS/JSON', 315);
+  const d = new Diagram('c2-containers', 1650, 1690, 'Container View: JD-based CV Screening and Ranking');
+  d.frame(55, 405, 1135, 1075, 'JD-based CV Screening and Ranking', '[Software System]');
+  d.node('REC', 440, 25, 380, 310, ['Recruiter'], '[Person]', ['Reviews criteria and results', 'and records decisions.'], 'person', GREEN);
+  d.node('WEB', 450, 465, 360, 210, ['Web App'], '[Container: HTML/CSS/JavaScript]', ['Presents the workflow and CV viewer;', 'tracks screening progress.'], 'browser');
+  d.node('API', 450, 815, 360, 235, ['Screening Backend'], '[Container: Python/FastAPI]', ['Provides the API, coordinates jobs,', 'scores CVs, and manages history.'], 'backend');
+  d.node('FILES', 170, 1190, 330, 190, ['CV Store'], '[Container: S3-compatible storage]', ['Stores original CV files', 'in a private bucket.'], 'bucket');
+  d.node('DB', 770, 1190, 330, 190, ['Screening Database'], '[Container: PostgreSQL]', ['Criteria, input snapshots,', 'jobs, and screening results.'], 'database');
+  d.node('AI', 1255, 815, 350, 235, ['AI Extraction Service'], '[External Software System: HTTPS API]', ['Extracts structured JD/CV data', 'with source evidence.'], 'box', RED);
+  d.edge('REC', 'WEB', [[630,335],[630,465]], 630, 360, ['Interacts and views results'], 'Browser', 310);
+  d.edge('WEB', 'API', [[630,675],[630,815]], 630, 723, ['Sends commands, queries, and polls'], 'HTTPS/JSON; CV: multipart', 355);
+  d.edge('API', 'FILES', [[530,1050],[340,1190]], 330, 1100, ['Stores and reads CV files'], 'HTTPS/S3 API', 275);
+  d.edge('API', 'DB', [[730,1050],[930,1190]], 950, 1100, ['Reads/writes and runs transactions'], 'SQL/TCP', 280);
+  d.edge('API', 'AI', [[810,930],[1255,930]], 1015, 855, ['Sends text; receives', 'structured extracted data'], 'HTTPS/JSON', 315);
   d.footer(1525);
   d.write();
 }
 
 // C3: the API container is expanded; neighbouring containers remain outside it.
 {
-  const d = new Diagram('c3-components', 2340, 2230, 'Component View: Sàng lọc CV theo JD — Screening Backend');
-  d.frame(50, 40, 1790, 1990, 'Sàng lọc và xếp hạng CV theo JD', '[Software System]');
+  const d = new Diagram('c3-components', 2340, 2230, 'Component View: JD-based CV Screening — Screening Backend');
+  d.frame(50, 40, 1790, 1990, 'JD-based CV Screening and Ranking', '[Software System]');
   d.frame(80, 330, 1730, 1290, 'Screening Backend', '[Container: Python/FastAPI]');
-  d.node('WEB', 760, 65, 360, 205, ['Web App'], '[Container: HTML/CSS/JavaScript]', ['Gửi lệnh, hiển thị kết quả', 'và theo dõi tác vụ.'], 'browser');
-  d.node('HTTP', 760, 400, 360, 190, ['API Controllers'], '[Component: FastAPI routers]', ['Kiểm tra request và phiên bản;', 'định tuyến, trả phản hồi HTTP.'], 'component');
-  d.node('CRIT', 140, 740, 300, 205, ['Criteria Service'], '[Component: Python]', ['Quản lý JD; duyệt và', 'đóng băng bộ tiêu chí.'], 'component');
-  d.node('CV', 560, 740, 300, 205, ['Resume Service'], '[Component: Python/PDF-DOCX parser]', ['Quản lý file, hash, phiên bản', 'và văn bản CV.'], 'component');
-  d.node('RUN', 980, 740, 300, 205, ['Screening', 'Coordinator'], '[Component: Python async tasks]', ['Tác vụ bền vững, retry', 'và công bố vòng chấm.'], 'component');
-  d.node('REVIEW', 1400, 740, 300, 205, ['Ranking and', 'Review Service'], '[Component: Python]', ['Xếp hạng, bằng chứng,', 'quyết định và so sánh.'], 'component');
-  d.node('EXTRACT', 140, 1110, 300, 205, ['Extraction Adapter'], '[Component: Python HTTP client]', ['Gọi AI; kiểm tra schema', 'và bằng chứng nguồn.'], 'component');
-  d.node('SCORE', 980, 1110, 300, 205, ['Scoring Engine'], '[Component: Python domain module]', ['Lọc bắt buộc, tính điểm', 'và đóng góp từng tiêu chí.'], 'component');
-  d.node('DATA', 700, 1400, 360, 190, ['Repositories'], '[Component: Python SQL/S3 clients]', ['Truy cập dữ liệu, file', 'và ranh giới giao dịch.'], 'component');
-  d.node('DB', 420, 1770, 360, 195, ['Screening Database'], '[Container: PostgreSQL]', ['Dữ liệu nghiệp vụ, tác vụ', 'và lịch sử các vòng chấm.'], 'database');
-  d.node('FILES', 1150, 1770, 360, 195, ['CV Store'], '[Container: S3-compatible storage]', ['File CV gốc', 'được lưu riêng tư.'], 'bucket');
-  d.node('AI', 1910, 1110, 365, 205, ['Dịch vụ trích xuất AI'], '[External Software System: HTTPS API]', ['Trả dữ liệu JD/CV có cấu trúc', 'và vị trí bằng chứng.'], 'box', RED);
-  d.edge('WEB', 'HTTP', [[940,270],[940,400]], 940, 292, ['Gửi lệnh và truy vấn'], 'HTTPS/JSON hoặc multipart', 350);
-  d.edge('HTTP', 'CRIT', [[790,590],[290,740]], 345, 645, ['Trích xuất hoặc lưu tiêu chí'], 'Gọi hàm nội bộ', 325);
-  d.edge('HTTP', 'CV', [[875,590],[710,740]], 680, 678, ['Nạp hoặc đọc file CV'], 'Gọi hàm nội bộ', 270);
-  d.edge('HTTP', 'RUN', [[1005,590],[1130,740]], 1120, 660, ['Tạo tác vụ, đọc tiến trình'], 'Gọi hàm nội bộ', 290);
-  d.edge('HTTP', 'REVIEW', [[1090,590],[1550,740]], 1510, 630, ['Đọc kết quả, ghi quyết định'], 'Gọi hàm nội bộ', 310);
-  d.edge('RUN', 'CV', [[980,865],[860,865]], 920, 823, ['Đọc văn', 'bản CV'], '', 110);
-  d.edge('CRIT', 'EXTRACT', [[290,945],[290,1110]], 290, 1020, ['Trích xuất JD'], 'Gọi hàm nội bộ', 235);
-  d.edge('CRIT', 'DATA', [[140,895],[105,895],[105,1360],[670,1360],[670,1440],[700,1440]], 365, 1360, ['Lưu revision tiêu chí'], 'Gọi hàm nội bộ', 280);
-  d.edge('CV', 'DATA', [[650,945],[650,1490],[700,1490]], 650, 1225, ['Lưu file, hash', 'và phiên bản CV'], 'Gọi hàm nội bộ', 235);
-  d.edge('RUN', 'EXTRACT', [[980,915],[920,915],[920,1010],[400,1010],[400,1110]], 650, 1005, ['Trích xuất CV chưa có snapshot'], 'Gọi hàm nội bộ', 355);
-  d.edge('RUN', 'SCORE', [[1130,945],[1130,1110]], 1130, 1030, ['Chấm snapshot theo policy'], 'Gọi hàm nội bộ', 295);
-  d.edge('RUN', 'DATA', [[1280,915],[1330,915],[1330,1370],[980,1370],[980,1400]], 1220, 1362, ['Tác vụ, snapshot và publish'], 'Gọi hàm nội bộ', 315);
-  d.edge('REVIEW', 'DATA', [[1550,945],[1550,1505],[1060,1505]], 1410, 1500, ['Đọc vòng, bằng chứng', 'và ghi quyết định'], 'Gọi hàm nội bộ', 305);
-  d.edge('EXTRACT', 'AI', [[440,1210],[475,1210],[475,1335],[1870,1335],[1870,1210],[1910,1210]], 1640, 1303, ['Trích xuất văn bản JD/CV'], 'HTTPS/JSON', 310);
-  d.edge('DATA', 'DB', [[795,1590],[600,1770]], 635, 1685, ['Đọc/ghi và giao dịch'], 'SQL/TCP', 270);
-  d.edge('DATA', 'FILES', [[965,1590],[1330,1770]], 1215, 1685, ['Lưu và đọc file CV'], 'HTTPS/S3 API', 270);
+  d.node('WEB', 760, 65, 360, 205, ['Web App'], '[Container: HTML/CSS/JavaScript]', ['Sends commands, displays results,', 'and tracks jobs.'], 'browser');
+  d.node('HTTP', 760, 400, 360, 190, ['API Controllers'], '[Component: FastAPI routers]', ['Validates requests, context,', 'and versions.'], 'component');
+  d.node('CRIT', 140, 740, 300, 205, ['Criteria Service'], '[Component: Python]', ['Manages positions, JDs,', 'and criteria revisions.'], 'component');
+  d.node('CV', 560, 740, 300, 205, ['Resume Service'], '[Component: Python/PDF-DOCX parser]', ['Manages files, hashes, versions,', 'and CV text.'], 'component');
+  d.node('RUN', 980, 740, 300, 205, ['Screening', 'Coordinator'], '[Component: Python async tasks]', ['Coordinates durable jobs, retries,', 'and run publication.'], 'component');
+  d.node('REVIEW', 1400, 740, 300, 205, ['Ranking and', 'Review Service'], '[Component: Python]', ['Provides rankings, evidence,', 'decisions, and comparisons.'], 'component');
+  d.node('EXTRACT', 140, 1110, 300, 205, ['Extraction Adapter'], '[Component: Python HTTP client]', ['Calls AI; validates schemas', 'and source evidence.'], 'component');
+  d.node('SCORE', 980, 1110, 300, 205, ['Scoring Engine'], '[Component: Python domain module]', ['Evaluates mandatory criteria, scores,', 'and criterion contributions.'], 'component');
+  d.node('DATA', 700, 1400, 360, 190, ['Repositories'], '[Component: Python SQL/S3 clients]', ['Provides data and file access', 'and transaction boundaries.'], 'component');
+  d.node('DB', 420, 1770, 360, 195, ['Screening Database'], '[Container: PostgreSQL]', ['Business data, jobs,', 'and screening-run history.'], 'database');
+  d.node('FILES', 1150, 1770, 360, 195, ['CV Store'], '[Container: S3-compatible storage]', ['Stores original CV files', 'privately.'], 'bucket');
+  d.node('AI', 1910, 1110, 365, 205, ['AI Extraction Service'], '[External Software System: HTTPS API]', ['Returns structured JD/CV data', 'and evidence locations.'], 'box', RED);
+  d.edge('WEB', 'HTTP', [[940,270],[940,400]], 940, 292, ['Sends commands and queries'], 'HTTPS/JSON or multipart', 350);
+  d.edge('HTTP', 'CRIT', [[790,590],[290,740]], 345, 620, ['Creates/reads positions', 'and manages criteria'], 'Internal function call', 325);
+  d.edge('HTTP', 'CV', [[875,590],[710,740]], 680, 678, ['Uploads or reads a CV file'], 'Internal function call', 270);
+  d.edge('HTTP', 'RUN', [[1005,590],[1130,740]], 1120, 660, ['Creates jobs and reads progress'], 'Internal function call', 290);
+  d.edge('HTTP', 'REVIEW', [[1090,590],[1550,740]], 1510, 630, ['Reads results and records decisions'], 'Internal function call', 310);
+  d.edge('RUN', 'CV', [[980,865],[860,865]], 920, 823, ['Reads CV', 'text'], '', 110);
+  d.edge('CRIT', 'EXTRACT', [[290,945],[290,1110]], 290, 1020, ['Extracts JD data'], 'Internal function call', 235);
+  d.edge('CRIT', 'DATA', [[140,895],[105,895],[105,1360],[670,1360],[670,1440],[700,1440]], 365, 1360, ['Reads/writes positions and criteria'], 'Internal function call', 330);
+  d.edge('CV', 'DATA', [[650,945],[650,1490],[700,1490]], 650, 1225, ['Stores file, hash,', 'and CV version'], 'Internal function call', 235);
+  d.edge('RUN', 'EXTRACT', [[980,915],[920,915],[920,1010],[400,1010],[400,1110]], 650, 1005, ['Extracts CV without a snapshot'], 'Internal function call', 355);
+  d.edge('RUN', 'SCORE', [[1130,945],[1130,1110]], 1130, 1030, ['Scores snapshot under policy'], 'Internal function call', 295);
+  d.edge('RUN', 'DATA', [[1280,915],[1330,915],[1330,1370],[980,1370],[980,1400]], 1220, 1362, ['Stores jobs/snapshots and publishes'], 'Internal function call', 315);
+  d.edge('REVIEW', 'DATA', [[1550,945],[1550,1505],[1060,1505]], 1410, 1500, ['Reads runs and evidence', 'and records decisions'], 'Internal function call', 305);
+  d.edge('EXTRACT', 'AI', [[440,1210],[475,1210],[475,1335],[1870,1335],[1870,1210],[1910,1210]], 1640, 1303, ['Extracts data from JD/CV text'], 'HTTPS/JSON', 310);
+  d.edge('DATA', 'DB', [[795,1590],[600,1770]], 635, 1685, ['Reads/writes and runs transactions'], 'SQL/TCP', 270);
+  d.edge('DATA', 'FILES', [[965,1590],[1330,1770]], 1215, 1685, ['Stores and reads CV files'], 'HTTPS/S3 API', 270);
   d.footer(2075);
   d.write();
 }
 
 // Deployment: the same containers as C2, placed on the proposed internal-trial nodes.
 {
-  const d = new Diagram('deployment', 1800, 2160, 'Deployment View: Sàng lọc và xếp hạng CV theo JD');
-  d.frame(80, 30, 660, 415, 'Máy nhân viên tuyển dụng', '[Deployment node]', { color: GRAY });
-  d.frame(110, 60, 600, 285, 'Trình duyệt', '[Execution environment]', { color: GRAY, dash: '9 7' });
-  d.frame(80, 490, 1060, 1090, 'Máy chủ thử nghiệm nội bộ', '[Deployment node · Linux VM · 4 vCPU / 8 GiB]', { color: GRAY });
+  const d = new Diagram('deployment', 1800, 2160, 'Deployment View: JD-based CV Screening and Ranking');
+  d.frame(80, 30, 660, 415, "Recruiter's computer", '[Deployment node]', { color: GRAY });
+  d.frame(110, 60, 600, 285, 'Web browser', '[Execution environment]', { color: GRAY, dash: '9 7' });
+  d.frame(80, 490, 1060, 1090, 'Internal trial server', '[Deployment node · Linux VM · 4 vCPU / 8 GiB]', { color: GRAY });
   d.frame(110, 790, 620, 370, 'Backend process', '[Execution environment]', { color: GRAY, dash: '9 7' });
-  d.node('WEB', 150, 85, 520, 170, ['Web App instance'], '[Container instance: HTML/CSS/JavaScript]', ['Hiển thị, nhập liệu', 'và theo dõi tiến trình.'], 'browser');
-  d.node('EDGE', 140, 530, 520, 200, ['Nginx'], '[Infrastructure node: reverse proxy]', ['HTTPS endpoint; phục vụ static', 'files của WEB và chuyển tiếp', '/api tới backend.'], 'box', AMBER);
-  d.node('API', 145, 820, 550, 240, ['Screening Backend instance'], '[Container instance: Python/FastAPI]', ['Python/FastAPI, một tiến trình;', 'HTTP và bộ điều phối RUN', 'chạy cùng ứng dụng.'], 'backend');
-  d.node('DB', 110, 1240, 460, 230, ['Screening Database instance'], '[Container instance: PostgreSQL]', ['PostgreSQL · volume riêng;', 'cổng 5432 chỉ mở trong', 'mạng nội bộ máy chủ.'], 'database');
-  d.node('FILES', 640, 1240, 460, 230, ['CV Store instance'], '[Container instance: S3-compatible storage]', ['Dịch vụ tương thích S3 ·', 'volume riêng; bucket CV', 'không công khai.'], 'bucket');
-  d.node('AI', 1320, 830, 420, 240, ['Dịch vụ trích xuất AI'], '[External deployment node: HTTPS endpoint]', ['Do nhà cung cấp vận hành,', 'ngoài phạm vi triển khai này.'], 'box', RED);
-  d.node('BACKUP', 450, 1690, 520, 230, ['Kho backup'], '[Infrastructure node: tách khỏi máy chủ]', ['Bản sao DB và file theo cùng', 'mốc dữ liệu; mã hóa và', 'giới hạn truy cập.'], 'bucket', AMBER);
-  d.edge('WEB', 'EDGE', [[470,255],[470,530]], 990, 420, ['Tải static files và gọi /api'], 'HTTPS :443', 400);
-  d.edge('EDGE', 'API', [[400,730],[400,820]], 780, 755, ['Chuyển tiếp /api tới backend'], 'HTTP loopback :8000', 400);
-  d.edge('API', 'DB', [[400,1060],[400,1210],[340,1210],[340,1240]], 205, 1190, ['Đọc/ghi và giao dịch'], 'SQL/TCP :5432 · mạng riêng', 230);
-  d.edge('API', 'FILES', [[600,1060],[600,1210],[870,1210],[870,1240]], 1010, 1160, ['Lưu và đọc file CV'], 'HTTPS/S3 API :443 · mạng riêng', 260);
-  d.edge('API', 'AI', [[695,940],[1320,940]], 920, 855, ['Gửi văn bản đã giảm', 'thông tin nhận dạng'], 'HTTPS :443', 350);
-  d.edge('DB', 'BACKUP', [[520,1470],[520,1690]], 330, 1630, ['Backup theo lịch'], 'Kênh mã hóa', 250);
-  d.edge('FILES', 'BACKUP', [[870,1470],[870,1690]], 1080, 1630, ['Backup theo lịch'], 'Kênh mã hóa', 250);
+  d.node('WEB', 150, 85, 520, 170, ['Web App instance'], '[Container instance: HTML/CSS/JavaScript]', ['Displays the interface, accepts input,', 'and tracks progress.'], 'browser');
+  d.node('EDGE', 140, 530, 520, 200, ['Nginx'], '[Infrastructure node: reverse proxy]', ['HTTPS endpoint; serves WEB files', 'and forwards /api requests', 'to the backend.'], 'box', AMBER);
+  d.node('API', 145, 820, 550, 240, ['Screening Backend instance'], '[Container instance: Python/FastAPI]', ['One Python/FastAPI process;', 'HTTP and the RUN coordinator', 'execute in the same application.'], 'backend');
+  d.node('DB', 110, 1240, 460, 230, ['Screening Database instance'], '[Container instance: PostgreSQL]', ['PostgreSQL · dedicated volume;', 'port 5432 is available only on', 'the server private network.'], 'database');
+  d.node('FILES', 640, 1240, 460, 230, ['CV Store instance'], '[Container instance: S3-compatible storage]', ['S3-compatible service · dedicated volume;', 'the CV bucket is private.'], 'bucket');
+  d.node('AI', 1320, 830, 420, 240, ['AI Extraction Service'], '[External deployment node: HTTPS endpoint]', ['Operated by a vendor', 'outside this deployment scope.'], 'box', RED);
+  d.node('BACKUP', 450, 1690, 520, 230, ['Backup store'], '[Infrastructure node: separate from server]', ['Database and file copies share', 'one recovery point; encrypted', 'and access restricted.'], 'bucket', AMBER);
+  d.edge('WEB', 'EDGE', [[470,255],[470,530]], 990, 420, ['Loads static files and calls /api'], 'HTTPS :443', 400);
+  d.edge('EDGE', 'API', [[400,730],[400,820]], 780, 755, ['Forwards /api to backend'], 'HTTP loopback :8000', 400);
+  d.edge('API', 'DB', [[400,1060],[400,1210],[340,1210],[340,1240]], 205, 1190, ['Reads/writes and runs transactions'], 'SQL/TCP :5432 · private network', 230);
+  d.edge('API', 'FILES', [[600,1060],[600,1210],[870,1210],[870,1240]], 1010, 1160, ['Stores and reads CV files'], 'HTTPS/S3 API :443 · private network', 260);
+  d.edge('API', 'AI', [[695,940],[1320,940]], 920, 855, ['Sends text with reduced', 'identifying information'], 'HTTPS :443', 350);
+  d.edge('DB', 'BACKUP', [[520,1470],[520,1690]], 330, 1630, ['Scheduled backup'], 'Encrypted channel', 250);
+  d.edge('FILES', 'BACKUP', [[870,1470],[870,1690]], 1080, 1630, ['Scheduled backup'], 'Encrypted channel', 250);
   d.footer(1980, {
-    items: [[30, BLUE, 'Instance của container trong phạm vi'], [520, AMBER, 'Hạ tầng vận hành'], [860, RED, 'Bên ngoài hệ thống']],
-    note: 'Mũi tên nét đứt: chiều khởi tạo kết nối; nhãn nêu trách nhiệm, giao thức và cổng. Khung xám: deployment node; khung xám nét đứt: execution environment.'
+    items: [[30, BLUE, 'In-scope container instance'], [520, AMBER, 'Operational infrastructure'], [860, RED, 'External system']],
+    note: 'Dashed arrow: connection initiation direction; labels state responsibility, protocol, and port. Solid grey frame: deployment node; dashed grey frame: execution environment.'
   });
   d.write();
 }

@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1090" viewBox="0 0 1600 1090" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
-<title id="title">System Context View: Sàng lọc và xếp hạng CV theo JD</title>
-<desc id="desc">Kiến trúc đề xuất cho phân hệ sàng lọc và xếp hạng CV theo JD. Chưa triển khai backend hoặc AI. Các quan hệ được kiểm tra khớp nguồn Mermaid trong tài liệu đi kèm.</desc>
+<title id="title">System Context View: JD-based CV Screening and Ranking</title>
+<desc id="desc">Proposed architecture for JD-based CV screening and ranking. The backend and AI integration are not implemented. Relationships are verified against the Mermaid source in the accompanying document.</desc>
 <defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
 <rect width="100%" height="100%" fill="white"/>
 <polyline data-from="REC" data-to="SYS" points="245,380 245,585" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <polyline data-from="SYS" data-to="AI" points="580,655 1030,655" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<g id="REC"><title>REC · Nhân viên tuyển dụng</title><rect x="130" y="146" width="450" height="234" rx="59" fill="white" stroke="#2b8205" stroke-width="6"/><circle cx="355" cy="96" r="61" fill="white" stroke="#2b8205" stroke-width="6"/></g>
-<text x="355" y="189" fill="#2b8205" font-size="28" font-weight="700" text-anchor="middle"><tspan x="355" dy="0">Nhân viên tuyển dụng</tspan></text>
+<g id="REC"><title>REC · Recruiter</title><rect x="130" y="146" width="450" height="234" rx="59" fill="white" stroke="#2b8205" stroke-width="6"/><circle cx="355" cy="96" r="61" fill="white" stroke="#2b8205" stroke-width="6"/></g>
+<text x="355" y="189" fill="#2b8205" font-size="28" font-weight="700" text-anchor="middle"><tspan x="355" dy="0">Recruiter</tspan></text>
 <text x="355" y="216" fill="#2b8205" font-size="14" font-weight="400" text-anchor="middle"><tspan x="355" dy="0">[Person]</tspan></text>
-<text x="355" y="250" fill="#2b8205" font-size="20" font-weight="400" text-anchor="middle"><tspan x="355" dy="0">Duyệt tiêu chí, kiểm chứng kết quả</tspan><tspan x="355" dy="25">và quyết định shortlist hoặc loại.</tspan></text>
-<g id="SYS"><title>SYS · Sàng lọc và xếp hạng CV theo JD</title><rect x="130" y="585" width="450" height="250" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="355" y="623" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="355" dy="0">Sàng lọc và xếp hạng CV</tspan><tspan x="355" dy="35.84">theo JD</tspan></text>
+<text x="355" y="250" fill="#2b8205" font-size="20" font-weight="400" text-anchor="middle"><tspan x="355" dy="0">Reviews criteria and verifies results</tspan><tspan x="355" dy="25">and decides to shortlist or reject.</tspan></text>
+<g id="SYS"><title>SYS · JD-based CV Screening and Ranking</title><rect x="130" y="585" width="450" height="250" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="355" y="623" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="355" dy="0">JD-based CV Screening</tspan><tspan x="355" dy="35.84">and Ranking</tspan></text>
 <text x="355" y="685.84" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="355" dy="0">[Software System]</tspan></text>
-<text x="355" y="719.84" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="355" dy="0">Đối chiếu CV với tiêu chí đã duyệt;</tspan><tspan x="355" dy="25">cung cấp điểm, bằng chứng</tspan><tspan x="355" dy="25">và lịch sử các vòng chấm.</tspan></text>
-<g id="AI"><title>AI · Dịch vụ trích xuất AI</title><rect x="1030" y="585" width="450" height="250" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
-<text x="1255" y="623" fill="#c71025" font-size="28" font-weight="700" text-anchor="middle"><tspan x="1255" dy="0">Dịch vụ trích xuất AI</tspan></text>
+<text x="355" y="719.84" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="355" dy="0">Evaluates CVs against approved criteria;</tspan><tspan x="355" dy="25">provides scores, evidence,</tspan><tspan x="355" dy="25">and screening-run history.</tspan></text>
+<g id="AI"><title>AI · AI Extraction Service</title><rect x="1030" y="585" width="450" height="250" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="1255" y="623" fill="#c71025" font-size="28" font-weight="700" text-anchor="middle"><tspan x="1255" dy="0">AI Extraction Service</tspan></text>
 <text x="1255" y="650" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1255" dy="0">[External Software System]</tspan></text>
-<text x="1255" y="684" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1255" dy="0">Trích xuất dữ liệu từ JD và CV,</tspan><tspan x="1255" dy="25">kèm vị trí bằng chứng trong nguồn.</tspan><tspan x="1255" dy="25">Không quyết định điểm hay shortlist.</tspan></text>
+<text x="1255" y="684" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1255" dy="0">Extracts data from JDs and CVs</tspan><tspan x="1255" dy="25">with source evidence locations.</tspan><tspan x="1255" dy="25">Does not decide scores or shortlists.</tspan></text>
 <rect x="45" y="433" width="330" height="60" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="210" y="453" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="210" dy="0">Nhập JD, nạp CV, duyệt</tspan><tspan x="210" dy="25">tiêu chí và yêu cầu chấm</tspan></text>
+<text x="210" y="453" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="210" dy="0">Enters JD, uploads CVs, approves</tspan><tspan x="210" dy="25">criteria, and requests screening</tspan></text>
 <rect x="620" y="585" width="370" height="60" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="805" y="605" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="805" dy="0">Gửi văn bản cần trích xuất</tspan><tspan x="805" dy="25">và cấu trúc kết quả mong đợi</tspan></text>
-<text x="30" y="920" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">System Context View: Sàng lọc và xếp hạng CV theo JD</tspan></text>
-<text x="30" y="951" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Kiến trúc đề xuất · Chỉ phân hệ sàng lọc và xếp hạng CV theo JD · Chưa triển khai backend/AI</tspan></text>
+<text x="805" y="605" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="805" dy="0">Sends text to extract and</tspan><tspan x="805" dy="25">the expected result structure</tspan></text>
+<text x="30" y="920" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">System Context View: JD-based CV Screening and Ranking</tspan></text>
+<text x="30" y="951" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
 <rect x="30" y="974" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
-<text x="62" y="991" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · Người sử dụng</tspan></text>
+<text x="62" y="991" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · User</tspan></text>
 <rect x="360" y="974" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="392" y="991" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Phần mềm trong phạm vi</tspan></text>
+<text x="392" y="991" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Software in scope</tspan></text>
 <rect x="735" y="974" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
-<text x="767" y="991" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">Hệ thống bên ngoài</tspan></text>
-<text x="30" y="1023" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Mũi tên nét đứt: quan hệ có hướng; nhãn nêu trách nhiệm và giao thức. Khung lớn: ranh giới hệ thống/container.</tspan></text>
-<text x="30" y="1050" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: mô tả công việc · CV: hồ sơ ứng tuyển · Phong cách trình bày tham khảo các ví dụ C4 của Simon Brown (c4model.com).</tspan></text>
+<text x="767" y="991" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">External system</tspan></text>
+<text x="30" y="1023" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: directed relationship; its label states the responsibility and protocol. Large frame: system/container boundary.</tspan></text>
+<text x="30" y="1050" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
 </svg>

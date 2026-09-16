@@ -19,30 +19,30 @@ config:
     clusterBorder: "#494949"
 ---
 flowchart TB
-    subgraph CANVAS["<b>Deployment View: Sàng lọc và xếp hạng CV theo JD</b>"]
+    subgraph CANVAS["<b>Deployment View: JD-based CV Screening and Ranking</b>"]
     direction TB
-        subgraph CLIENT["<b>Máy nhân viên tuyển dụng</b> <small>[Deployment node]</small>"]
-            subgraph BROWSER["<b>Trình duyệt</b> <small>[Execution environment]</small>"]
-                WEB["<b>Web App instance</b><br/><small>[Container instance: HTML/CSS/JavaScript]</small><br/>Hiển thị, nhập liệu<br/>và theo dõi tiến trình."]
+        subgraph CLIENT["<b>Recruiter's computer</b> <small>[Deployment node]</small>"]
+            subgraph BROWSER["<b>Web browser</b> <small>[Execution environment]</small>"]
+                WEB["<b>Web App instance</b><br/><small>[Container instance: HTML/CSS/JavaScript]</small><br/>Displays the interface, accepts input,<br/>and tracks progress."]
             end
         end
-        subgraph HOST["<b>Máy chủ thử nghiệm nội bộ</b> <small>[Deployment node · Linux VM · 4 vCPU / 8 GiB]</small>"]
-            EDGE["<b>Nginx</b><br/><small>[Infrastructure node: reverse proxy]</small><br/>HTTPS endpoint; phục vụ static<br/>files của WEB và chuyển tiếp<br/>/api tới backend."]
+        subgraph HOST["<b>Internal trial server</b> <small>[Deployment node · Linux VM · 4 vCPU / 8 GiB]</small>"]
+            EDGE["<b>Nginx</b><br/><small>[Infrastructure node: reverse proxy]</small><br/>HTTPS endpoint; serves WEB static files<br/>and forwards /api to the backend."]
             subgraph APP["<b>Backend process</b> <small>[Execution environment]</small>"]
-                API["<b>Screening Backend instance</b><br/><small>[Container instance: Python/FastAPI]</small><br/>Python/FastAPI, một tiến trình;<br/>HTTP và bộ điều phối RUN<br/>chạy cùng ứng dụng."]
+                API["<b>Screening Backend instance</b><br/><small>[Container instance: Python/FastAPI]</small><br/>One Python/FastAPI process;<br/>HTTP and the RUN coordinator<br/>execute in the same application."]
             end
-            DB[("<b>Screening Database instance</b><br/><small>[Container instance: PostgreSQL]</small><br/>PostgreSQL · volume riêng;<br/>cổng 5432 chỉ mở trong<br/>mạng nội bộ máy chủ.")]
-            FILES[("<b>CV Store instance</b><br/><small>[Container instance: S3-compatible storage]</small><br/>Dịch vụ tương thích S3 ·<br/>volume riêng; bucket CV<br/>không công khai.")]
-            EDGE -.->|"Chuyển tiếp /api tới backend<br/><small>[HTTP loopback :8000]</small>"| API
-            API -.->|"Đọc/ghi và giao dịch<br/><small>[SQL/TCP :5432 · mạng riêng]</small>"| DB
-            API -.->|"Lưu và đọc file CV<br/><small>[HTTPS/S3 API :443 · mạng riêng]</small>"| FILES
+            DB[("<b>Screening Database instance</b><br/><small>[Container instance: PostgreSQL]</small><br/>PostgreSQL · dedicated volume;<br/>port 5432 is available only on<br/>the server's private network.")]
+            FILES[("<b>CV Store instance</b><br/><small>[Container instance: S3-compatible storage]</small><br/>S3-compatible service · dedicated volume;<br/>the CV bucket is private.")]
+            EDGE -.->|"Forwards /api to the backend<br/><small>[HTTP loopback :8000]</small>"| API
+            API -.->|"Reads/writes and runs transactions<br/><small>[SQL/TCP :5432 · private network]</small>"| DB
+            API -.->|"Stores and reads CV files<br/><small>[HTTPS/S3 API :443 · private network]</small>"| FILES
         end
-        AI["<b>Dịch vụ trích xuất AI</b><br/><small>[External deployment node: HTTPS endpoint]</small><br/>Do nhà cung cấp vận hành,<br/>ngoài phạm vi triển khai này."]
-        BACKUP[("<b>Kho backup</b><br/><small>[Infrastructure node: tách khỏi máy chủ]</small><br/>Bản sao DB và file theo cùng<br/>mốc dữ liệu; mã hóa và<br/>giới hạn truy cập.")]
-        WEB -.->|"Tải static files và gọi /api<br/><small>[HTTPS :443]</small>"| EDGE
-        API -.->|"Gửi văn bản đã giảm thông tin nhận dạng<br/><small>[HTTPS :443]</small>"| AI
-        DB -.->|"Backup theo lịch<br/><small>[Kênh mã hóa]</small>"| BACKUP
-        FILES -.->|"Backup theo lịch<br/><small>[Kênh mã hóa]</small>"| BACKUP
+        AI["<b>AI Extraction Service</b><br/><small>[External deployment node: HTTPS endpoint]</small><br/>Operated by a vendor outside<br/>this deployment scope."]
+        BACKUP[("<b>Backup store</b><br/><small>[Infrastructure node: separate from server]</small><br/>Database and file copies share<br/>one recovery point; encrypted<br/>and access restricted.")]
+        WEB -.->|"Loads static files and calls /api<br/><small>[HTTPS :443]</small>"| EDGE
+        API -.->|"Sends text with reduced identifying data<br/><small>[HTTPS :443]</small>"| AI
+        DB -.->|"Scheduled backup<br/><small>[Encrypted channel]</small>"| BACKUP
+        FILES -.->|"Scheduled backup<br/><small>[Encrypted channel]</small>"| BACKUP
     end
     classDef internal fill:#ffffff,color:#146ac4,stroke:#146ac4,stroke-width:3px
     classDef infra fill:#ffffff,color:#8a6a12,stroke:#8a6a12,stroke-width:3px
@@ -74,7 +74,7 @@ A solid grey frame is a device or server (deployment node); a dashed grey frame 
 
 - Only the Nginx HTTPS endpoint accepts traffic from the trial network. The database, the file store, and the backend port are not exposed directly to the browser. The prototype has no login mechanism; this environment relies on network restriction and synthetic data only.
 - Backend configuration covers the database connection string, the file store endpoint and bucket, access keys, the AI endpoint and model, timeouts, and batch limits. Secrets stay server-side, never in JavaScript or in the repository. No real secret values appear in this documentation.
-- Static files and the API share one origin to keep connectivity simple. The API serves CV files to the browser for a valid `resume_id`; it does not expose object keys as public URLs.
+- Static files and the API share one origin to keep connectivity simple. The API serves CV files only after checking the position association and, for evidence viewing, the selected run/result/CV version. It does not expose object keys as public URLs. Under [Q11](../requirements/non-functional-requirements.md), sensitive API and CV responses carry `Cache-Control: no-store`, which Nginx must preserve without caching those responses. Static assets can be cached separately. Browser storage, telemetry, notifications, and errors must not persist or expose raw CV content or contact details, as specified in [C3](c3-components.md#position-lifecycle-and-q11-responsibilities).
 - Each deployment: back up → apply tested migrations → start the backend → check the database, file store, and readiness → serve the interface. There are currently no migrations, no Docker Compose file, and no deployment pipeline; the diagram does not claim those artifacts exist.
 - Health checks distinguish "the process is alive" from "ready to serve". An AI failure causes controlled job retries or failures; it does not make previously published results unavailable for reading.
 - Daily database and file backups are stored away from the server, with a manifest linking `resume_id`, object key, and hash. Trial targets: RPO at most 24 hours, RTO at most 4 hours; both can be confirmed only by rehearsing a restore.

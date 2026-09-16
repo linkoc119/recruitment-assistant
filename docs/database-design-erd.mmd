@@ -1,0 +1,178 @@
+---
+title: CV Screening Database — 13 Tables (Proposed)
+config:
+  layout: elk
+---
+erDiagram
+  skills {
+    bigint id PK
+    varchar name
+    varchar category
+  }
+  jobs {
+    bigint id PK,FK
+    varchar title
+    varchar level
+    text jd_raw_text
+    job_status status
+    integer criteria_revision FK
+    bigint published_run_id FK
+    timestamptz created_at
+  }
+  job_criteria_versions {
+    bigint id PK
+    bigint job_id FK
+    integer revision
+    text jd_snapshot
+    varchar dictionary_version
+    timestamptz approved_at
+    timestamptz created_at
+  }
+  job_requirements {
+    bigint id PK
+    bigint criteria_version_id FK
+    varchar criterion_key
+    requirement_kind kind
+    bigint skill_id FK
+    varchar canonical_skill_name
+    varchar label
+    requirement_type req_type
+    decimal weight
+    numeric min_years
+    degree_level min_degree
+    varchar source
+    jsonb jd_evidence
+  }
+  candidates {
+    bigint id PK
+    varchar full_name
+    varchar email
+    varchar phone
+    timestamptz created_at
+  }
+  resumes {
+    bigint id PK
+    bigint candidate_id FK
+    integer version
+    varchar file_name
+    varchar object_key
+    char file_hash
+    varchar media_type
+    bigint size_bytes
+    parse_status status
+    varchar error_code
+    timestamptz created_at
+  }
+  position_resumes {
+    bigint job_id PK,FK
+    bigint resume_id PK,FK
+    timestamptz uploaded_at
+  }
+  resume_snapshots {
+    bigint id PK
+    bigint resume_id FK
+    text raw_text
+    jsonb extraction
+    varchar parser_version
+    varchar model_version
+    varchar prompt_version
+    varchar schema_version
+    varchar dictionary_version
+    timestamptz created_at
+  }
+  resume_skills {
+    bigint id PK
+    bigint snapshot_id FK
+    bigint skill_id FK
+    varchar canonical_name
+    varchar raw_text
+    jsonb evidence
+    numeric confidence
+  }
+  screening_runs {
+    bigint id PK
+    bigint job_id FK
+    integer round
+    bigint base_run_id FK
+    bigint criteria_version_id FK
+    varchar policy_version
+    jsonb policy_snapshot
+    run_status status
+    varchar idempotency_key
+    char payload_hash
+    varchar lease_owner
+    timestamptz lease_expires_at
+    bigint lease_token
+    varchar error_code
+    timestamptz created_at
+    timestamptz started_at
+    timestamptz finished_at
+    timestamptz published_at
+  }
+  screening_run_items {
+    bigint run_id PK,FK
+    bigint job_id FK
+    bigint resume_id PK,FK
+    bigint snapshot_id FK
+    item_status status
+    integer attempts
+    varchar error_code
+    varchar error_phase
+    timestamptz updated_at
+  }
+  screenings {
+    bigint id PK
+    bigint run_id FK
+    bigint job_id FK
+    bigint resume_id FK
+    bigint criteria_version_id FK
+    numeric total_score
+    decimal displayed_total
+    numeric skill_score
+    numeric experience_score
+    numeric education_score
+    numeric semantic_score
+    boolean passed_mandatory
+    integer rank_in_job
+    text summary
+    decision_status status
+    bigint result_version
+    timestamptz decision_at
+    integer scored_round
+    boolean is_latest
+    timestamptz scored_at
+  }
+  screening_details {
+    bigint id PK
+    bigint screening_id FK
+    bigint criteria_version_id FK
+    bigint job_requirement_id FK
+    match_status status
+    boolean criterion_passed
+    varchar reason_code
+    text reason
+    numeric score_contribution
+    decimal displayed_contribution
+    jsonb evidence
+  }
+  jobs ||..o{ job_criteria_versions : "job_id"
+  job_criteria_versions |o..o| jobs : "id, criteria_revision"
+  screening_runs |o..o| jobs : "published_run_id, id"
+  job_criteria_versions ||..o{ job_requirements : "criteria_version_id"
+  skills |o..o{ job_requirements : "skill_id"
+  candidates ||..o{ resumes : "candidate_id"
+  jobs ||..o{ position_resumes : "job_id"
+  resumes ||..o{ position_resumes : "resume_id"
+  resumes ||..o{ resume_snapshots : "resume_id"
+  resume_snapshots |o..o{ resume_skills : "snapshot_id"
+  skills |o..o{ resume_skills : "skill_id"
+  jobs ||..o{ screening_runs : "job_id"
+  job_criteria_versions ||..o{ screening_runs : "criteria_version_id, job_id"
+  screening_runs |o..o{ screening_runs : "base_run_id, job_id"
+  screening_runs ||..o{ screening_run_items : "run_id, job_id"
+  position_resumes ||..o{ screening_run_items : "job_id, resume_id"
+  resume_snapshots |o..o{ screening_run_items : "snapshot_id, resume_id"
+  screening_runs ||..o{ screenings : "run_id, job_id"
+  screening_run_items ||..o| screenings : "run_id, resume_id"
+  screenings ||..o{ screening_details : "screening_id, criteria_version_id"
+  job_requirements ||..o{ screening_details : "job_requirement_id, criteria_version_id"

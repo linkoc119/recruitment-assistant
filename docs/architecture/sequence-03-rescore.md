@@ -8,60 +8,66 @@
 
 ```mermaid
 ---
-title: "SEQ-03 — Sửa tiêu chí và chấm lại — Đề xuất"
+title: "SEQ-03 — Criteria Revision and Rescoring — Proposed"
 ---
 sequenceDiagram
     autonumber
-    actor REC as Nhân viên tuyển dụng
+    actor REC as Recruiter
     participant WEB as WEB · Web App
     participant HTTP as HTTP · API Controllers
     participant CRIT as CRIT · Criteria Service
     participant RUN as RUN · Screening Coordinator
     participant SCORE as SCORE · Scoring Engine
     participant REVIEW as REVIEW · Ranking and Review Service
-    participant DB as DB qua DATA
-    REC->>WEB: Đổi trọng số hoặc bắt buộc/ưu tiên
-    WEB->>HTTP: PUT criteria với expected_revision
-    HTTP->>CRIT: Kiểm tra và lưu revision mới
-    CRIT->>DB: Append snapshot tiêu chí R2, không sửa snapshot R1
-    CRIT-->>WEB: Revision mới, kết quả hiện tại dựa trên tiêu chí cũ
-    REC->>WEB: Xem thay đổi và xác nhận chấm lại
+    participant DB as DB via DATA
+    REC->>WEB: Change weight or mandatory/preferred status
+    WEB->>HTTP: PUT criteria with expected_revision
+    HTTP->>CRIT: Validate and store new revision
+    CRIT->>DB: Append R2 criteria snapshot without modifying R1
+    CRIT-->>WEB: New revision, current results still use old criteria
+    REC->>WEB: Review changes and confirm rescoring
     WEB->>HTTP: POST screening-runs, base_run_id, revision, idempotency key
-    HTTP->>RUN: Tạo R2 từ tập CV đã thành công của R1
-    RUN->>DB: Transaction kiểm tra base run, active run và đóng băng đầu vào
-    alt Yêu cầu cũ hoặc đang có tác vụ khác
-        DB-->>RUN: Xung đột, không tạo thêm vòng
-        RUN-->>WEB: 409 và ID vòng hiện hành/tác vụ đang chạy
-    else Yêu cầu hợp lệ
-        DB-->>RUN: run_id R2 queued, R1 vẫn published
-        RUN-->>WEB: 202 Accepted và run_id R2
-        RUN->>DB: Nhận lease, đọc snapshot CV của R1 và tiêu chí R2
-        loop Mỗi CV trong tập chấm lại đã đóng băng
-            RUN->>SCORE: Snapshot CV cũ, criteria R2, cùng scoring policy
-            SCORE-->>RUN: Điểm mới, pass/fail, đóng góp và bằng chứng
-            RUN->>DB: Lưu kết quả staged của R2 và tiến trình
+    HTTP->>RUN: Create R2 from R1's successful CV set
+    RUN->>DB: Check base/active runs and freeze inputs in transaction
+    alt Stale request or another job is active
+        DB-->>RUN: Conflict, no additional run created
+        RUN-->>WEB: 409 and current run/active job ID
+    else Valid request
+        DB-->>RUN: R2 run_id queued, R1 remains published
+        RUN-->>WEB: 202 Accepted and R2 run_id
+        RUN->>DB: Acquire lease, then read R1 CV snapshots and R2 criteria
+        loop Each CV in the frozen rescore set
+            RUN->>SCORE: Existing CV snapshot, R2 criteria, same scoring policy
+            SCORE-->>RUN: New score, eligibility, contributions, and evidence
+            RUN->>DB: Store R2 staged result and progress
         end
-        Note over RUN,DB: WEB polling R2 qua HTTP, R1 vẫn đọc được trong lúc chạy
-        alt Có item lỗi sau retry hoặc run không hoàn tất
-            RUN->>DB: Đánh dấu R2 failed, không đổi published run
-            RUN-->>WEB: Thông báo lỗi qua polling, giữ ranking R1
-        else Mọi item của tập so sánh đều thành công
-            RUN->>DB: BEGIN, khóa vị trí, kiểm tra base_run_id và lease token
+        Note over RUN,DB: WEB polls R2 via HTTP while R1 remains readable
+        alt An item fails after retries or the run cannot complete
+            RUN->>DB: Mark R2 failed and keep published run unchanged
+            RUN-->>WEB: Report failure through polling and retain R1 ranking
+        else Every item in the comparison set succeeds
+            RUN->>DB: BEGIN, lock position, check base_run_id and lease token
             RUN->>DB: R1 latest=false, R2 latest=true, published_run_id=R2
-            RUN->>DB: R2 completed, COMMIT toàn bộ cùng giao dịch
-            RUN-->>WEB: Hoàn tất qua polling, có thể xem R2
+            RUN->>DB: Mark R2 completed and COMMIT atomically
+            RUN-->>WEB: Completion through polling, R2 is available
         end
     end
-    opt R2 đã được công bố
-        REC->>WEB: So sánh R1 và R2
-        WEB->>HTTP: GET comparison với hai run_id cụ thể
-        HTTP->>REVIEW: So sánh cùng resume_id/snapshot
-        REVIEW->>DB: Đọc điểm, criteria, policy và quyết định của hai vòng
-        REVIEW-->>WEB: Chênh điểm, hạng, pass/fail và tiêu chí thay đổi
+    opt R2 has been published
+        REC->>WEB: Compare R1 and R2
+        WEB->>HTTP: GET comparison with two explicit run_ids
+        HTTP->>REVIEW: Validate both runs belong to the requested position via DATA
+        break Missing run or mismatched position context
+            REVIEW-->>WEB: Generic 404 without other-position data
+        end
+        HTTP->>REVIEW: Compare matching resume_id/snapshot pairs
+        REVIEW->>DB: Read scores, criteria, policy, and decisions for both runs
+        REVIEW-->>WEB: Score/rank/eligibility deltas and changed criteria
     end
 ```
 
 ## Rules and exceptions
+
+Under [Q11](../requirements/non-functional-requirements.md), revision, source-run, progress, and comparison requests include the position context, which is checked before returning data or creating a run. Comparison responses and historical viewers follow the same no-store and sensitive-data handling rules as [SEQ-02](sequence-02-review.md). Position lifecycle remains display/filter only and adds no rescore prerequisite.
 
 The component names match C3; the database is reached through DATA. A solid line is a call and a dashed line a result; responses to WEB are collapsed through HTTP. `alt` is a choice, `loop` an iteration, and `opt` a part that only occurs when its condition holds.
 

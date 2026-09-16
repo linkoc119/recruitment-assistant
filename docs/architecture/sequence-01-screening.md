@@ -8,94 +8,104 @@
 
 ```mermaid
 ---
-title: "SEQ-01 — Thiết lập JD và sàng lọc lần đầu — Đề xuất"
+title: "SEQ-01 — JD Setup and Initial Screening — Proposed"
 ---
 sequenceDiagram
     autonumber
-    actor REC as Nhân viên tuyển dụng
+    actor REC as Recruiter
     participant WEB as WEB · Web App
     participant API as API · HTTP + CRIT + CV
     participant RUN as RUN · Screening Coordinator
-    participant AI as AI qua EXTRACT
+    participant AI as AI via EXTRACT
     participant SCORE as SCORE · Scoring Engine
-    participant DB as DB qua DATA
-    participant FILES as FILES qua DATA
-    REC->>WEB: Nhập vị trí và JD
-    WEB->>API: POST /jobs và POST /jobs/{id}/criteria-draft
-    API->>DB: Lưu vị trí và JD gốc
-    API->>AI: Trích xuất tiêu chí từ văn bản JD
-    alt AI lỗi hoặc dữ liệu không hợp lệ
-        AI-->>API: Lỗi có cấu trúc
-        API-->>WEB: Báo lỗi và cho phép nhập tiêu chí thủ công
-    else Dữ liệu hợp lệ
-        AI-->>API: Tiêu chí nháp kèm nguồn JD
-        API-->>WEB: Đề xuất để người dùng kiểm tra
+    participant DB as DB via DATA
+    participant FILES as FILES via DATA
+    REC->>WEB: Enter position and JD
+    WEB->>API: POST /jobs with title and original JD
+    API->>DB: Store position and original JD with lifecycle status draft
+    API-->>WEB: 201, job_id and stored status draft
+    opt View or filter positions
+        WEB->>API: GET /jobs with optional lifecycle status filter
+        API->>DB: Read positions matching draft, open, or closed
+        API-->>WEB: Positions with stored status for list and workspace
     end
-    REC->>WEB: Sửa và xác nhận bộ tiêu chí
-    WEB->>API: PUT criteria với expected_revision
-    API->>DB: Kiểm tra version, lưu revision bất biến
-    API-->>WEB: criteria_revision mới
-    REC->>WEB: Chọn các CV và tải lên
-    loop Mỗi file
-        WEB->>API: POST resumes, file multipart
-        API->>API: Kiểm tra định dạng, dung lượng và SHA-256
-        API->>DB: Tra hash đã tồn tại
-        alt File trùng
-            API-->>WEB: resume_id đã có, không tạo bản sao
-        else File mới hợp lệ
-            API->>FILES: Lưu bằng object key duy nhất
-            API->>DB: Lưu metadata và phiên bản CV
-            API-->>WEB: resume_id, trạng thái uploaded
-        else File không hợp lệ
-            API-->>WEB: Lỗi riêng của file
+    WEB->>API: POST /jobs/{id}/criteria-draft
+    API->>AI: Extract criteria from JD text
+    alt AI failure or invalid data
+        AI-->>API: Structured error
+        API-->>WEB: Report failure and allow manual criteria entry
+    else Valid data
+        AI-->>API: Draft criteria with JD evidence
+        API-->>WEB: Suggestions for recruiter review
+    end
+    REC->>WEB: Edit and approve the criteria set
+    WEB->>API: PUT criteria with expected_revision
+    API->>DB: Check version and store immutable revision
+    API-->>WEB: New criteria_revision
+    REC->>WEB: Select and upload CVs
+    loop Each file
+        WEB->>API: POST resumes, job_id and file multipart
+        API->>API: Validate format, size, and SHA-256
+        API->>DB: Look up existing hash
+        alt Duplicate file
+            API-->>WEB: Existing resume_id, no copy created
+        else Valid new file
+            API->>FILES: Store under a unique object key
+            API->>DB: Store metadata and CV version
+            API-->>WEB: resume_id and uploaded status
+        else Invalid file
+            API-->>WEB: File-specific error
         end
     end
-    REC->>WEB: Bắt đầu sàng lọc các CV hợp lệ
+    REC->>WEB: Start screening valid CVs
     WEB->>API: POST screening-runs, revision, resume_ids, idempotency key
-    API->>RUN: Tạo vòng đầu
-    RUN->>DB: Transaction tạo run queued và đóng băng đầu vào
+    API->>RUN: Create initial run
+    RUN->>DB: Create queued run transaction and freeze inputs
     API-->>WEB: 202 Accepted, run_id
-    par Xử lý nền trong backend
-    RUN->>DB: Nhận lease, chuyển run sang running
-    loop Mỗi CV trong snapshot của run
-        RUN->>API: CV đọc văn bản của phiên bản đã chọn
-        API->>FILES: Lấy file gốc
-        API-->>RUN: Văn bản hoặc lỗi đọc file
-        opt Văn bản đọc được
-            RUN->>AI: Trích xuất dữ liệu CV
-            AI-->>RUN: Dữ liệu đã kiểm tra hoặc lỗi
+    par Background processing in backend
+    RUN->>DB: Acquire lease and move run to running
+    loop Each CV in the run snapshot
+        RUN->>API: Read text from selected CV version
+        API->>FILES: Retrieve original file
+        API-->>RUN: Text or file-read error
+        opt Readable text
+            RUN->>AI: Extract CV data
+            AI-->>RUN: Validated data or error
         end
-        alt Đọc file hoặc trích xuất thất bại sau retry
-            RUN->>DB: Ghi item failed, nguyên nhân, cập nhật tiến trình
-        else Đầu vào đủ điều kiện chấm
-            RUN->>DB: Lưu snapshot trích xuất và phiên bản model
-            RUN->>SCORE: Chấm snapshot CV với criteria và policy
-            SCORE-->>RUN: Điểm, pass/fail, đóng góp, bằng chứng
-            RUN->>DB: Lưu kết quả staged và đánh dấu item succeeded
+        alt File read or extraction fails after retries
+            RUN->>DB: Mark item failed, store cause, and update progress
+        else Input is eligible for scoring
+            RUN->>DB: Store extraction snapshot and model version
+            RUN->>SCORE: Score CV snapshot against criteria and policy
+            SCORE-->>RUN: Score, eligibility, contributions, and evidence
+            RUN->>DB: Store staged result and mark item succeeded
         end
     end
-    alt Có ít nhất một CV thành công, mọi item đã kết thúc
-        RUN->>DB: Transaction publish run và đánh dấu kết quả latest
-    else Không có kết quả thành công
-        RUN->>DB: Đánh dấu run failed, không công bố ranking
+    alt At least one CV succeeded and every item is terminal
+        RUN->>DB: Publish run transaction and mark results current
+    else No successful result
+        RUN->>DB: Mark run failed and do not publish ranking
     end
-    and Theo dõi tiến trình từ giao diện
-    loop Trong khi tác vụ chưa kết thúc
+    and Track progress from the interface
+    loop While the job is not terminal
         WEB->>API: GET screening-runs/{run_id}
-        API->>RUN: Đọc tiến trình
-        RUN->>DB: Đọc trạng thái đã lưu
-        API-->>WEB: Tổng, thành công, lỗi, còn chờ và trạng thái run
+        API->>RUN: Read progress
+        RUN->>DB: Read persisted state
+        API-->>WEB: Total, succeeded, failed, pending, and run status
     end
     end
-    REC->>WEB: Xem kết quả
+    REC->>WEB: View results
     WEB->>API: GET jobs/{id}/ranking
-    API->>DB: REVIEW đọc published run qua DATA
-    API-->>WEB: Ranking, run_id, tiêu chí đã dùng và danh sách lỗi
+    API->>DB: REVIEW reads published run via DATA
+    API-->>WEB: Ranking, run_id, criteria used, and failure list
 ```
 
 ## Rules and exceptions
 
-- The `API` lane collapses the `HTTP`, `CRIT`, and `CV` components into their container; `RUN` and `SCORE` are kept separate because the flow turns on their interaction. Participants annotated `qua DATA` / `qua EXTRACT` ("via DATA" / "via EXTRACT") collapse the C3 adapter calls to keep the diagram readable; no service bypasses the repository on its own. RUN is a module inside the API, not a separate process or service. A solid line is a request, a dashed line a response; `alt` is a conditional branch and `loop` an iteration.
+- [US-01 AC-4](../requirements/README.md#us-01--create-position-and-jd): CRIT owns position creation and status reads through DATA. New positions start as `draft`; stored `draft`/`open`/`closed` status is displayed and filterable, with no transition control or API command in v1. Lifecycle status does not gate screening.
+- [Q11](../requirements/non-functional-requirements.md): uploads and run reads carry the position context. The API checks each selected CV/run belongs to that position before accepting or returning data. WEB keeps raw CV/contact data out of URLs, telemetry labels, notifications, errors, and persistent storage. Failure messages contain safe codes/IDs, not file contents or contact details. Sensitive responses are not cached.
+
+- The `API` lane collapses the `HTTP`, `CRIT`, and `CV` components into their container; `RUN` and `SCORE` are kept separate because the flow turns on their interaction. Participants annotated `via DATA` or `via EXTRACT` collapse the C3 adapter calls to keep the diagram readable; no service bypasses the repository on its own. RUN is a module inside the API, not a separate process or service. A solid line is a request, a dashed line a response; `alt` is a conditional branch and `loop` an iteration.
 - The `par` block shows background processing and polling happening concurrently. WEB does not have to wait for scoring to finish before asking for progress; once the run ends, the interface can fetch the results or display the error.
 - A missing, invalid, or superseded criteria set returns `422`/`409` and no job is created. Resending the same idempotency key with the same payload returns the same run; a different payload returns `409`.
 - A PDF with no text layer is flagged as needing reprocessing; automatic OCR is not part of this first proposal. A failed file is never counted as a candidate who did not meet the criteria.

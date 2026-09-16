@@ -15,22 +15,22 @@
 
 ```mermaid
 ---
-title: "C2 — Container: Sàng lọc CV theo JD — Đề xuất"
+title: "C2 — Container: CV Screening against a JD — Proposed"
 ---
 flowchart TB
-    REC["REC · Nhân viên tuyển dụng<br/>[Person]<br/>Duyệt tiêu chí, kết quả và quyết định"]
-    subgraph SYS["SYS · Sàng lọc và xếp hạng CV theo JD — Software System đề xuất"]
-        WEB["WEB · Web App<br/>[Container · HTML/CSS/JavaScript]<br/>7 màn hình, xem CV và theo dõi tiến trình"]
-        API["API · Screening Backend<br/>[Container · Python/FastAPI]<br/>API, điều phối tác vụ bền vững, chấm điểm và lịch sử"]
-        DB[("DB · Screening Database<br/>[Container · PostgreSQL]<br/>Tiêu chí, phiên bản đầu vào, tác vụ và kết quả")]
-        FILES[("FILES · CV Store<br/>[Container · S3-compatible object storage]<br/>Giữ file CV gốc trong bucket riêng tư")]
-        WEB -->|"Lệnh, truy vấn và polling · HTTPS/JSON; CV · multipart"| API
-        API -->|"Đọc/ghi dữ liệu và giao dịch · SQL/TCP"| DB
-        API -->|"Lưu/đọc file theo object key · HTTPS/S3 API"| FILES
+    REC["REC · Recruiter<br/>[Person]<br/>Reviews criteria and results and records decisions"]
+    subgraph SYS["SYS · JD-based CV Screening and Ranking — Proposed Software System"]
+        WEB["WEB · Web App<br/>[Container · HTML/CSS/JavaScript]<br/>Presents the workflow, CV viewer, and progress"]
+        API["API · Screening Backend<br/>[Container · Python/FastAPI]<br/>API, durable-job coordination, scoring, and history"]
+        DB[("DB · Screening Database<br/>[Container · PostgreSQL]<br/>Criteria, input snapshots, jobs, and results")]
+        FILES[("FILES · CV Store<br/>[Container · S3-compatible object storage]<br/>Stores original CV files in a private bucket")]
+        WEB -->|"Commands, queries, and polling · HTTPS/JSON; CV · multipart"| API
+        API -->|"Reads/writes data and transactions · SQL/TCP"| DB
+        API -->|"Stores/reads files by object key · HTTPS/S3 API"| FILES
     end
-    AI["AI · Dịch vụ trích xuất AI<br/>[External Software System · HTTPS API]<br/>Trích xuất dữ liệu JD/CV có bằng chứng"]
-    REC -->|"Thao tác và xem kết quả · trình duyệt"| WEB
-    API -->|"Gửi văn bản; nhận dữ liệu có cấu trúc · HTTPS/JSON"| AI
+    AI["AI · AI Extraction Service<br/>[External Software System · HTTPS API]<br/>Extracts evidenced JD and CV data"]
+    REC -->|"Interacts with the workflow and views results · browser"| WEB
+    API -->|"Sends text; receives structured data · HTTPS/JSON"| AI
     classDef person fill:#fff,color:#2b8205,stroke:#2b8205,stroke-width:3px
     classDef internal fill:#fff,color:#146ac4,stroke:#146ac4,stroke-width:3px
     classDef external fill:#fff,color:#c71025,stroke:#c71025,stroke-width:3px
@@ -46,13 +46,19 @@ flowchart TB
 
 | ID | Responsibility | Boundary |
 |---|---|---|
-| WEB | Rendering, data entry, action confirmation, job polling | Holds no AI key, computes no authoritative score, has no direct database access |
-| API | Validates input; runs the pipeline; returns rankings; publishes new runs; serves files to the CV viewer | One modular backend, not a set of microservices |
-| DB | Business data, immutable snapshots, job state, and the run-publication transaction | Built on the 8-table model; requires the extensions listed in arc42 §8 |
+| WEB | Rendering, position-status display/filter, data entry, action confirmation, job polling | Holds no AI key, computes no authoritative score, has no direct database access; applies Q11 data-handling rules |
+| API | Creates/reads positions; validates input and position context; runs the pipeline; returns rankings; publishes new runs; serves files to the CV viewer | One modular backend; no position-status transition operation in v1 |
+| DB | Position metadata and stored lifecycle status, immutable snapshots, job state, and the run-publication transaction | Defined by the 13-table DBML and database-design.md; transaction/immutability enforcement requires implementation |
 | FILES | Original PDF/DOCX files, identified by object key and hash | Private bucket; in this design WEB reads through the API |
 | AI | Extracts criteria, CV information, and citation positions | Output is untrusted by default; the API validates the schema and cross-checks it against the source text |
 
 A dashed arrow marks the party that initiates the call; return values travel over the same connection and are not drawn separately. Dashed does not mean asynchronous processing. The green person figure is a user; the blue frame encloses the system's containers; the red box is an external system. The window icon is the Web App, the terminal prompt is the backend, the cylinder is the database, and the bucket shape is the file store. The accompanying type/technology labels keep the diagram readable when printed without colour. HTTP(S) is the web protocol; JSON is the data format; SQL is the database query interface; the S3 API is the object-storage interface. "Container" here is the C4 unit of application or data store, not necessarily a Docker container.
+
+## Position lifecycle and UI data exposure
+
+Under [US-01 AC-4](../requirements/README.md#us-01--create-position-and-jd), API creates each position with stored lifecycle status `draft`. WEB displays the stored `draft`, `open`, or `closed` status in the list and workspace and offers a list filter. API validates the filter and DB supplies the stored value. V1 exposes no lifecycle transition command or UI control. This status is distinct from screening-run state and candidate decisions and introduces no additional screening prerequisite.
+
+Under [Q11](../requirements/non-functional-requirements.md), WEB keeps raw CV content and contact details out of URLs, analytics labels, notifications, client-side errors, and persistent browser storage (including localStorage, IndexedDB, and persistent caches). Sensitive viewing data is held only for the active view and released when leaving it. API checks the requested position context before returning run, result, or CV data, including file content. Private storage and opaque IDs alone do not enforce this relationship. See [C3 responsibilities](c3-components.md#position-lifecycle-and-q11-responsibilities) and [SEQ-02](sequence-02-review.md).
 
 ## Background processing at project scale
 

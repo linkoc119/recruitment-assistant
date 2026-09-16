@@ -15,39 +15,39 @@
 
 ```mermaid
 ---
-title: "C3 — Component: Screening Backend — Đề xuất"
+title: "C3 — Component: Screening Backend — Proposed"
 ---
 flowchart TB
-    WEB["WEB · Web App<br/>[Container · HTML/CSS/JavaScript]<br/>Gửi lệnh và xem kết quả"]
-    subgraph API["API · Screening Backend — Container Python/FastAPI đề xuất"]
-        HTTP["HTTP · API Controllers<br/>[Component · FastAPI routers]<br/>Kiểm tra request, phiên bản và trả HTTP"]
-        CRIT["CRIT · Criteria Service<br/>[Component · Python]<br/>JD, duyệt và đóng băng bộ tiêu chí"]
-        CV["CV · Resume Service<br/>[Component · Python/PDF-DOCX parser]<br/>File, hash, phiên bản và văn bản CV"]
-        RUN["RUN · Screening Coordinator<br/>[Component · Python async tasks]<br/>Tác vụ bền vững, retry và công bố vòng"]
-        SCORE["SCORE · Scoring Engine<br/>[Component · Python domain module]<br/>Lọc bắt buộc, điểm và đóng góp tiêu chí"]
-        REVIEW["REVIEW · Ranking and Review Service<br/>[Component · Python]<br/>Xếp hạng, bằng chứng, quyết định và so sánh"]
-        EXTRACT["EXTRACT · Extraction Adapter<br/>[Component · Python HTTP client]<br/>Gọi AI, kiểm tra schema và bằng chứng"]
-        DATA["DATA · Repositories<br/>[Component · Python SQL/S3 clients]<br/>Truy cập dữ liệu, file và ranh giới giao dịch"]
-        HTTP -->|"Yêu cầu trích xuất hoặc lưu tiêu chí · gọi hàm"| CRIT
-        HTTP -->|"Nạp hoặc đọc file CV · gọi hàm"| CV
-        HTTP -->|"Tạo tác vụ và đọc tiến trình · gọi hàm"| RUN
-        HTTP -->|"Đọc kết quả và ghi quyết định · gọi hàm"| REVIEW
-        CRIT -->|"Trích xuất JD · gọi hàm"| EXTRACT
-        CRIT -->|"Lưu revision tiêu chí · gọi hàm"| DATA
-        CV -->|"Lưu file, hash và phiên bản · gọi hàm"| DATA
-        RUN -->|"Đọc văn bản của phiên bản CV · gọi hàm"| CV
-        RUN -->|"Trích xuất CV chưa có snapshot · gọi hàm"| EXTRACT
-        RUN -->|"Chấm snapshot theo policy · gọi hàm"| SCORE
-        RUN -->|"Tác vụ, snapshot và publish transaction · gọi hàm"| DATA
-        REVIEW -->|"Đọc vòng, bằng chứng và ghi quyết định · gọi hàm"| DATA
+    WEB["WEB · Web App<br/>[Container · HTML/CSS/JavaScript]<br/>Sends commands and displays results"]
+    subgraph API["API · Screening Backend — Proposed Python/FastAPI Container"]
+        HTTP["HTTP · API Controllers<br/>[Component · FastAPI routers]<br/>Validates requests, context, and versions"]
+        CRIT["CRIT · Criteria Service<br/>[Component · Python]<br/>Manages positions, JDs, and criteria revisions"]
+        CV["CV · Resume Service<br/>[Component · Python/PDF-DOCX parser]<br/>Manages files, hashes, versions, and CV text"]
+        RUN["RUN · Screening Coordinator<br/>[Component · Python async tasks]<br/>Coordinates durable jobs, retries, and publication"]
+        SCORE["SCORE · Scoring Engine<br/>[Component · Python domain module]<br/>Evaluates eligibility, scores, and criterion contributions"]
+        REVIEW["REVIEW · Ranking and Review Service<br/>[Component · Python]<br/>Provides rankings, evidence, decisions, and comparisons"]
+        EXTRACT["EXTRACT · Extraction Adapter<br/>[Component · Python HTTP client]<br/>Calls AI and validates schemas and source evidence"]
+        DATA["DATA · Repositories<br/>[Component · Python SQL/S3 clients]<br/>Provides data/file access and transaction boundaries"]
+        HTTP -->|"Creates/reads positions and manages criteria · function call"| CRIT
+        HTTP -->|"Uploads or reads a CV file · function call"| CV
+        HTTP -->|"Creates jobs and reads progress · function call"| RUN
+        HTTP -->|"Reads results and records decisions · function call"| REVIEW
+        CRIT -->|"Extracts JD data · function call"| EXTRACT
+        CRIT -->|"Reads/writes positions and criteria · function call"| DATA
+        CV -->|"Stores file, hash, and version · function call"| DATA
+        RUN -->|"Reads text from the selected CV version · function call"| CV
+        RUN -->|"Extracts a CV without a snapshot · function call"| EXTRACT
+        RUN -->|"Scores a snapshot under the policy · function call"| SCORE
+        RUN -->|"Stores jobs and snapshots and publishes transactionally · function call"| DATA
+        REVIEW -->|"Reads runs/evidence and records decisions · function call"| DATA
     end
-    DB[("DB · Screening Database<br/>[Container · PostgreSQL]<br/>Dữ liệu, tác vụ và lịch sử")]
-    FILES[("FILES · CV Store<br/>[Container · S3-compatible storage]<br/>File CV gốc riêng tư")]
-    AI["AI · Dịch vụ trích xuất AI<br/>[External Software System · HTTPS API]<br/>Trả dữ liệu JD/CV có cấu trúc"]
-    WEB -->|"HTTPS/JSON hoặc multipart"| HTTP
-    DATA -->|"Đọc/ghi và giao dịch · SQL/TCP"| DB
-    DATA -->|"Lưu/đọc file · HTTPS/S3 API"| FILES
-    EXTRACT -->|"Trích xuất văn bản · HTTPS/JSON"| AI
+    DB[("DB · Screening Database<br/>[Container · PostgreSQL]<br/>Business data, jobs, and history")]
+    FILES[("FILES · CV Store<br/>[Container · S3-compatible storage]<br/>Private original CV files")]
+    AI["AI · AI Extraction Service<br/>[External Software System · HTTPS API]<br/>Returns structured JD and CV data"]
+    WEB -->|"HTTPS/JSON or multipart"| HTTP
+    DATA -->|"Reads/writes and runs transactions · SQL/TCP"| DB
+    DATA -->|"Stores/reads files · HTTPS/S3 API"| FILES
+    EXTRACT -->|"Extracts text data · HTTPS/JSON"| AI
     classDef internal fill:#fff,color:#146ac4,stroke:#146ac4,stroke-width:3px
     classDef neighbour fill:#fff,color:#146ac4,stroke:#146ac4,stroke-width:3px
     classDef external fill:#fff,color:#c71025,stroke:#c71025,stroke-width:3px
@@ -69,8 +69,8 @@ A dashed arrow runs from caller to provider and states whether the call is inter
 
 | Component | Main contract | Failure cases |
 |---|---|---|
-| HTTP | Valid request → service call; response carries the ID and version | `422` for invalid data, `409` for a version or job conflict |
-| CRIT | JD → draft criteria; user approval → an immutable revision | Too few criteria, weights that do not sum correctly, edits to a superseded revision |
+| HTTP | Valid request and position context → scoped service call; response carries the ID and version | `422` for invalid data, generic `404` for context mismatch, `409` for a version or job conflict |
+| CRIT | Creates/reads positions and filters stored status; JD → draft criteria; user approval → an immutable revision | Invalid position input/status filter, too few criteria, invalid weights, edits to a superseded revision |
 | CV | Valid file → `resume_id`, hash, object key, status | Corrupt file, size limit exceeded, duplicate hash; never merges people on matching names alone |
 | RUN | Input revision + CV list → `run_id`, progress, published run | Bounded retries, lease expiry, no CV processed successfully |
 | SCORE | CV snapshot + criteria + policy → score, pass/fail, contributions | Missing data is recorded explicitly; an invalid policy is rejected |
@@ -79,5 +79,15 @@ A dashed arrow runs from caller to provider and states whether the call is inter
 | DATA | Repository methods plus the transaction boundary | Database rollback; compensating deletion of written files when the metadata cannot be saved |
 
 Calls into DATA are shown at the shared repository level; no service calls the database directly. Background processing uses `RUN` inside the same API container — no worker container has been left out of the diagram.
+
+## Position lifecycle and Q11 responsibilities
+
+`CRIT` also owns position metadata and the original JD in this subsystem. Through DATA, it creates a position with status `draft`, reads position details, and lists positions with an optional `draft`/`open`/`closed` filter. HTTP validates the filter, returns stored status, and exposes no status-transition operation. WEB displays and filters status without allowing edits. Run state and decision state remain separate. This implements [US-01 AC-4](../requirements/README.md#us-01--create-position-and-jd) without adding a recruitment lifecycle workflow.
+
+For [Q11](../requirements/non-functional-requirements.md), HTTP requires the position context on resource requests and passes it to the responsible service. RUN checks run membership, REVIEW checks run/result membership (and both runs for comparison), and CV checks the selected CV's association with the position. For an evidence viewer, CV also checks that the requested version is the one referenced by the selected result and run. DATA performs these scoped lookups before returning sensitive data or resolving a file object key. A mismatch returns a generic `404` without content or metadata from the other position. This context check does not replace future user authorization.
+
+WEB excludes raw CV content and contact details from URLs, analytics labels, notifications, error messages, and persistent storage. HTTP returns sanitized error codes and correlation IDs, never submitted sensitive values. CV content and sensitive API responses use `Cache-Control: no-store`; WEB must not persist these responses in localStorage, IndexedDB, or Cache Storage, and releases viewer data/object URLs when the view closes or changes position. Notifications use generic text rather than candidate contact details or raw filenames.
+
+Verification uses marked synthetic CV/contact data to inspect URLs, browser storage, telemetry, notifications, and client errors after upload, ranking, and evidence viewing. Cross-position requests for runs, results, and CV content must return no data from the other position. Valid historical requests within the correct position must remain readable.
 
 See [the three runtime flows](arc42.md#6-runtime-view) and [the scoring rules](arc42.md#8-cross-cutting-concepts).

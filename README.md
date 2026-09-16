@@ -110,36 +110,32 @@ The system is structured into 4 core functional pillars:
   - Dedicated **Knockout Demarcation Divider**: Disqualified applicants are clearly grouped beneath this line with an explicit reason banner, rather than silently deleted.
 - **One-Click Candidate Actions**: Instant **Shortlist** (with ink-blue status `#1B3A63`) and **Reject** modals directly accessible from table rows.
 
-### 3.4 Dynamic Rescoring & What-If Simulation (`scored_round`, `is_latest`)
+### 3.4 Dynamic Rescoring & What-If Simulation
 - **Parameter Recalibration**: Recruiters can modify criteria weights or promote a preferred criterion to mandatory (e.g., toggling *Docker* to Mandatory).
 - **Multi-Round Versioning**:
-  - Automatically archives previous screening results (`is_latest = FALSE`).
-  - Generates a new evaluation round (`scored_round = scored_round + 1, is_latest = TRUE`).
+  - Creates a new run using the source run's successful CV snapshots and newly approved criteria; the current ranking remains readable.
+  - Only after every required CV succeeds, atomically switches `published_run_id` and the compatibility `is_latest` flags. A failed rescore preserves the previous ranking; `scored_round` follows the run's round number.
 - **Comparative Diff Analysis**: Displays a side-by-side leaderboard comparison showing ranking shifts (e.g., top candidate drops from Rank 1 to Rank 20 below the divider due to a missing mandatory skill; overall passing count drops from 31 to 19).
 
 ---
 
 ## 4. Database Schema (ERD)
 
-The database design is an 8-table normalised relational schema, not a connected persistence layer in the current prototype. It separates the **job side** (`jobs` → `job_requirements`), the **candidate side** (`candidates` → `resumes` → `resume_skills`), and the **evaluation side** (`screenings` → `screening_details`), with `skills` acting as the shared controlled vocabulary. The proposed architecture documents additional snapshot and task records needed for a real implementation; these have not been applied to the original DBML.
+The proposed database now has **13 tables**, aligned with the current screening requirements. [DBML](sang-loc-xep-hang-v2.dbml) is the schema source; [database design](docs/database-design.md) documents transaction rules, partial indexes, snapshot contracts and Q11. No database or migration is deployed in the frontend prototype.
 
 ![Database ERD](docs/database-design-erd.png)
 
-| Table | Role in the screening pipeline |
+| Tables | Responsibility |
 |---|---|
-| `skills` | Canonical skill dictionary + alias normalisation (`Postgres` → `PostgreSQL`), so scoring never compares raw strings |
-| `jobs` | Job position and its JD text |
-| `job_requirements` | One row per criterion: weight, mandatory flag, link to a canonical skill |
-| `candidates` | Candidate identity (deduplicated by email) |
-| `resumes` | An uploaded CV file + its parsed/extracted payload |
-| `resume_skills` | Skills extracted from a CV, with years of experience and evidence span |
-| `screenings` | One scoring run of one CV against one job: 4 sub-scores, total, pass/fail, `scored_round`, `is_latest` |
-| `screening_details` | Per-criterion breakdown: matched skill, contribution to the total, evidence quote — this table is what makes the ranking explainable |
+| `jobs`, `job_criteria_versions`, `job_requirements` | Position/JD, display-only lifecycle and immutable approved criteria |
+| `skills` | Canonical skills; aliases use versioned configuration |
+| `candidates`, `resumes`, `position_resumes` | Candidate identity, immutable CV files and position membership before screening |
+| `resume_snapshots`, `resume_skills` | Immutable validated facts, source text and evidence |
+| `screening_runs`, `screening_run_items` | Frozen inputs, progress/failures, idempotency, leases and rescore source |
+| `screenings`, `screening_details` | Successful scores, per-criterion explanations and versioned human decisions |
 
-Two design decisions are load-bearing:
+Ranking reads `jobs.published_run_id`. Publication switches this pointer and compatibility `is_latest` flags atomically; `scored_round` mirrors the run's round. A failed rescore preserves the previous ranking. Historical evidence uses immutable criteria and CV snapshots. Scoring policy v1 uses skill, experience and education; semantic_score remains NULL.
 
-- **`scored_round` + `is_latest`** — rescoring never overwrites history. A new round is inserted and the previous one is flagged `is_latest = FALSE`, which is what enables the side-by-side round comparison in §3.4.
-- **`screening_details` stores evidence, not just numbers** — every point a candidate earns is traceable to a quoted span in their CV, satisfying the explainability requirement.
 
 ---
 
@@ -218,7 +214,7 @@ Open your browser and navigate to: **`http://localhost:8080`**
 recruitment-assistant/
 ├── index.html                   # Single-Page Application shell with hash router & modals
 ├── README.md                    # System documentation, mindmap & architectural specifications
-├── sang-loc-xep-hang-v2.dbml    # DBML source of the 8-table relational schema
+├── sang-loc-xep-hang-v2.dbml    # DBML source of the 13-table relational schema
 ├── css/
 │   ├── tokens.css               # Design system variables (colors, typography, spacing)
 │   └── app.css                  # Application layouts, responsive tables & animations
@@ -230,7 +226,7 @@ recruitment-assistant/
     ├── mindmap.png              # 7-branch recruitment system mindmap
     ├── use-case-diagram.svg     # UML use case diagram — screening & ranking (source)
     ├── use-case-diagram.png     # UML use case diagram — rendered
-    ├── database-design-erd.png  # 8-table relational database architecture diagram
+    ├── database-design-erd.png  # 13-table relational database architecture diagram
     └── screenshots/             # Captures of all 7 UI screens (embedded in §5)
         ├── 01-job-positions.png
         ├── 02-jd-criteria.png

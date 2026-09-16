@@ -104,16 +104,7 @@ The solution keeps the underlying formulas of the v2 design but additionally fix
 
 ### 5.3 Data foundation
 
-[DBML v2](../../sang-loc-xep-hang-v2.dbml) has 8 tables:
-
-| Cluster | Tables | Content |
-|---|---|---|
-| Criteria | `jobs`, `job_requirements` | Position/JD and its requirements |
-| Dictionary | `skills` | Canonical skills |
-| CV | `candidates`, `resumes`, `resume_skills` | People, file versions, and evidenced skills |
-| Results | `screenings`, `screening_details` | The score for a CV–position pair and the per-criterion explanation |
-
-An ERD is not a component diagram. The data additions in §8.2 are preconditions for implementing the proposed solution; the original 8-table model on its own does not express durable jobs and snapshots.
+[DBML](../../sang-loc-xep-hang-v2.dbml) defines 13 tables. The [ERD and data design](../database-design.md) cover position/JD and criteria revisions; candidate/file identity and position membership; validated extraction snapshots; durable runs/items; and scored results/details. These are proposed persistence structures for the screening subsystem. No database or migration has been deployed.
 
 ### 5.4 Comparison with the existing code
 
@@ -141,19 +132,23 @@ The paths below are proposals under the `/api` prefix; no route is implemented. 
 
 | Interface | Main input | Result |
 |---|---|---|
-| `POST /jobs` | Position title and JD | `201`, `job_id` |
+| `POST /jobs` | Position title and JD | `201`, `job_id`, stored lifecycle status `draft` |
+| `GET /jobs` | Optional lifecycle status filter: `draft`, `open`, or `closed` | Positions with stored lifecycle status |
+| `GET /jobs/{id}` | Position ID | Position metadata, original JD, and stored lifecycle status |
 | `POST /jobs/{id}/criteria-draft` | The stored JD | Draft criteria, or an AI error that allows manual entry |
 | `PUT /jobs/{id}/criteria` | Criteria + `expected_revision` | A new revision, or `409`/`422` |
-| `POST /resumes` | Multipart file | `resume_id`, status; a duplicate file returns the existing ID |
+| `POST /resumes` | Position ID and multipart file | `resume_id`, status; a duplicate file within the position returns the existing ID |
 | `POST /jobs/{id}/screening-runs` | Revision, resume IDs or a base run ID, idempotency key | `202`, run ID, or `409` |
-| `GET /screening-runs/{id}` | Run ID | Status, totals, successes, failures, and progress |
+| `GET /screening-runs/{id}` | Run ID and position ID | Status, totals, successes, failures, and progress within that position |
 | `GET /jobs/{id}/ranking` | Position, filters, pagination | The published run ID and the results of that same run |
-| `GET /screenings/{id}` | Screening ID plus run ID for cross-checking | Breakdown, criteria snapshot, and evidence |
-| `GET /resumes/{id}/content` | Resume ID | The file at the correct version, or a read error |
-| `PATCH /screenings/{id}/decision` | Decision, run ID, expected result version | New status and version, or `409` |
+| `GET /screenings/{id}` | Screening ID, position ID, and run ID for cross-checking | Breakdown, criteria snapshot, and evidence |
+| `GET /resumes/{id}/content` | Resume ID and position ID; run and result IDs for evidence viewing | The file at the verified version, or a read error |
+| `PATCH /screenings/{id}/decision` | Decision, position ID, run ID, expected result version | New status and version, or `409` |
 | `GET /jobs/{id}/comparison` | Two run IDs for the same position | A diff by resume ID over score, rank, and mandatory status |
 
-Errors carry a `code`, a message the user can understand, a `request_id`, and where relevant a `run_id`/`resume_id`. Error messages never contain stack traces, credentials, or the full CV.
+Errors carry a `code`, a message the user can understand, a `request_id`, and where relevant a `run_id`/`resume_id`. Error messages never contain stack traces, credentials, raw CV content, or contact details. Resource requests must validate the supplied position and associated run/result/CV before returning data or applying changes. A mismatch returns a generic `404` with no other-position data. Sensitive responses carry `Cache-Control: no-store` (Q11).
+
+Under US-01 AC-4, CRIT manages position metadata through DATA. New positions start in `draft`; WEB displays stored `draft`/`open`/`closed` status and filters the list through `GET /jobs`. V1 has no lifecycle transition control or API operation. Position lifecycle is separate from run and decision states and does not add a screening or rescore prerequisite.
 
 ## 7. Deployment View
 
@@ -174,25 +169,24 @@ The prototype still runs directly from `index.html` or a static HTTP server. Add
 - The first run may publish the successful CVs once all items have finished, marked `completed_with_errors` where appropriate. If no CV succeeded, the run fails. A technical error must never become a score of 0 for a candidate.
 - Re-scoring after a criteria change requires the entire successful CV set of the base run to be scored successfully. Otherwise the previously published run is kept. The publication transaction locks the position, checks the base run and the lease, and flips the latest flags and the published-run pointer together.
 
-### 8.2 Snapshots and the required data extensions
+### 8.2 Snapshots and persistence design
 
-**None of the following changes have been applied to the current DBML/DDL.** This is additional data design for a future backend; it is not a claim that the original 8 tables suffice for every property proposed here.
+The requirements-aligned design is now represented in [DBML](../../sang-loc-xep-hang-v2.dbml) and the [ERD](../database-design-erd.svg). [Database design](../database-design.md) specifies the additional PostgreSQL partial indexes, approval/publication transactions, immutable-record enforcement and JSON contracts that future migrations and services must implement.
 
-| Proposed addition | Content |
+| Tables | Content |
 |---|---|
-| `jobs` | `criteria_revision`, `published_run_id` to identify the current criteria and the run being displayed |
-| `job_criteria_versions` — new table | Unique `(job_id, revision)`; JD snapshot; criteria with a stable ID, label, kind, type, weight, min_years/degree; source and approval timestamp; immutable once stored |
-| `screening_runs` — new table | Run ID, job, base run, round, revision, policy snapshot/version, status, idempotency key/payload hash, counts, lease, and timestamps |
-| `screening_run_items` — new table | Unique per run/CV; status, attempts, error code, text and extraction snapshots, parser/model/prompt/schema versions |
-| `resumes` | File read status and the required metadata; the experience/education used for scoring lives in the per-CV snapshot rather than in a person record that may later be edited |
-| `screenings` | `run_id`, `result_version`, `decision_at`; `scored_round` is kept for compatibility, with the round number taken from the position-level run |
-| `screening_details` | Criteria snapshot, evidence status, page/paragraph/offset, and the pre-rounding contribution; history does not depend on criteria currently being edited |
+| `jobs` | Stored lifecycle, current approved criteria_revision and authoritative published_run_id |
+| `job_criteria_versions`, `job_requirements` | Versioned JD, stable criterion keys, weights and thresholds; immutable after approval |
+| `candidates`, `resumes`, `position_resumes` | Identity, immutable file versions, and position association before scoring |
+| `resume_snapshots`, `resume_skills`, `skills` | Validated source text, employment/education facts, skill evidence and dictionary version |
+| `screening_runs`, `screening_run_items` | Frozen CV set, criteria/policy, source run, lease, idempotency and per-file status/error |
+| `screenings`, `screening_details` | Scores at calculation precision, separate display values, evidence/reasons, result_version and decision_at |
 
-A run has a unique `(job_id, round)`; each item/result has a unique `(run_id, resume_id)`; a conditional unique constraint limits each job–resume pair to at most one result with `is_latest=true`. The ranking is read via `jobs.published_run_id`; the latest flags are updated in the same transaction so there are never two conflicting sources.
+Composite foreign keys keep positions, CV versions and criteria revisions consistent across run, item and result. Partial unique indexes enforce one active run per position and one latest result per position/CV. Ranking reads the published pointer; latest flags switch in the same publication transaction. scored_round mirrors the position-level run round. Failed files have no scoring result.
 
-Criteria that have been used are never hard-deleted, and historical evidence is never cascade-deleted when criteria are edited. The foreign keys in the older DBML need an appropriate migration; the immutable snapshot is the source for reading history. A real CV/data deletion policy must be applied consistently to snapshots, files, and backups alike — which is not the same as saying data is retained indefinitely.
+Approved criteria and extraction snapshots are immutable. Rescoring reuses the exact successful source snapshots under the same policy, and publication waits for every required item. Historical evidence has no cascade-delete relationship to editable criteria. Erasure of real data would require a consistent policy covering snapshots, files and backups.
 
-Dictionary aliases use versioned configuration in the first release, for example ReactJS → React. The snapshot stores the canonical name and the dictionary version; no skills administration module is required. A dictionary change must never silently alter already-published results.
+Aliases remain versioned configuration; snapshot canonical names and dictionary versions preserve reproducibility. Q11 additionally requires position-scoped repository checks and safe response/browser handling; foreign keys alone do not authorize data access.
 
 ### 8.3 Proposed scoring formula and rules — policy v1
 
@@ -252,6 +246,8 @@ Shortlist/reject changes status only; it never alters the score or the mandatory
 
 ### 8.6 Files, interface, and observability
 
+Q11 requires raw CV content and contact details to stay out of URLs, analytics labels, notifications, client-side errors, and persistent browser storage, including localStorage, IndexedDB, and Cache Storage. Sensitive responses use `Cache-Control: no-store`; proxies must preserve it and avoid caching these responses. WEB releases in-memory viewer data and temporary object URLs when the view closes or the position changes. API services validate position/run/result/CV associations before data access; private object storage alone is insufficient. See [C3 responsibilities and verification](c3-components.md#position-lifecycle-and-q11-responsibilities) and [SEQ-02](sequence-02-review.md).
+
 Validate the file's actual format, size limit, and count before parsing; files are stored under a server-generated object key. Content preview must not execute scripts embedded in the document. A scanned PDF is reported as needing reprocessing rather than pretended to be OCR'd. The remaining files are still processed.
 
 The interface has empty/running/error/complete states and shows the number of failed CVs separately from the number who did not pass. Colour must always be accompanied by a label and an icon; the not-passed group sits below a separator and remains actionable. Run ID and revision are shown in the history detail where they mean something to the user; table names and adapter names are never scattered across the UI.
@@ -273,7 +269,7 @@ The ADRs below have the status **proposed in design 1.0** and are not yet proven
 | ADR-07 | The old formula and the UI scores are interpreted differently: settle policy v1 and normalised contributions | Bending the formula to match each demo number | The demo is not an oracle; the UI must distinguish weight from maximum contribution; experience/education weights do not affect the score in v1, so the what-if screen must reflect that |
 | ADR-08 | No load data yet: a one-host trial with no broker or cluster | HA infrastructure from the start | Low cost, single point of failure; no claim of production readiness |
 
-The original data decisions are carried over: candidates and resumes are separate, canonical skills are used, a score belongs to a CV–position pair, and the details hold the evidence. See [the original data model](../../sang-loc-xep-hang-v2.dbml).
+The original data decisions are carried over: candidates and resumes are separate, canonical skills are used, a score belongs to a CV–position pair, and the details hold the evidence. See [the requirements-aligned data model](../../sang-loc-xep-hang-v2.dbml).
 
 ## 10. Quality Requirements
 
