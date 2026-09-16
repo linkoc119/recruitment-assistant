@@ -1,5 +1,7 @@
 # AI Recruitment Assistant — Screening & Candidate Ranking System
 
+API design: [OpenAPI 3.0.3](docs/api/openapi.yaml) ? [API guide and requirements mapping](docs/api/README.md) ? [Next.js backend decision](docs/architecture/nextjs-backend.md). The API is documented, not implemented.
+
 An explainable recruitment assistant concept for resume screening and candidate ranking based on Job Descriptions (JD). It aims to reduce manual screening effort and make results inspectable through evidence; the prototype does not establish real-world AI accuracy or bias reduction.
 
 The current deliverable is an interactive **HTML5, Vanilla CSS, and ES6 JavaScript prototype**, with zero build steps and sample data held in memory. It does not implement real CV parsing, AI calls, a backend, or database persistence. The relational schema is a design artifact.

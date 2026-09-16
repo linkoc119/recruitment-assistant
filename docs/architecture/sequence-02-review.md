@@ -1,67 +1,16 @@
 # SEQ-02 — Reviewing evidence and deciding shortlist/reject
 
+**Runtime/API update (2026-09-16):** Technology/process labels and illustrative endpoints in this view and its SVG predate the [Next.js backend decision](nextjs-backend.md). That decision and [OpenAPI](../api/openapi.yaml) supersede those details; business invariants remain applicable.
+
 **Status:** proposed behaviour. **Preconditions:** a published run exists. **Outcome:** the user can verify the scores; a decision is written only against the exact result being viewed, and only while it is not stale.
 
 [Open the SVG](diagrams/sequence-02-review.svg) to zoom in or embed it in a report.
 
 ![SEQ-02 — Reviewing evidence and deciding shortlist/reject](diagrams/sequence-02-review.svg)
 
-```mermaid
----
-title: "SEQ-02 — Evidence Review and Shortlist/Reject Decision — Proposed"
----
-sequenceDiagram
-    autonumber
-    actor REC as Recruiter
-    participant WEB as WEB · Web App
-    participant HTTP as HTTP · API Controllers
-    participant REVIEW as REVIEW · Ranking and Review Service
-    participant CV as CV · Resume Service
-    participant DB as DB via DATA
-    participant FILES as FILES via DATA
-    REC->>WEB: Open the position ranking
-    WEB->>HTTP: GET jobs/{id}/ranking
-    HTTP->>REVIEW: Get the published run
-    REVIEW->>DB: Read run_id and a consistent snapshot of results
-    REVIEW-->>WEB: Ranking, run_id, result_version
-    REC->>WEB: Open details and evidence
-    WEB->>HTTP: GET screenings/{id} with job_id and run_id
-    HTTP->>REVIEW: Validate position/run/result association via DATA
-    break Missing resource or mismatched position context
-        REVIEW-->>WEB: Generic 404 without other-position data
-    end
-    HTTP->>REVIEW: Read the selected historical result
-    REVIEW->>DB: Read score, criteria snapshot, and evidence spans
-    REVIEW-->>WEB: Score, contributions, and citation locations
-    WEB->>HTTP: GET resumes/{resume_id}/content with job_id, run_id, result_id
-    HTTP->>CV: Validate position/run/result/CV version association via DATA
-    break Missing resource or mismatched evidence context
-        CV-->>WEB: Generic 404 without file data or metadata
-    end
-    HTTP->>CV: Read the file for the displayed result
-    CV->>DB: Look up the correct CV version's object key
-    CV->>FILES: Read private file
-    alt File available
-        CV-->>WEB: CV content with excerpt mapping, Cache-Control no-store
-    else File temporarily unavailable
-        CV-->>WEB: CV viewer error, retain loaded analysis
-    end
-    REC->>WEB: Select shortlist or reject and confirm
-    WEB->>HTTP: PATCH decision, job_id, run_id, expected_result_version
-    HTTP->>REVIEW: Request decision write
-    REVIEW->>DB: Lock position and check published run/version in transaction
-    alt New run published or decision changed
-        DB-->>REVIEW: Conflict and rollback
-        REVIEW-->>WEB: 409, load current result and review again
-    else Result is still current
-        REVIEW->>DB: Update status and decision_at, increment result_version
-        DB-->>REVIEW: Commit
-        REVIEW-->>WEB: Saved decision and new version
-    end
-    WEB-->>REC: Display status using text, icon, and color
-```
-
 ## Rules and exceptions
+
+Under [D-05](../requirements/decisions.md#d-05--final-human-decisions-in-v1), the write branch requires status=scored. An identical decision with the current version is a no-op; a different decision on an already-decided result returns 409/decision_final. There is no undo. Check this after position/run/version validation and before updating status or decision_at.
 
 [Q11](../requirements/non-functional-requirements.md) applies to ranking, historical detail, evidence, and decision requests. Position-context validation happens before returning data or applying changes. A context mismatch returns a generic `404`; a valid context with a stale decision returns `409`. Valid historical results remain readable within their position. These checks enforce resource relationships and do not introduce a new login or role workflow.
 

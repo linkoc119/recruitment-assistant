@@ -284,7 +284,7 @@ Selecting evidence highlights or navigates to the corresponding place in the CV 
 
 ### 10.3 Human decisions
 
-Human decisions are displayed separately from model assessments. Recording or changing a decision requires an explicit action and persists the decision independently of future rescoring.
+Human decisions are displayed separately from model assessments. Under D-05/BR-DEC-06, recording a decision requires confirmation on a current scored result; once shortlisted/rejected, no undo or switch is available. A new run starts scored while the original decision remains readable in its original run.
 
 ## 11. Empty, Loading, Error, and Stale States
 

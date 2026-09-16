@@ -127,82 +127,91 @@ class Diagram {
 
 // C2: preserve the four containers chosen in arc42; no extra static-content service.
 {
-  const d = new Diagram('c2-containers', 1650, 1690, 'Container View: JD-based CV Screening and Ranking');
-  d.frame(55, 405, 1135, 1075, 'JD-based CV Screening and Ranking', '[Software System]');
+  const d = new Diagram('c2-containers', 1780, 1770, 'Container View: JD-based CV Screening and Ranking');
+  d.frame(55, 405, 1200, 1155, 'JD-based CV Screening and Ranking', '[Software System]');
   d.node('REC', 440, 25, 380, 310, ['Recruiter'], '[Person]', ['Reviews criteria and results', 'and records decisions.'], 'person', GREEN);
   d.node('WEB', 450, 465, 360, 210, ['Web App'], '[Container: HTML/CSS/JavaScript]', ['Presents the workflow and CV viewer;', 'tracks screening progress.'], 'browser');
-  d.node('API', 450, 815, 360, 235, ['Screening Backend'], '[Container: Python/FastAPI]', ['Provides the API, coordinates jobs,', 'scores CVs, and manages history.'], 'backend');
-  d.node('FILES', 170, 1190, 330, 190, ['CV Store'], '[Container: S3-compatible storage]', ['Stores original CV files', 'in a private bucket.'], 'bucket');
-  d.node('DB', 770, 1190, 330, 190, ['Screening Database'], '[Container: PostgreSQL]', ['Criteria, input snapshots,', 'jobs, and screening results.'], 'database');
-  d.node('AI', 1255, 815, 350, 235, ['AI Extraction Service'], '[External Software System: HTTPS API]', ['Extracts structured JD/CV data', 'with source evidence.'], 'box', RED);
+  d.node('API', 450, 815, 360, 235, ['Screening Backend'], '[Container: Next.js Route Handlers]', ['Validates requests, serves synchronous', 'reads/writes, and enqueues durable work.'], 'backend');
+  d.node('WORKER', 860, 815, 350, 235, ['Screening Worker'], '[Container: Node.js/TypeScript]', ['Claims durable work by lease,', 'parses CVs, scores, and publishes.'], 'backend');
+  d.node('FILES', 170, 1270, 330, 190, ['CV Store'], '[Container: S3-compatible storage]', ['Stores original CV files', 'in a private bucket.'], 'bucket');
+  d.node('DB', 770, 1270, 330, 190, ['Screening Database'], '[Container: PostgreSQL]', ['Criteria, input snapshots, durable', 'commands/leases, and results.'], 'database');
+  d.node('AI', 1320, 815, 350, 235, ['AI Extraction Service'], '[External Software System: HTTPS API]', ['Extracts structured JD/CV data', 'with source evidence.'], 'box', RED);
   d.edge('REC', 'WEB', [[630,335],[630,465]], 630, 360, ['Interacts and views results'], 'Browser', 310);
   d.edge('WEB', 'API', [[630,675],[630,815]], 630, 723, ['Sends commands, queries, and polls'], 'HTTPS/JSON; CV: multipart', 355);
-  d.edge('API', 'FILES', [[530,1050],[340,1190]], 330, 1100, ['Stores and reads CV files'], 'HTTPS/S3 API', 275);
-  d.edge('API', 'DB', [[730,1050],[930,1190]], 950, 1100, ['Reads/writes and runs transactions'], 'SQL/TCP', 280);
-  d.edge('API', 'AI', [[810,930],[1255,930]], 1015, 855, ['Sends text; receives', 'structured extracted data'], 'HTTPS/JSON', 315);
-  d.footer(1525);
+  d.edge('API', 'FILES', [[530,1050],[340,1270]], 330, 1160, ['Reads CV files'], 'HTTPS/S3 API', 275);
+  d.edge('API', 'DB', [[730,1050],[930,1270]], 750, 1220, ['Reads/writes and enqueues durable work'], 'SQL/TCP', 280);
+  d.edge('API', 'AI', [[810,850],[810,780],[1400,780],[1400,815]], 1050, 740, ['Sends JD text; receives', 'structured extracted data'], 'HTTPS/JSON', 315);
+  d.edge('WORKER', 'DB', [[950,1050],[950,1270]], 1000, 1130, ['Claims work by lease', 'and writes results'], 'SQL/TCP', 210);
+  d.edge('WORKER', 'FILES', [[1210,1050],[1210,1510],[335,1510],[335,1460]], 740, 1515, ['Stores and reads CV files'], 'HTTPS/S3 API', 300);
+  d.edge('WORKER', 'AI', [[1210,900],[1320,900]], 1460, 1090, ['Sends CV text; receives', 'structured extracted data'], 'HTTPS/JSON', 260);
+  d.footer(1605);
   d.write();
 }
 
-// C3: the API container is expanded; neighbouring containers remain outside it.
+// C3: API and WORKER are separate process frames; SCORE/EXTRACT/DATA are shared code, drawn outside both.
 {
-  const d = new Diagram('c3-components', 2340, 2230, 'Component View: JD-based CV Screening — Screening Backend');
-  d.frame(50, 40, 1790, 1990, 'JD-based CV Screening and Ranking', '[Software System]');
-  d.frame(80, 330, 1730, 1290, 'Screening Backend', '[Container: Python/FastAPI]');
+  const d = new Diagram('c3-components', 2340, 2580, 'Component View: JD-based CV Screening — Backend and Worker');
+  d.frame(50, 40, 1790, 2335, 'JD-based CV Screening and Ranking', '[Software System]');
+  d.frame(110, 330, 1650, 725, 'Screening Backend', '[Container: Next.js Route Handlers]');
+  d.frame(700, 1105, 420, 350, 'Screening Worker', '[Container: Node.js/TypeScript]');
   d.node('WEB', 760, 65, 360, 205, ['Web App'], '[Container: HTML/CSS/JavaScript]', ['Sends commands, displays results,', 'and tracks jobs.'], 'browser');
-  d.node('HTTP', 760, 400, 360, 190, ['API Controllers'], '[Component: FastAPI routers]', ['Validates requests, context,', 'and versions.'], 'component');
-  d.node('CRIT', 140, 740, 300, 205, ['Criteria Service'], '[Component: Python]', ['Manages positions, JDs,', 'and criteria revisions.'], 'component');
-  d.node('CV', 560, 740, 300, 205, ['Resume Service'], '[Component: Python/PDF-DOCX parser]', ['Manages files, hashes, versions,', 'and CV text.'], 'component');
-  d.node('RUN', 980, 740, 300, 205, ['Screening', 'Coordinator'], '[Component: Python async tasks]', ['Coordinates durable jobs, retries,', 'and run publication.'], 'component');
-  d.node('REVIEW', 1400, 740, 300, 205, ['Ranking and', 'Review Service'], '[Component: Python]', ['Provides rankings, evidence,', 'decisions, and comparisons.'], 'component');
-  d.node('EXTRACT', 140, 1110, 300, 205, ['Extraction Adapter'], '[Component: Python HTTP client]', ['Calls AI; validates schemas', 'and source evidence.'], 'component');
-  d.node('SCORE', 980, 1110, 300, 205, ['Scoring Engine'], '[Component: Python domain module]', ['Evaluates mandatory criteria, scores,', 'and criterion contributions.'], 'component');
-  d.node('DATA', 700, 1400, 360, 190, ['Repositories'], '[Component: Python SQL/S3 clients]', ['Provides data and file access', 'and transaction boundaries.'], 'component');
-  d.node('DB', 420, 1770, 360, 195, ['Screening Database'], '[Container: PostgreSQL]', ['Business data, jobs,', 'and screening-run history.'], 'database');
-  d.node('FILES', 1150, 1770, 360, 195, ['CV Store'], '[Container: S3-compatible storage]', ['Stores original CV files', 'privately.'], 'bucket');
-  d.node('AI', 1910, 1110, 365, 205, ['AI Extraction Service'], '[External Software System: HTTPS API]', ['Returns structured JD/CV data', 'and evidence locations.'], 'box', RED);
+  d.node('HTTP', 760, 400, 360, 190, ['API Controllers'], '[Component: Next.js Route Handlers]', ['Validates requests, context,', 'and versions.'], 'component');
+  d.node('CRIT', 140, 740, 300, 205, ['Criteria Service'], '[Component: TypeScript]', ['Manages positions, JDs,', 'and criteria revisions.'], 'component');
+  d.node('CV', 560, 740, 300, 205, ['Resume Service'], '[Component: TypeScript]', ['Accepts uploads; manages files,', 'hashes, and versions.'], 'component');
+  d.node('REVIEW', 1400, 740, 300, 205, ['Ranking and', 'Review Service'], '[Component: TypeScript]', ['Provides rankings, evidence,', 'decisions, and comparisons.'], 'component');
+  d.node('RUN', 760, 1150, 300, 205, ['Screening', 'Coordinator'], '[Component: Node.js durable worker loop]', ['Claims durable commands,', 'coordinates retries, and publishes.'], 'component');
+  d.node('EXTRACT', 140, 1515, 300, 205, ['Extraction Adapter'], '[Component: TypeScript HTTP client · shared]', ['Calls AI; validates schemas', 'and source evidence.'], 'component');
+  d.node('SCORE', 1250, 1515, 300, 205, ['Scoring Engine'], '[Component: TypeScript domain module · shared]', ['Evaluates mandatory criteria, scores,', 'and criterion contributions.'], 'component');
+  d.node('AI', 1910, 1515, 365, 205, ['AI Extraction Service'], '[External Software System: HTTPS API]', ['Returns structured JD/CV data', 'and evidence locations.'], 'box', RED);
+  d.node('DATA', 650, 1810, 360, 190, ['Repositories'], '[Component: TypeScript SQL/S3 clients · shared]', ['Provides data and file access', 'and transaction boundaries.'], 'component');
+  d.node('DB', 420, 2090, 360, 195, ['Screening Database'], '[Container: PostgreSQL]', ['Business data, durable commands,', 'jobs, and screening-run history.'], 'database');
+  d.node('FILES', 1150, 2090, 360, 195, ['CV Store'], '[Container: S3-compatible storage]', ['Stores original CV files', 'privately.'], 'bucket');
   d.edge('WEB', 'HTTP', [[940,270],[940,400]], 940, 292, ['Sends commands and queries'], 'HTTPS/JSON or multipart', 350);
   d.edge('HTTP', 'CRIT', [[790,590],[290,740]], 345, 620, ['Creates/reads positions', 'and manages criteria'], 'Internal function call', 325);
   d.edge('HTTP', 'CV', [[875,590],[710,740]], 680, 678, ['Uploads or reads a CV file'], 'Internal function call', 270);
-  d.edge('HTTP', 'RUN', [[1005,590],[1130,740]], 1120, 660, ['Creates jobs and reads progress'], 'Internal function call', 290);
   d.edge('HTTP', 'REVIEW', [[1090,590],[1550,740]], 1510, 630, ['Reads results and records decisions'], 'Internal function call', 310);
-  d.edge('RUN', 'CV', [[980,865],[860,865]], 920, 823, ['Reads CV', 'text'], '', 110);
-  d.edge('CRIT', 'EXTRACT', [[290,945],[290,1110]], 290, 1020, ['Extracts JD data'], 'Internal function call', 235);
-  d.edge('CRIT', 'DATA', [[140,895],[105,895],[105,1360],[670,1360],[670,1440],[700,1440]], 365, 1360, ['Reads/writes positions and criteria'], 'Internal function call', 330);
-  d.edge('CV', 'DATA', [[650,945],[650,1490],[700,1490]], 650, 1225, ['Stores file, hash,', 'and CV version'], 'Internal function call', 235);
-  d.edge('RUN', 'EXTRACT', [[980,915],[920,915],[920,1010],[400,1010],[400,1110]], 650, 1005, ['Extracts CV without a snapshot'], 'Internal function call', 355);
-  d.edge('RUN', 'SCORE', [[1130,945],[1130,1110]], 1130, 1030, ['Scores snapshot under policy'], 'Internal function call', 295);
-  d.edge('RUN', 'DATA', [[1280,915],[1330,915],[1330,1370],[980,1370],[980,1400]], 1220, 1362, ['Stores jobs/snapshots and publishes'], 'Internal function call', 315);
-  d.edge('REVIEW', 'DATA', [[1550,945],[1550,1505],[1060,1505]], 1410, 1500, ['Reads runs and evidence', 'and records decisions'], 'Internal function call', 305);
-  d.edge('EXTRACT', 'AI', [[440,1210],[475,1210],[475,1335],[1870,1335],[1870,1210],[1910,1210]], 1640, 1303, ['Extracts data from JD/CV text'], 'HTTPS/JSON', 310);
-  d.edge('DATA', 'DB', [[795,1590],[600,1770]], 635, 1685, ['Reads/writes and runs transactions'], 'SQL/TCP', 270);
-  d.edge('DATA', 'FILES', [[965,1590],[1330,1770]], 1215, 1685, ['Stores and reads CV files'], 'HTTPS/S3 API', 270);
-  d.footer(2075);
+  d.edge('HTTP', 'DATA', [[1120,550],[1180,550],[1180,1900],[1010,1900]], 1180, 870, ['Writes a durable run command', 'and reads progress'], 'Internal function call', 280);
+  d.edge('CRIT', 'EXTRACT', [[290,945],[290,1515]], 290, 1200, ['Extracts JD data'], 'Internal function call', 235);
+  d.edge('CRIT', 'DATA', [[140,895],[105,895],[105,1810],[650,1810]], 150, 1400, ['Reads/writes positions and criteria'], 'Internal function call', 280);
+  d.edge('CV', 'DATA', [[620,945],[620,1810],[700,1810]], 620, 1500, ['Stores file, hash,', 'and CV version'], 'Internal function call', 200);
+  d.edge('RUN', 'DATA', [[900,1355],[900,1810]], 900, 1600, ['Claims commands, stores', 'jobs/snapshots, and publishes'], 'Internal function call', 280);
+  d.edge('RUN', 'EXTRACT', [[760,1250],[290,1250],[290,1515]], 500, 1250, ['Extracts a CV without a snapshot'], 'Internal function call', 300);
+  d.edge('RUN', 'SCORE', [[1060,1250],[1400,1250],[1400,1515]], 1270, 1250, ['Scores a snapshot under policy'], 'Internal function call', 280);
+  d.edge('REVIEW', 'DATA', [[1600,945],[1600,1750],[1010,1750],[1010,1810]], 1300, 1750, ['Reads runs and evidence', 'and records decisions'], 'Internal function call', 305);
+  d.edge('EXTRACT', 'AI', [[290,1720],[290,1770],[2090,1770],[2090,1720]], 700, 1770, ['Extracts data from JD/CV text'], 'HTTPS/JSON', 280);
+  d.edge('DATA', 'DB', [[745,2000],[600,2090]], 550, 2050, ['Reads/writes and runs transactions'], 'SQL/TCP', 270);
+  d.edge('DATA', 'FILES', [[955,2000],[1330,2090]], 1215, 2050, ['Stores and reads CV files'], 'HTTPS/S3 API', 270);
+  d.footer(2420);
   d.write();
 }
 
-// Deployment: the same containers as C2, placed on the proposed internal-trial nodes.
+// Deployment: the same containers as C2, placed on the proposed internal-trial nodes; API and WORKER are two separate OS processes.
 {
-  const d = new Diagram('deployment', 1800, 2160, 'Deployment View: JD-based CV Screening and Ranking');
+  const d = new Diagram('deployment', 1800, 2470, 'Deployment View: JD-based CV Screening and Ranking');
   d.frame(80, 30, 660, 415, "Recruiter's computer", '[Deployment node]', { color: GRAY });
   d.frame(110, 60, 600, 285, 'Web browser', '[Execution environment]', { color: GRAY, dash: '9 7' });
-  d.frame(80, 490, 1060, 1090, 'Internal trial server', '[Deployment node · Linux VM · 4 vCPU / 8 GiB]', { color: GRAY });
+  d.frame(80, 490, 1060, 1460, 'Internal trial server', '[Deployment node · Linux VM · 4 vCPU / 8 GiB]', { color: GRAY });
   d.frame(110, 790, 620, 370, 'Backend process', '[Execution environment]', { color: GRAY, dash: '9 7' });
+  d.frame(110, 1200, 620, 370, 'Worker process', '[Execution environment]', { color: GRAY, dash: '9 7' });
   d.node('WEB', 150, 85, 520, 170, ['Web App instance'], '[Container instance: HTML/CSS/JavaScript]', ['Displays the interface, accepts input,', 'and tracks progress.'], 'browser');
   d.node('EDGE', 140, 530, 520, 200, ['Nginx'], '[Infrastructure node: reverse proxy]', ['HTTPS endpoint; serves WEB files', 'and forwards /api requests', 'to the backend.'], 'box', AMBER);
-  d.node('API', 145, 820, 550, 240, ['Screening Backend instance'], '[Container instance: Python/FastAPI]', ['One Python/FastAPI process;', 'HTTP and the RUN coordinator', 'execute in the same application.'], 'backend');
-  d.node('DB', 110, 1240, 460, 230, ['Screening Database instance'], '[Container instance: PostgreSQL]', ['PostgreSQL · dedicated volume;', 'port 5432 is available only on', 'the server private network.'], 'database');
-  d.node('FILES', 640, 1240, 460, 230, ['CV Store instance'], '[Container instance: S3-compatible storage]', ['S3-compatible service · dedicated volume;', 'the CV bucket is private.'], 'bucket');
-  d.node('AI', 1320, 830, 420, 240, ['AI Extraction Service'], '[External deployment node: HTTPS endpoint]', ['Operated by a vendor', 'outside this deployment scope.'], 'box', RED);
-  d.node('BACKUP', 450, 1690, 520, 230, ['Backup store'], '[Infrastructure node: separate from server]', ['Database and file copies share', 'one recovery point; encrypted', 'and access restricted.'], 'bucket', AMBER);
+  d.node('API', 145, 820, 550, 240, ['Screening Backend instance'], '[Container instance: Next.js Route Handlers, Node.js]', ['One Node.js process; HTTP and', 'synchronous reads/writes.'], 'backend');
+  d.node('WORKER', 145, 1230, 550, 240, ['Screening Worker instance'], '[Container instance: Node.js/TypeScript]', ['A separate OS process from the backend;', 'claims durable work by lease.'], 'backend');
+  d.node('DB', 110, 1610, 460, 230, ['Screening Database instance'], '[Container instance: PostgreSQL]', ['PostgreSQL · dedicated volume;', 'port 5432 is available only on', 'the server private network.'], 'database');
+  d.node('FILES', 640, 1610, 460, 230, ['CV Store instance'], '[Container instance: S3-compatible storage]', ['S3-compatible service · dedicated volume;', 'the CV bucket is private.'], 'bucket');
+  d.node('AI', 1320, 1000, 420, 240, ['AI Extraction Service'], '[External deployment node: HTTPS endpoint]', ['Operated by a vendor', 'outside this deployment scope.'], 'box', RED);
+  d.node('BACKUP', 450, 2000, 520, 230, ['Backup store'], '[Infrastructure node: separate from server]', ['Database and file copies share', 'one recovery point; encrypted', 'and access restricted.'], 'bucket', AMBER);
   d.edge('WEB', 'EDGE', [[470,255],[470,530]], 990, 420, ['Loads static files and calls /api'], 'HTTPS :443', 400);
   d.edge('EDGE', 'API', [[400,730],[400,820]], 780, 755, ['Forwards /api to backend'], 'HTTP loopback :8000', 400);
-  d.edge('API', 'DB', [[400,1060],[400,1210],[340,1210],[340,1240]], 205, 1190, ['Reads/writes and runs transactions'], 'SQL/TCP :5432 · private network', 230);
-  d.edge('API', 'FILES', [[600,1060],[600,1210],[870,1210],[870,1240]], 1010, 1160, ['Stores and reads CV files'], 'HTTPS/S3 API :443 · private network', 260);
-  d.edge('API', 'AI', [[695,940],[1320,940]], 920, 855, ['Sends text with reduced', 'identifying information'], 'HTTPS :443', 350);
-  d.edge('DB', 'BACKUP', [[520,1470],[520,1690]], 330, 1630, ['Scheduled backup'], 'Encrypted channel', 250);
-  d.edge('FILES', 'BACKUP', [[870,1470],[870,1690]], 1080, 1630, ['Scheduled backup'], 'Encrypted channel', 250);
-  d.footer(1980, {
+  d.edge('API', 'DB', [[145,1030],[95,1030],[95,1650],[110,1650]], 95, 1150, ['Reads/writes and enqueues durable work'], 'SQL/TCP :5432 · private network', 250);
+  d.edge('API', 'FILES', [[695,1030],[830,1030],[830,1610],[870,1610]], 830, 1300, ['Reads CV files'], 'HTTPS/S3 API :443 · private network', 260);
+  d.edge('WORKER', 'DB', [[250,1470],[250,1610]], 250, 1540, ['Claims work by lease', 'and writes results'], 'SQL/TCP :5432 · private network', 220);
+  d.edge('WORKER', 'FILES', [[600,1470],[870,1610]], 735, 1540, ['Stores and reads CV files'], 'HTTPS/S3 API :443 · private network', 260);
+  d.edge('API', 'AI', [[695,980],[1320,1050]], 1000, 960, ['Sends JD text with reduced', 'identifying information'], 'HTTPS :443', 280);
+  d.edge('WORKER', 'AI', [[695,1290],[1320,1190]], 1000, 1230, ['Sends CV text with reduced', 'identifying information'], 'HTTPS :443', 280);
+  d.edge('DB', 'BACKUP', [[520,1840],[520,2000]], 330, 1930, ['Scheduled backup'], 'Encrypted channel', 250);
+  d.edge('FILES', 'BACKUP', [[870,1840],[870,2000]], 1080, 1930, ['Scheduled backup'], 'Encrypted channel', 250);
+  d.footer(2290, {
     items: [[30, BLUE, 'In-scope container instance'], [520, AMBER, 'Operational infrastructure'], [860, RED, 'External system']],
     note: 'Dashed arrow: connection initiation direction; labels state responsibility, protocol, and port. Solid grey frame: deployment node; dashed grey frame: execution environment.'
   });

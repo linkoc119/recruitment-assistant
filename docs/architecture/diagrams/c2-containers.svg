@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="1690" viewBox="0 0 1650 1690" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="1770" viewBox="0 0 1780 1770" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
 <title id="title">Container View: JD-based CV Screening and Ranking</title>
 <desc id="desc">Proposed architecture for JD-based CV screening and ranking. The backend and AI integration are not implemented. Relationships are verified against the Mermaid source in the accompanying document.</desc>
 <defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
 <rect width="100%" height="100%" fill="white"/>
-<rect x="55" y="405" width="1135" height="1075" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="73" y="1441" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="73" dy="0">JD-based CV Screening and Ranking</tspan></text>
-<text x="73" y="1465" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="73" dy="0">[Software System]</tspan></text>
+<rect x="55" y="405" width="1200" height="1155" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="73" y="1521" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="73" dy="0">JD-based CV Screening and Ranking</tspan></text>
+<text x="73" y="1545" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="73" dy="0">[Software System]</tspan></text>
 <polyline data-from="REC" data-to="WEB" points="630,335 630,465" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <polyline data-from="WEB" data-to="API" points="630,675 630,815" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="API" data-to="FILES" points="530,1050 340,1190" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="API" data-to="DB" points="730,1050 930,1190" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="API" data-to="AI" points="810,930 1255,930" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="FILES" points="530,1050 340,1270" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="DB" points="730,1050 930,1270" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="AI" points="810,850 810,780 1400,780 1400,815" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WORKER" data-to="DB" points="950,1050 950,1270" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WORKER" data-to="FILES" points="1210,1050 1210,1510 335,1510 335,1460" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WORKER" data-to="AI" points="1210,900 1320,900" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <g id="REC"><title>REC · Recruiter</title><rect x="440" y="136" width="380" height="199" rx="59" fill="white" stroke="#2b8205" stroke-width="6"/><circle cx="630" cy="86" r="61" fill="white" stroke="#2b8205" stroke-width="6"/></g>
 <text x="630" y="179" fill="#2b8205" font-size="28" font-weight="700" text-anchor="middle"><tspan x="630" dy="0">Recruiter</tspan></text>
 <text x="630" y="206" fill="#2b8205" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Person]</tspan></text>
@@ -22,43 +25,56 @@
 <text x="630" y="591" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Presents the workflow and CV viewer;</tspan><tspan x="630" dy="25">tracks screening progress.</tspan></text>
 <g id="API"><title>API · Screening Backend</title><rect x="450" y="815" width="360" height="235" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 469 833 l 13 9 l -13 9 M 491 853 h 20" fill="none" stroke="#146ac4" stroke-width="4"/></g>
 <text x="630" y="882" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="630" dy="0">Screening Backend</tspan></text>
-<text x="630" y="909" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Container: Python/FastAPI]</tspan></text>
-<text x="630" y="943" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Provides the API, coordinates jobs,</tspan><tspan x="630" dy="25">scores CVs, and manages history.</tspan></text>
-<g id="FILES"><title>FILES · CV Store</title><path d="M 170 1213 L 198 1357 A 137 23 0 0 0 472 1357 L 500 1213 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="335" cy="1213" rx="165" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="335" y="1263" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="335" dy="0">CV Store</tspan></text>
-<text x="335" y="1290" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="335" dy="0">[Container: S3-compatible storage]</tspan></text>
-<text x="335" y="1324" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="335" dy="0">Stores original CV files</tspan><tspan x="335" dy="25">in a private bucket.</tspan></text>
-<g id="DB"><title>DB · Screening Database</title><path d="M 770 1213 L 770 1357 A 165 23 0 0 0 1100 1357 L 1100 1213 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="935" cy="1213" rx="165" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="935" y="1263" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="935" dy="0">Screening Database</tspan></text>
-<text x="935" y="1290" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">[Container: PostgreSQL]</tspan></text>
-<text x="935" y="1324" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">Criteria, input snapshots,</tspan><tspan x="935" dy="25">jobs, and screening results.</tspan></text>
-<g id="AI"><title>AI · AI Extraction Service</title><rect x="1255" y="815" width="350" height="235" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
-<text x="1430" y="853" fill="#c71025" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1430" dy="0">AI Extraction Service</tspan></text>
-<text x="1430" y="880" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1430" dy="0">[External Software System: HTTPS API]</tspan></text>
-<text x="1430" y="914" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1430" dy="0">Extracts structured JD/CV data</tspan><tspan x="1430" dy="25">with source evidence.</tspan></text>
+<text x="630" y="909" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Container: Next.js Route Handlers]</tspan></text>
+<text x="630" y="943" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Validates requests, serves synchronous</tspan><tspan x="630" dy="25">reads/writes, and enqueues durable work.</tspan></text>
+<g id="WORKER"><title>WORKER · Screening Worker</title><rect x="860" y="815" width="350" height="235" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 879 833 l 13 9 l -13 9 M 901 853 h 20" fill="none" stroke="#146ac4" stroke-width="4"/></g>
+<text x="1035" y="882" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1035" dy="0">Screening Worker</tspan></text>
+<text x="1035" y="909" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1035" dy="0">[Container: Node.js/TypeScript]</tspan></text>
+<text x="1035" y="943" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1035" dy="0">Claims durable work by lease,</tspan><tspan x="1035" dy="25">parses CVs, scores, and publishes.</tspan></text>
+<g id="FILES"><title>FILES · CV Store</title><path d="M 170 1293 L 198 1437 A 137 23 0 0 0 472 1437 L 500 1293 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="335" cy="1293" rx="165" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="335" y="1343" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="335" dy="0">CV Store</tspan></text>
+<text x="335" y="1370" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="335" dy="0">[Container: S3-compatible storage]</tspan></text>
+<text x="335" y="1404" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="335" dy="0">Stores original CV files</tspan><tspan x="335" dy="25">in a private bucket.</tspan></text>
+<g id="DB"><title>DB · Screening Database</title><path d="M 770 1293 L 770 1437 A 165 23 0 0 0 1100 1437 L 1100 1293 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="935" cy="1293" rx="165" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="935" y="1343" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="935" dy="0">Screening Database</tspan></text>
+<text x="935" y="1370" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">[Container: PostgreSQL]</tspan></text>
+<text x="935" y="1404" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">Criteria, input snapshots, durable</tspan><tspan x="935" dy="25">commands/leases, and results.</tspan></text>
+<g id="AI"><title>AI · AI Extraction Service</title><rect x="1320" y="815" width="350" height="235" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="1495" y="853" fill="#c71025" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1495" dy="0">AI Extraction Service</tspan></text>
+<text x="1495" y="880" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1495" dy="0">[External Software System: HTTPS API]</tspan></text>
+<text x="1495" y="914" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1495" dy="0">Extracts structured JD/CV data</tspan><tspan x="1495" dy="25">with source evidence.</tspan></text>
 <rect x="475" y="340" width="310" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="630" y="360" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Interacts and views results</tspan></text>
 <text x="630" y="385" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[Browser]</tspan></text>
 <rect x="452.5" y="703" width="355" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="630" y="723" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">Sends commands, queries, and polls</tspan></text>
 <text x="630" y="748" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="630" dy="0">[HTTPS/JSON; CV: multipart]</tspan></text>
-<rect x="192.5" y="1080" width="275" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="330" y="1100" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Stores and reads CV files</tspan></text>
-<text x="330" y="1125" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[HTTPS/S3 API]</tspan></text>
-<rect x="810" y="1080" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="950" y="1100" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="950" dy="0">Reads/writes and runs transactions</tspan></text>
-<text x="950" y="1125" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="950" dy="0">[SQL/TCP]</tspan></text>
-<rect x="857.5" y="835" width="315" height="81" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1015" y="855" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1015" dy="0">Sends text; receives</tspan><tspan x="1015" dy="25">structured extracted data</tspan></text>
-<text x="1015" y="905" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1015" dy="0">[HTTPS/JSON]</tspan></text>
-<text x="30" y="1525" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Container View: JD-based CV Screening and Ranking</tspan></text>
-<text x="30" y="1556" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
-<rect x="30" y="1579" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
-<text x="62" y="1596" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · User</tspan></text>
-<rect x="360" y="1579" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="392" y="1596" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Software in scope</tspan></text>
-<rect x="735" y="1579" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
-<text x="767" y="1596" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">External system</tspan></text>
-<text x="30" y="1628" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: directed relationship; its label states the responsibility and protocol. Large frame: system/container boundary.</tspan></text>
-<text x="30" y="1655" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
+<rect x="192.5" y="1140" width="275" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="330" y="1160" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Reads CV files</tspan></text>
+<text x="330" y="1185" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[HTTPS/S3 API]</tspan></text>
+<rect x="610" y="1200" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="750" y="1220" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="750" dy="0">Reads/writes and enqueues durable work</tspan></text>
+<text x="750" y="1245" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="750" dy="0">[SQL/TCP]</tspan></text>
+<rect x="892.5" y="720" width="315" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1050" y="740" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1050" dy="0">Sends JD text; receives</tspan><tspan x="1050" dy="25">structured extracted data</tspan></text>
+<text x="1050" y="790" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1050" dy="0">[HTTPS/JSON]</tspan></text>
+<rect x="895" y="1110" width="210" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1000" y="1130" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">Claims work by lease</tspan><tspan x="1000" dy="25">and writes results</tspan></text>
+<text x="1000" y="1180" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">[SQL/TCP]</tspan></text>
+<rect x="590" y="1495" width="300" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="740" y="1515" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="740" dy="0">Stores and reads CV files</tspan></text>
+<text x="740" y="1540" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="740" dy="0">[HTTPS/S3 API]</tspan></text>
+<rect x="1330" y="1070" width="260" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1460" y="1090" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1460" dy="0">Sends CV text; receives</tspan><tspan x="1460" dy="25">structured extracted data</tspan></text>
+<text x="1460" y="1140" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1460" dy="0">[HTTPS/JSON]</tspan></text>
+<text x="30" y="1605" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Container View: JD-based CV Screening and Ranking</tspan></text>
+<text x="30" y="1636" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
+<rect x="30" y="1659" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
+<text x="62" y="1676" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · User</tspan></text>
+<rect x="360" y="1659" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="392" y="1676" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Software in scope</tspan></text>
+<rect x="735" y="1659" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
+<text x="767" y="1676" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">External system</tspan></text>
+<text x="30" y="1708" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: directed relationship; its label states the responsibility and protocol. Large frame: system/container boundary.</tspan></text>
+<text x="30" y="1735" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
 </svg>

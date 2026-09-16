@@ -40,7 +40,7 @@ flowchart LR
 - The green person figure `[Person]` is a user; the blue box `[Software System]` is the system under consideration; the red box `[External Software System]` is an external system. The element-type labels remain distinguishable when printed without colour.
 - A dashed arrow denotes a directed relationship. It does not denote an asynchronous call or an unimplemented state.
 - The arrow points from the party that initiates the exchange; return values travel over the same connection and are therefore not drawn separately. This convention is kept in C2, C3, and the deployment view. C1 describes business exchanges and does not yet fix protocols.
-- JD is the job description; CV is the candidate's application file; AI is the extraction support service. Calling an external service is a design choice; no vendor has been selected.
+- JD is the job description; CV is the candidate's application file; AI is the extraction support service. The selected provider is OpenAI GPT-4o mini under [D-01](../requirements/decisions.md); integration remains unimplemented.
 
 Candidates do not log in or submit CVs through this system: the recruiter loads CVs that have already been received. The department head and the administrator appear in the older overall use-case model but have no dedicated process within this scope. The skills dictionary is loaded from configuration data; no dictionary administration screen has been built.
 

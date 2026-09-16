@@ -1,5 +1,7 @@
 # Deployment — Internal trial environment
 
+**Runtime/API update (2026-09-16):** This view reflects the [Next.js backend decision](nextjs-backend.md): the backend and worker are two separate OS processes on the trial server, coordinated only through a lease/command table in PostgreSQL, with no message broker. [OpenAPI](../api/openapi.yaml) defines canonical HTTP behavior; business invariants are unchanged.
+
 **Status:** a proposed deployment diagram, not infrastructure that has been built. **Scope:** one instance of the screening subsystem running on synthetic data; not a production operating configuration.
 
 [Open the SVG](diagrams/deployment.svg) to zoom in or embed it in a report.
@@ -29,31 +31,38 @@ flowchart TB
         subgraph HOST["<b>Internal trial server</b> <small>[Deployment node · Linux VM · 4 vCPU / 8 GiB]</small>"]
             EDGE["<b>Nginx</b><br/><small>[Infrastructure node: reverse proxy]</small><br/>HTTPS endpoint; serves WEB static files<br/>and forwards /api to the backend."]
             subgraph APP["<b>Backend process</b> <small>[Execution environment]</small>"]
-                API["<b>Screening Backend instance</b><br/><small>[Container instance: Python/FastAPI]</small><br/>One Python/FastAPI process;<br/>HTTP and the RUN coordinator<br/>execute in the same application."]
+                API["<b>Screening Backend instance</b><br/><small>[Container instance: Next.js Route Handlers, Node.js]</small><br/>One Node.js process;<br/>HTTP and synchronous<br/>reads/writes."]
+            end
+            subgraph WORKERPROC["<b>Worker process</b> <small>[Execution environment]</small>"]
+                WORKER["<b>Screening Worker instance</b><br/><small>[Container instance: Node.js/TypeScript]</small><br/>A separate OS process from<br/>the backend; claims durable<br/>work by lease."]
             end
             DB[("<b>Screening Database instance</b><br/><small>[Container instance: PostgreSQL]</small><br/>PostgreSQL · dedicated volume;<br/>port 5432 is available only on<br/>the server's private network.")]
             FILES[("<b>CV Store instance</b><br/><small>[Container instance: S3-compatible storage]</small><br/>S3-compatible service · dedicated volume;<br/>the CV bucket is private.")]
             EDGE -.->|"Forwards /api to the backend<br/><small>[HTTP loopback :8000]</small>"| API
-            API -.->|"Reads/writes and runs transactions<br/><small>[SQL/TCP :5432 · private network]</small>"| DB
-            API -.->|"Stores and reads CV files<br/><small>[HTTPS/S3 API :443 · private network]</small>"| FILES
+            API -.->|"Reads/writes and enqueues durable work<br/><small>[SQL/TCP :5432 · private network]</small>"| DB
+            API -.->|"Reads CV files<br/><small>[HTTPS/S3 API :443 · private network]</small>"| FILES
+            WORKER -.->|"Claims work by lease and writes results<br/><small>[SQL/TCP :5432 · private network]</small>"| DB
+            WORKER -.->|"Stores and reads CV files<br/><small>[HTTPS/S3 API :443 · private network]</small>"| FILES
         end
         AI["<b>AI Extraction Service</b><br/><small>[External deployment node: HTTPS endpoint]</small><br/>Operated by a vendor outside<br/>this deployment scope."]
         BACKUP[("<b>Backup store</b><br/><small>[Infrastructure node: separate from server]</small><br/>Database and file copies share<br/>one recovery point; encrypted<br/>and access restricted.")]
         WEB -.->|"Loads static files and calls /api<br/><small>[HTTPS :443]</small>"| EDGE
-        API -.->|"Sends text with reduced identifying data<br/><small>[HTTPS :443]</small>"| AI
+        API -.->|"Sends JD text with reduced identifying data<br/><small>[HTTPS :443]</small>"| AI
+        WORKER -.->|"Sends CV text with reduced identifying data<br/><small>[HTTPS :443]</small>"| AI
         DB -.->|"Scheduled backup<br/><small>[Encrypted channel]</small>"| BACKUP
         FILES -.->|"Scheduled backup<br/><small>[Encrypted channel]</small>"| BACKUP
     end
     classDef internal fill:#ffffff,color:#146ac4,stroke:#146ac4,stroke-width:3px
     classDef infra fill:#ffffff,color:#8a6a12,stroke:#8a6a12,stroke-width:3px
     classDef external fill:#ffffff,color:#c71025,stroke:#c71025,stroke-width:3px
-    class WEB,API,DB,FILES internal
+    class WEB,API,WORKER,DB,FILES internal
     class EDGE,BACKUP infra
     class AI external
     style CLIENT fill:#ffffff,color:#494949,stroke:#494949,stroke-width:2px
     style HOST fill:#ffffff,color:#494949,stroke:#494949,stroke-width:2px
     style BROWSER fill:#ffffff,color:#494949,stroke:#494949,stroke-width:2px,stroke-dasharray:8 6
     style APP fill:#ffffff,color:#494949,stroke:#494949,stroke-width:2px,stroke-dasharray:8 6
+    style WORKERPROC fill:#ffffff,color:#494949,stroke:#494949,stroke-width:2px,stroke-dasharray:8 6
     linkStyle default stroke:#494949,stroke-width:2px
     style CANVAS fill:#ffffff,color:#494949,stroke:#ffffff,stroke-width:16px
 ```
@@ -65,10 +74,11 @@ A solid grey frame is a device or server (deployment node); a dashed grey frame 
 | C2 container | Where it executes or is stored |
 |---|---|
 | WEB | Files served by Nginx; the JavaScript executes in the browser |
-| API | A single backend process; the C3 components run inside it |
-| DB | PostgreSQL on the trial server; data outlives the process |
+| API | A single Next.js/Node.js backend process behind Nginx; the API-side C3 components run inside it |
+| WORKER | A separate Node.js process on the same server; the durable-work C3 components run inside it and share code, not a process, with API |
+| DB | PostgreSQL on the trial server; data outlives either process |
 | FILES | An S3-compatible object storage service on the server; durable data |
-| AI | An external vendor endpoint; no vendor has been selected |
+| AI | OpenAI API endpoint using GPT-4o mini; integration remains unimplemented |
 
 ## Intended configuration and operations
 
@@ -78,12 +88,12 @@ A solid grey frame is a device or server (deployment node); a dashed grey frame 
 - Each deployment: back up → apply tested migrations → start the backend → check the database, file store, and readiness → serve the interface. There are currently no migrations, no Docker Compose file, and no deployment pipeline; the diagram does not claim those artifacts exist.
 - Health checks distinguish "the process is alive" from "ready to serve". An AI failure causes controlled job retries or failures; it does not make previously published results unavailable for reading.
 - Daily database and file backups are stored away from the server, with a manifest linking `resume_id`, object key, and hash. Trial targets: RPO at most 24 hours, RTO at most 4 hours; both can be confirmed only by rehearsing a restore.
-- After a restart, the dispatcher reclaims jobs whose lease has expired. Results are written only with a still-valid lease token; the currently published run is kept intact until the transaction publishing the new run completes.
+- API and WORKER are supervised as two separate OS processes and restart independently. After a WORKER restart, it reclaims jobs whose lease has expired by polling the same durable command table API writes to; no message broker sits between them. Results are written only with a still-valid lease token; the currently published run is kept intact until the transaction publishing the new run completes.
 
 A single server is a single point of failure. No high availability or automatic failover is claimed. Before real CVs are used, access control and a data-handling policy must be added; building an account administration module remains outside the scope of this business design.
 
 ## How it runs today
 
-The current prototype is opened directly as `index.html`, or served by a static HTTP server as described in the [README](../../README.md). It does not use Nginx, FastAPI, PostgreSQL, S3, or the AI service shown in the proposal above. None of this infrastructure is needed to run the existing demo.
+The current prototype is opened directly as `index.html`, or served by a static HTTP server as described in the [README](../../README.md). It does not use Nginx, Next.js, a separate worker process, PostgreSQL, S3, or the AI service shown in the proposal above. None of this infrastructure is needed to run the existing demo.
 
 Related: [C2 — the containers being deployed](c2-containers.md), [operations and quality goals in arc42](arc42.md#9-architecture-decisions).

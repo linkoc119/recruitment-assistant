@@ -1,5 +1,7 @@
 # Part 1 — Requirements and INVEST User Stories
 
+Application API: [OpenAPI 3.0.3](../api/openapi.yaml) and [contract guide / story mapping](../api/README.md). Backend implementation and contract acceptance tests remain pending.
+
 Version 1.1 · 2026-09-15 · **Requirements for the proposed solution, not implemented capabilities.**
 
 ## 1. Basis and scope
@@ -78,7 +80,7 @@ Priority **M** means required to accept the v1 workflow; **S** means desirable a
 
 **As a recruiter, I want to upload multiple CVs and see which files were accepted, so that I can prepare the screening set without overlooking failures.**
 
-- **AC-1:** Given no more than 200 text-layer PDF or DOCX files of no more than 10 MB each, when I upload the batch, then each accepted file has its own identifier/status and is associated with the position.
+- **AC-1:** Given no more than 200 text-layer PDF or DOCX files of no more than 10 MiB (10,485,760 bytes) each, when I upload the batch, then each accepted file has its own identifier/status and is associated with the position.
 - **AC-2:** Given an oversized file or unsupported actual format, when validation runs, then the file receives its own error while valid files are accepted; renaming an extension does not bypass format validation.
 - **AC-3:** Given 201 selected files, when I submit the batch, then the system asks me to split it and does not silently omit file 201. Rejecting this entire oversized batch is a proposed interpretation of the arc42 limit.
 
@@ -88,7 +90,7 @@ Priority **M** means required to accept the v1 workflow; **S** means desirable a
 
 - **AC-1:** Given an accepted file, when identical content is uploaded again to the same position, then the existing CV is identified, the duplicate is reported, and no copy is added to the screening set.
 - **AC-2:** Given an identified candidate and different CV content, when the new version is accepted, then the prior version and its history remain intact; completed runs do not change their referenced content.
-- **AC-3:** Given insufficient evidence that two records represent the same person, when the file is accepted, then the system does not merge them from name alone. Candidate identity confirmation remains refinement decision D-02 and does not introduce a candidate-administration screen.
+- **AC-3:** Given insufficient evidence that two records represent the same person, when the file is accepted, then the system does not merge them from name alone. Candidate identity confirmation follows accepted decision D-02 in [Decisions](decisions.md) and does not introduce a candidate-administration screen.
 
 ### US-06 — Parse a CV with Evidence
 
@@ -151,10 +153,12 @@ Priority **M** means required to accept the v1 workflow; **S** means desirable a
 **As a recruiter, I want to record a shortlist or reject decision for a candidate, so that human hiring decisions are explicitly distinguished from automated screening results.**
 
 - **AC-1:** Given a current result in scored state, when I confirm shortlist, then shortlisted status and decision time are stored under BR-DEC-01.
-- **AC-2:** Given a current result, when I confirm reject, then rejected status and decision time are stored under BR-DEC-01.
+- **AC-2:** Given a current result in scored state, when I confirm reject, then rejected status and decision time are stored under BR-DEC-01.
 - **AC-3:** Given a candidate who failed mandatory eligibility, when I select shortlist, then the failed criteria are shown and confirmation is required; canceling leaves status unchanged, while confirming retains the mandatory result under BR-DEC-02.
 - **AC-4:** Given a candidate who passed mandatory eligibility or has a high score, when I confirm reject, then the decision is stored; the system does not substitute the score for my decision under BR-ELG-02 and BR-DEC-02.
 - **AC-5:** Given a save failure or stale displayed data, when I record a decision, then the interface does not show it as saved; stale/conflicting changes are rejected without overwrite under BR-DEC-03, BR-DEC-04, and Q06.
+
+- **AC-6:** Given an already shortlisted/rejected current result, when a different decision or undo is requested, then it is rejected under BR-DEC-06. A current-version identical retry preserves decision_at and result_version.
 
 ### US-14 — Adjust and Version Criteria
 
@@ -219,16 +223,18 @@ Proposed order: US-01/03/04 → US-02/05/06 → US-07–12 → US-13 → US-14�
 
 US-02 remains **Must** because F01 in arc42 currently defines criteria suggestion as an in-scope capability. Changing it to Should would change Product Scope and requires a corresponding PO-approved update to arc42.
 
-### Open Questions / Decisions Required
+### Accepted decisions and delivery readiness
 
-| ID | Decision required before taking the story into a sprint | Affects |
+See [D-01–D-05](decisions.md) for accepted behavior and provisional story estimates, and [Extraction contract](extraction-contract.md) for the GPT-4o mini adapter.
+
+| ID | Decision status | Affects |
 |---|---|---|
-| D-01 | Select the extraction adapter/model and contract; create an annotated synthetic PDF/DOCX corpus. A stub can support development but cannot prove real integration acceptance | US-02, US-06; split by format if too large for one sprint |
-| D-02 | Define candidate identity confirmation, duplicate scope outside one position, and how a new CV is attached; never merge identities from name alone | US-05; same-position identical-content behavior is already defined |
-| D-03 | Define date/month normalization, ongoing employment, incomplete dates, and whether 10 MB uses decimal or binary bytes; version the rules before boundary fixtures are finalized | US-04, US-06, US-10 |
-| D-04 | Let the delivery team estimate every story and split US-06, US-08, or US-15 by user value if too large. Refine background processing and recovery in technical design | US-06, US-08, US-15 |
-| D-05 | Decide whether changing or undoing a shortlisted/rejected state is needed. Current AC starts from scored and does not add a broader recruitment lifecycle | US-13 |
+| D-01 | Accepted: OpenAI GPT-4o mini; extraction-v1 contract and synthetic gold cases. PDF/DOCX corpus expansion and live evaluation remain implementation work | US-02, US-06; split by format if too large for one sprint |
+| D-02 | Accepted: scoped duplicate reuse; explicit recruiter confirmation before attaching a different-content CV version; no automatic name/email merge | US-05; same-position identical-content behavior is already defined |
+| D-03 | Accepted: months-v1, frozen UTC as_of_date, ambiguous dates as missing evidence; maximum 10,485,760 bytes | US-04, US-06, US-10 |
+| D-04 | Provisional estimates and slices recorded in decisions.md; owner/capacity and sprint-fit confirmation remain pending after OpenAPI | US-06, US-08, US-15 |
+| D-05 | Accepted: scored to shortlisted/rejected only; no undo/switch; current-version identical retries may return existing state | US-13 |
 
-**Proposed Definition of Ready:** value and scope are shared; AC and fixtures are clear; dependency outcomes/contracts are available; related D-items are resolved; and the delivery team has estimated and confirmed sprint fit. The backlog is ready for discussion and design, but not every story is automatically ready for implementation.
+**Proposed Definition of Ready:** value and scope are shared; AC and fixtures are clear; dependency outcomes/contracts are available; applicable accepted decisions have implementation-ready contracts; and the delivery team has estimated and confirmed sprint fit. The backlog is ready for discussion and design, but not every story is automatically ready for implementation.
 
 **Proposed Definition of Done for each story:** relevant AC and Q requirements pass suitable tests; integration failures are handled; documentation and traceability remain aligned; and mocks are not presented as evidence that AI/backend integration works. This document completes the requirements portion only; API, data diagrams, and test code belong to later parts.

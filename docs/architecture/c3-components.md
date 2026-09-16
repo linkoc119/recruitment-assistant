@@ -1,8 +1,10 @@
 # C3 — Component: Screening Backend
 
+**Runtime/API update (2026-09-16):** This view reflects the [Next.js backend decision](nextjs-backend.md): `API` (Next.js Route Handlers) and `WORKER` (Node.js/TypeScript) are separate processes, coordinated only through a lease/command table in PostgreSQL, with no message broker. [OpenAPI](../api/openapi.yaml) defines canonical HTTP behavior; business invariants are unchanged.
+
 **Status:** proposed; these components do not exist in the current code.
 
-**Scope:** opens up the `API` container from C2 only.
+**Scope:** opens up `API` and `WORKER` from C2.
 
 **Audience:** backend designers and developers.
 
@@ -15,33 +17,34 @@
 
 ```mermaid
 ---
-title: "C3 — Component: Screening Backend — Proposed"
+title: "C3 — Component: Screening Backend and Worker — Proposed"
 ---
 flowchart TB
     WEB["WEB · Web App<br/>[Container · HTML/CSS/JavaScript]<br/>Sends commands and displays results"]
-    subgraph API["API · Screening Backend — Proposed Python/FastAPI Container"]
-        HTTP["HTTP · API Controllers<br/>[Component · FastAPI routers]<br/>Validates requests, context, and versions"]
-        CRIT["CRIT · Criteria Service<br/>[Component · Python]<br/>Manages positions, JDs, and criteria revisions"]
-        CV["CV · Resume Service<br/>[Component · Python/PDF-DOCX parser]<br/>Manages files, hashes, versions, and CV text"]
-        RUN["RUN · Screening Coordinator<br/>[Component · Python async tasks]<br/>Coordinates durable jobs, retries, and publication"]
-        SCORE["SCORE · Scoring Engine<br/>[Component · Python domain module]<br/>Evaluates eligibility, scores, and criterion contributions"]
-        REVIEW["REVIEW · Ranking and Review Service<br/>[Component · Python]<br/>Provides rankings, evidence, decisions, and comparisons"]
-        EXTRACT["EXTRACT · Extraction Adapter<br/>[Component · Python HTTP client]<br/>Calls AI and validates schemas and source evidence"]
-        DATA["DATA · Repositories<br/>[Component · Python SQL/S3 clients]<br/>Provides data/file access and transaction boundaries"]
+    subgraph API["API · Screening Backend — Next.js Route Handlers Container"]
+        HTTP["HTTP · API Controllers<br/>[Component · Next.js Route Handlers]<br/>Validates requests, context, and versions"]
+        CRIT["CRIT · Criteria Service<br/>[Component · TypeScript]<br/>Manages positions, JDs, and criteria revisions"]
+        CV["CV · Resume Service<br/>[Component · TypeScript]<br/>Accepts uploads; manages files, hashes, and versions"]
+        REVIEW["REVIEW · Ranking and Review Service<br/>[Component · TypeScript]<br/>Provides rankings, evidence, decisions, and comparisons"]
         HTTP -->|"Creates/reads positions and manages criteria · function call"| CRIT
         HTTP -->|"Uploads or reads a CV file · function call"| CV
-        HTTP -->|"Creates jobs and reads progress · function call"| RUN
+        HTTP -->|"Writes a durable run command and reads progress · function call"| DATA
         HTTP -->|"Reads results and records decisions · function call"| REVIEW
         CRIT -->|"Extracts JD data · function call"| EXTRACT
         CRIT -->|"Reads/writes positions and criteria · function call"| DATA
         CV -->|"Stores file, hash, and version · function call"| DATA
-        RUN -->|"Reads text from the selected CV version · function call"| CV
-        RUN -->|"Extracts a CV without a snapshot · function call"| EXTRACT
-        RUN -->|"Scores a snapshot under the policy · function call"| SCORE
-        RUN -->|"Stores jobs and snapshots and publishes transactionally · function call"| DATA
         REVIEW -->|"Reads runs/evidence and records decisions · function call"| DATA
     end
-    DB[("DB · Screening Database<br/>[Container · PostgreSQL]<br/>Business data, jobs, and history")]
+    subgraph WORKER["WORKER · Screening Worker — Node.js/TypeScript Container"]
+        RUN["RUN · Screening Coordinator<br/>[Component · Node.js durable worker loop]<br/>Claims durable commands, coordinates retries, and publishes runs"]
+        RUN -->|"Claims durable commands, stores jobs/snapshots, and publishes transactionally · function call"| DATA
+        RUN -->|"Extracts a CV without a snapshot · function call"| EXTRACT
+        RUN -->|"Scores a snapshot under the policy · function call"| SCORE
+    end
+    SCORE["SCORE · Scoring Engine<br/>[Component · TypeScript domain module · shared]<br/>Evaluates eligibility, scores, and criterion contributions"]
+    EXTRACT["EXTRACT · Extraction Adapter<br/>[Component · TypeScript HTTP client · shared]<br/>Calls AI and validates schemas and source evidence"]
+    DATA["DATA · Repositories<br/>[Component · TypeScript SQL/S3 clients · shared]<br/>Provides data/file access and transaction boundaries"]
+    DB[("DB · Screening Database<br/>[Container · PostgreSQL]<br/>Business data, durable commands/leases, jobs, and history")]
     FILES[("FILES · CV Store<br/>[Container · S3-compatible storage]<br/>Private original CV files")]
     AI["AI · AI Extraction Service<br/>[External Software System · HTTPS API]<br/>Returns structured JD and CV data"]
     WEB -->|"HTTPS/JSON or multipart"| HTTP
@@ -61,11 +64,11 @@ flowchart TB
 
 ## Legend and dependency rules
 
-In the SVG, the outer frame is the `SYS` system and the inner frame is the `API` container. A box with two tabs on its left edge and a `[Component]` label is a component inside the backend. WEB, DB, and FILES sit outside the backend frame but still belong to the system; AI is a red box outside both frames. The Mermaid version omits the outer frame to keep the focus on the API; the elements and relationships are equivalent to the SVG.
+In the SVG, `API` and `WORKER` are each drawn as their own frame — two separate processes, per the [Next.js backend decision](nextjs-backend.md) — with `SCORE`, `EXTRACT`, and `DATA` drawn outside both frames because their code is shared by both processes, not owned by either one. A box with two tabs on its left edge and a `[Component]` label is a component. WEB, DB, and FILES sit outside both backend frames but still belong to the system; AI is a red box outside every frame. The Mermaid version omits the outer `SYS` frame from C2 to keep the focus on the backend; the elements and relationships are equivalent to the SVG.
 
-A dashed arrow runs from caller to provider and states whether the call is internal or a network protocol; it does not express execution order or synchronous versus asynchronous behaviour. Element-type labels accompany the icons, so meaning does not depend on colour alone. PDF/DOCX are CV formats; the remaining abbreviations follow the [arc42 glossary](arc42.md#12-glossary).
+A dashed arrow runs from caller to provider and states whether the call is internal or a network protocol; it does not express execution order or synchronous versus asynchronous behaviour. An arrow never crosses the `API`/`WORKER` process boundary directly — the two processes coordinate only by writing and polling rows in `DATA`, never by calling one another's components. Element-type labels accompany the icons, so meaning does not depend on colour alone. PDF/DOCX are CV formats; the remaining abbreviations follow the [arc42 glossary](arc42.md#12-glossary).
 
-`SCORE` only receives a snapshot and returns a result: it does not call the AI, write to the database, or read files. That makes it testable — the same input always yields the same score. `EXTRACT` returns either validated data or a structured error; it never decides a shortlist. `DATA` contains no scoring formula. `RUN` owns the job lifecycle and the run-publication transaction; `REVIEW` owns human actions.
+`SCORE` only receives a snapshot and returns a result: it does not call the AI, write to the database, or read files. That makes it testable — the same input always yields the same score. `EXTRACT` returns either validated data or a structured error; it never decides a shortlist. `DATA` contains no scoring formula. `RUN`, in the `WORKER` process, owns the job lifecycle and the run-publication transaction; `REVIEW`, in the `API` process, owns human actions.
 
 | Component | Main contract | Failure cases |
 |---|---|---|
@@ -78,13 +81,13 @@ A dashed arrow runs from caller to provider and states whether the call is inter
 | EXTRACT | Text + schema → data with valid spans plus metadata | Timeout, malformed JSON, evidence absent from the source |
 | DATA | Repository methods plus the transaction boundary | Database rollback; compensating deletion of written files when the metadata cannot be saved |
 
-Calls into DATA are shown at the shared repository level; no service calls the database directly. Background processing uses `RUN` inside the same API container — no worker container has been left out of the diagram.
+Calls into DATA are shown at the shared repository level; no service calls the database directly. Background processing runs in `WORKER`, a Node.js/TypeScript process separate from `API`; the two coordinate only through the durable command/lease rows in `DATA`, never through a direct call — see [Background processing in C2](c2-containers.md#background-processing-a-separate-worker-coordinated-by-a-lease-table).
 
 ## Position lifecycle and Q11 responsibilities
 
 `CRIT` also owns position metadata and the original JD in this subsystem. Through DATA, it creates a position with status `draft`, reads position details, and lists positions with an optional `draft`/`open`/`closed` filter. HTTP validates the filter, returns stored status, and exposes no status-transition operation. WEB displays and filters status without allowing edits. Run state and decision state remain separate. This implements [US-01 AC-4](../requirements/README.md#us-01--create-position-and-jd) without adding a recruitment lifecycle workflow.
 
-For [Q11](../requirements/non-functional-requirements.md), HTTP requires the position context on resource requests and passes it to the responsible service. RUN checks run membership, REVIEW checks run/result membership (and both runs for comparison), and CV checks the selected CV's association with the position. For an evidence viewer, CV also checks that the requested version is the one referenced by the selected result and run. DATA performs these scoped lookups before returning sensitive data or resolving a file object key. A mismatch returns a generic `404` without content or metadata from the other position. This context check does not replace future user authorization.
+For [Q11](../requirements/non-functional-requirements.md), HTTP requires the position context on resource requests. It passes that context directly to the service it calls in-process (CRIT, CV, REVIEW); for a durable run, it writes the position context into the command row that RUN, in the separate WORKER process, later reads when it claims the lease. RUN checks run membership from that durable record, REVIEW checks run/result membership (and both runs for comparison), and CV checks the selected CV's association with the position. For an evidence viewer, CV also checks that the requested version is the one referenced by the selected result and run. DATA performs these scoped lookups before returning sensitive data or resolving a file object key. A mismatch returns a generic `404` without content or metadata from the other position. This context check does not replace future user authorization.
 
 WEB excludes raw CV content and contact details from URLs, analytics labels, notifications, error messages, and persistent storage. HTTP returns sanitized error codes and correlation IDs, never submitted sensitive values. CV content and sensitive API responses use `Cache-Control: no-store`; WEB must not persist these responses in localStorage, IndexedDB, or Cache Storage, and releases viewer data/object URLs when the view closes or changes position. Notifications use generic text rather than candidate contact details or raw filenames.
 

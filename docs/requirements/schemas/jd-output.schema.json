@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "extraction-v1"
+      ]
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "skill",
+              "experience",
+              "education"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "skill_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requirement_type": {
+            "type": "string",
+            "enum": [
+              "mandatory",
+              "preferred",
+              "unspecified"
+            ]
+          },
+          "min_years": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "min_degree": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "vocational",
+              "college",
+              "bachelor",
+              "master",
+              "doctorate",
+              null
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "segment_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "segment_id",
+                "quote"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "skill_name",
+          "requirement_type",
+          "min_years",
+          "min_degree",
+          "evidence"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "criteria"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,2309 @@
+openapi: 3.0.3
+info:
+  title: CV Screening and Ranking API
+  version: 1.0.0
+  description: Proposed contract for US-01–US-17, decisions D-01–D-05 and policy v1. Next.js/TypeScript target; no backend is implemented. Internal synthetic-data trial only; authentication/RBAC are outside v1. All resources are position scoped, sensitive responses use no-store. JSON IDs and exact decimals are strings.
+  license:
+    name: Project documentation
+servers:
+- url: http://localhost:3000/api
+  description: Planned local Next.js server; not an existing service.
+tags:
+- name: Positions
+  description: Positions operations within the screening subsystem.
+- name: Criteria
+  description: Criteria operations within the screening subsystem.
+- name: CVs
+  description: CVs operations within the screening subsystem.
+- name: Runs
+  description: Runs operations within the screening subsystem.
+- name: Results
+  description: Results operations within the screening subsystem.
+security: []
+paths:
+  /jobs:
+    get:
+      tags: [Positions]
+      operationId: listJobs
+      summary: List positions
+      description: Filter stored lifecycle only. No lifecycle mutation exists.
+      x-user-stories: [US-01]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobList'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - name: status
+        in: query
+        required: false
+        description: Stored lifecycle filter.
+        schema:
+          $ref: '#/components/schemas/JobStatus'
+    post:
+      tags: [Positions]
+      operationId: createJob
+      summary: Create position and original JD
+      description: Creates draft lifecycle. Reject whitespace-only title/JD; preserve JD exactly.
+      x-user-stories: [US-01]
+      responses:
+        '201':
+          $ref: '#/components/responses/JobResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobInput'
+  /jobs/{job_id}:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    get:
+      tags: [Positions]
+      operationId: getJob
+      summary: Read workspace context
+      description: Includes readiness from approved criteria, parsed CVs and active run.
+      x-user-stories: [US-01, US-07]
+      responses:
+        '200':
+          $ref: '#/components/responses/JobResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+    put:
+      tags: [Positions]
+      operationId: updateJob
+      summary: Edit position metadata and JD
+      description: Update metadata/JD with optimistic version checks; lifecycle is read-only.
+      x-user-stories: [US-01]
+      responses:
+        '200':
+          $ref: '#/components/responses/JobResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobUpdate'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#updatejob
+  /skills:
+    get:
+      tags: [Criteria]
+      operationId: listSkills
+      summary: Read skill vocabulary
+      description: Read-only dictionary, not an administration API. Does not accept CV text in query parameters.
+      x-user-stories: [US-03]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillList'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+  /jobs/{job_id}/criteria-draft:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    get:
+      tags: [Criteria]
+      operationId: getCriteriaDraft
+      summary: Read current unapproved draft
+      description: 404 draft_not_found when no draft; approved revisions use separate endpoints.
+      x-user-stories: [US-03, US-14]
+      responses:
+        '200':
+          $ref: '#/components/responses/CriteriaDraftResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+    put:
+      tags: [Criteria]
+      operationId: saveCriteriaDraft
+      summary: Save manual or edited criteria draft
+      description: Save a version-checked draft; incomplete criteria are allowed before approval.
+      x-user-stories: [US-03, US-14]
+      responses:
+        '200':
+          $ref: '#/components/responses/CriteriaDraftResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriteriaDraftInput'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#savecriteriadraft
+  /jobs/{job_id}/criteria-suggestions:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    post:
+      tags: [Criteria]
+      operationId: suggestCriteria
+      summary: Suggest criteria using GPT-4o mini
+      description: Return validated JD suggestions without saving or approving the draft.
+      x-user-stories: [US-02]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Suggestions'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '429':
+          $ref: '#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SuggestionInput'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#suggestcriteria
+  /jobs/{job_id}/criteria-revisions:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    post:
+      tags: [Criteria]
+      operationId: approveCriteria
+      summary: Approve current draft as a new revision
+      description: Validate and freeze a new criteria revision atomically; consume the draft.
+      x-user-stories: [US-03, US-14]
+      responses:
+        '201':
+          $ref: '#/components/responses/CriteriaRevisionResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApprovalInput'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#approvecriteria
+    get:
+      tags: [Criteria]
+      operationId: listCriteriaRevisions
+      summary: List approved revisions
+      description: Ascending revision order; approved immutable revisions only.
+      x-user-stories: [US-14, US-16]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevisionList'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+  /jobs/{job_id}/criteria-revisions/{revision}:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/revision'
+    get:
+      tags: [Criteria]
+      operationId: getCriteriaRevision
+      summary: Read immutable approved criteria
+      description: Reads original snapshot, never current JD.
+      x-user-stories: [US-03, US-14, US-16]
+      responses:
+        '200':
+          $ref: '#/components/responses/CriteriaRevisionResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+  /jobs/{job_id}/candidates:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    get:
+      tags: [CVs]
+      operationId: listPositionCandidates
+      summary: List candidate identities for version confirmation
+      description: List candidates in this position for explicit new-version upload confirmation.
+      x-user-stories: [US-05]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CandidateList'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#listpositioncandidates
+  /jobs/{job_id}/resumes:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    get:
+      tags: [CVs]
+      operationId: listResumes
+      summary: List accepted CVs and parsing states
+      description: List persisted extraction states, ordered by uploaded_at then resume_id.
+      x-user-stories: [US-04, US-05, US-06]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumeList'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - name: status
+        in: query
+        required: false
+        description: Optional parse status.
+        schema:
+          $ref: '#/components/schemas/ResumeStatus'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#listresumes
+  /jobs/{job_id}/resumes/{resume_id}:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/resume_id'
+    get:
+      tags: [CVs]
+      operationId: getResume
+      summary: Read position-scoped CV status
+      description: Includes snapshot ID only after validated extraction. Errors are distinct from eligibility.
+      x-user-stories: [US-06]
+      responses:
+        '200':
+          $ref: '#/components/responses/ResumeResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+  /jobs/{job_id}/resume-batches:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    post:
+      tags: [CVs]
+      operationId: uploadResumeBatch
+      summary: Accept a PDF/DOCX batch
+      description: Accept a validated batch and report each file outcome; extraction runs asynchronously.
+      x-user-stories: [US-04, US-05, US-06]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '413':
+          $ref: '#/components/responses/413'
+        '415':
+          $ref: '#/components/responses/415'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  minItems: 1
+                  maxItems: 200
+                manifest:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UploadManifestItem'
+                  minItems: 1
+                  maxItems: 200
+              required: [files, manifest]
+            encoding:
+              files:
+                contentType: application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document
+              manifest:
+                contentType: application/json
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#uploadresumebatch
+  /jobs/{job_id}/screening-runs:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    post:
+      tags: [Runs]
+      operationId: startRun
+      summary: Start screening or criteria-only rescore
+      description: Commit one durable screening/rescore command and return its run.
+      x-user-stories: [US-07, US-15]
+      responses:
+        '202':
+          $ref: '#/components/responses/RunResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunInput'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#startrun
+    get:
+      tags: [Runs]
+      operationId: listRuns
+      summary: List run history
+      description: Newest round first. Includes failed/unpublished processing attempts; only published_at != null runs expose results/comparison.
+      x-user-stories: [US-08, US-16]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunList'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - name: published_only
+        in: query
+        required: false
+        description: Only successfully published history.
+        schema:
+          type: boolean
+          default: false
+  /jobs/{job_id}/screening-runs/{run_id}:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/run_id'
+    get:
+      tags: [Runs]
+      operationId: getRun
+      summary: Poll durable progress
+      description: Read persisted progress and publication state; technical failures remain separate.
+      x-user-stories: [US-08, US-15]
+      responses:
+        '200':
+          $ref: '#/components/responses/RunResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#getrun
+  /jobs/{job_id}/screening-runs/{run_id}/items:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/run_id'
+    get:
+      tags: [Runs]
+      operationId: listRunItems
+      summary: Read per-CV progress and technical failures
+      description: Failed items never produce zero scores or rejection decisions. Excludes source text from error payload.
+      x-user-stories: [US-08]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunItemList'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - name: status
+        in: query
+        required: false
+        description: Filter failures separately from ranking.
+        schema:
+          type: string
+          enum: [pending, processing, succeeded, failed]
+  /jobs/{job_id}/ranking/query:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    post:
+      tags: [Results]
+      operationId: queryRanking
+      summary: Search/filter a consistent published ranking
+      description: Read a published ranking with run/decision-epoch pagination; search stays in the body.
+      x-user-stories: [US-11, US-16]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ranking'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RankingQuery'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#queryranking
+  /jobs/{job_id}/screening-runs/{run_id}/results/{result_id}:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/run_id'
+    - $ref: '#/components/parameters/result_id'
+    get:
+      tags: [Results]
+      operationId: getResult
+      summary: Inspect scores and criterion evidence
+      description: Read snapshot-specific analysis from a published run; validate the full position context.
+      x-user-stories: [US-09, US-10, US-12, US-16]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultDetail'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#getresult
+  /jobs/{job_id}/screening-runs/{run_id}/results/{result_id}/source:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/run_id'
+    - $ref: '#/components/parameters/result_id'
+    get:
+      tags: [Results]
+      operationId: getResultSource
+      summary: Read safe frozen source preview
+      description: Read plain-text source for evidence; unavailable source returns 503 source_unavailable.
+      x-user-stories: [US-12]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcePreview'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#getresultsource
+  /jobs/{job_id}/screening-runs/{run_id}/results/{result_id}/file:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/run_id'
+    - $ref: '#/components/parameters/result_id'
+    get:
+      tags: [Results]
+      operationId: getResultFile
+      summary: Read original file for selected result
+      description: Deliver the scoped original PDF/DOCX without exposing private storage paths.
+      x-user-stories: [US-12]
+      responses:
+        '200':
+          description: Private original CV bytes.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+            Content-Disposition:
+              $ref: '#/components/headers/ContentDisposition'
+            X-Content-Type-Options:
+              $ref: '#/components/headers/XContentTypeOptions'
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.wordprocessingml.document:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#getresultfile
+  /jobs/{job_id}/screening-runs/{run_id}/results/{result_id}/decision:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/run_id'
+    - $ref: '#/components/parameters/result_id'
+    patch:
+      tags: [Results]
+      operationId: recordDecision
+      summary: Record final shortlist/reject decision
+      description: Record a final decision against the current run/result version; conflicting writes fail.
+      x-user-stories: [US-13]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionInput'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#recorddecision
+  /jobs/{job_id}/comparison:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    get:
+      tags: [Results]
+      operationId: compareRuns
+      summary: Compare two published runs
+      description: Compare two published runs in one position by exact CV snapshot identity.
+      x-user-stories: [US-17]
+      responses:
+        '200':
+          description: Successful response.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControl'
+            X-Request-Id:
+              $ref: '#/components/headers/XRequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comparison'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+      - name: left_run_id
+        in: query
+        required: true
+        description: Baseline published run.
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: right_run_id
+        in: query
+        required: true
+        description: Compared published run.
+        schema:
+          $ref: '#/components/schemas/Id'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#compareruns
+  /jobs/{job_id}/resumes/{resume_id}/reprocess:
+    parameters:
+    - $ref: '#/components/parameters/job_id'
+    - $ref: '#/components/parameters/resume_id'
+    post:
+      tags: [CVs]
+      operationId: reprocessResume
+      summary: Retry failed CV extraction
+      description: Queue extraction only for a parse-failed resume without a validated snapshot.
+      x-user-stories: [US-06, US-08]
+      responses:
+        '202':
+          $ref: '#/components/responses/ResumeResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+        '503':
+          $ref: '#/components/responses/503'
+      parameters:
+      - $ref: '#/components/parameters/key'
+      externalDocs:
+        description: Workflow and consistency rules
+        url: README.md#reprocessresume
+components:
+  schemas:
+    Id:
+      type: string
+      pattern: ^[1-9][0-9]*$
+      example: '42'
+      description: Positive database bigint encoded as a decimal string to avoid JavaScript precision loss.
+    Version:
+      type: integer
+      minimum: 1
+      example: 1
+    Decimal:
+      type: string
+      pattern: ^(0|[1-9][0-9]*)(\.[0-9]+)?$
+      example: '92.94'
+      description: Non-negative decimal string; do not use binary floating point for authoritative calculations.
+    DisplayedScore:
+      type: string
+      pattern: ^(100\.00|[0-9]{1,2}\.[0-9]{2})$
+      example: '92.94'
+    Error:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          example: stale_result
+        message:
+          type: string
+          example: This result changed. Reload it before deciding.
+        request_id:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              field:
+                type: string
+              code:
+                type: string
+              message:
+                type: string
+            required: [field, code, message]
+        retryable:
+          type: boolean
+      required: [code, message, request_id, retryable]
+      example:
+        code: stale_result
+        message: This result changed. Reload it before deciding.
+        request_id: req-demo-01
+        retryable: false
+    JobInput:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+        jd_raw_text:
+          type: string
+          minLength: 1
+          pattern: \S
+          description: Non-whitespace original text, preserved exactly.
+        level:
+          type: string
+          maxLength: 50
+          nullable: true
+      required: [title, jd_raw_text]
+      example:
+        title: Backend Developer
+        jd_raw_text: Python is required.
+        level: Mid
+    JobUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_version:
+          $ref: '#/components/schemas/Version'
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: \S
+        jd_raw_text:
+          type: string
+          minLength: 1
+          pattern: \S
+        level:
+          type: string
+          nullable: true
+          maxLength: 50
+      required: [expected_version, title, jd_raw_text]
+    Job:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        jd_raw_text:
+          type: string
+        level:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        version:
+          $ref: '#/components/schemas/Version'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+        criteria_revision:
+          type: integer
+          minimum: 1
+          nullable: true
+        published_run_id:
+          $ref: '#/components/schemas/NullableId'
+        readiness:
+          type: object
+          additionalProperties: false
+          properties:
+            approved_criteria:
+              type: boolean
+            ready_cv_count:
+              type: integer
+              minimum: 0
+            active_run_id:
+              $ref: '#/components/schemas/NullableId'
+            can_start:
+              type: boolean
+            blocking_codes:
+              type: array
+              items:
+                type: string
+                enum: [criteria_not_approved, no_ready_cv, active_run]
+          required: [approved_criteria, ready_cv_count, active_run_id, can_start, blocking_codes]
+      required: [id, title, jd_raw_text, level, status, version, created_at, updated_at, criteria_revision, published_run_id, readiness]
+    JobListItem:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        title:
+          type: string
+        level:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        ready_cv_count:
+          type: integer
+          minimum: 0
+        published_run_id:
+          $ref: '#/components/schemas/NullableId'
+        active_run_id:
+          $ref: '#/components/schemas/NullableId'
+      required: [id, title, level, status, created_at, ready_cv_count, published_run_id, active_run_id]
+    Page:
+      type: object
+      additionalProperties: false
+      properties:
+        offset:
+          type: integer
+          minimum: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+      required: [offset, limit, total]
+    Evidence:
+      type: object
+      additionalProperties: false
+      properties:
+        source:
+          type: string
+          enum: [jd, cv]
+        source_id:
+          $ref: '#/components/schemas/Id'
+        segment_id:
+          type: string
+        quote:
+          type: string
+          minLength: 1
+        start_offset:
+          type: integer
+          minimum: 0
+        end_offset:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+          nullable: true
+        paragraph:
+          type: integer
+          minimum: 1
+          nullable: true
+      required: [source, source_id, segment_id, quote, start_offset, end_offset, page, paragraph]
+      description: "Exact source evidence with Unicode code-point offsets [start,end). See README section 10 for source identity rules."
+    CriterionInput:
+      type: object
+      additionalProperties: false
+      properties:
+        criterion_key:
+          type: string
+          minLength: 1
+          maxLength: 100
+        kind:
+          type: string
+          enum: [skill, experience, education]
+        label:
+          type: string
+          minLength: 1
+          maxLength: 255
+        skill_id:
+          $ref: '#/components/schemas/NullableId'
+        req_type:
+          type: string
+          enum: [mandatory, preferred]
+        weight:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)(\.[0-9]+)?$
+          example: '92.94'
+          description: Draft allows 0; approval requires >0 and exact total 100 across all criteria.
+        min_years:
+          $ref: '#/components/schemas/NullableDecimal'
+        min_degree:
+          type: string
+          nullable: true
+          enum: [vocational, college, bachelor, master, doctorate, null]
+        source:
+          type: string
+          enum: [manual, ai]
+        jd_evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evidence'
+      required: [criterion_key, kind, label, req_type, weight, source]
+    Criterion:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        criterion_key:
+          type: string
+        kind:
+          type: string
+          enum: [skill, experience, education]
+        label:
+          type: string
+        skill_id:
+          $ref: '#/components/schemas/NullableId'
+        canonical_skill_name:
+          type: string
+          nullable: true
+        req_type:
+          type: string
+          enum: [mandatory, preferred]
+        weight:
+          $ref: '#/components/schemas/Decimal'
+        min_years:
+          $ref: '#/components/schemas/NullableDecimal'
+        min_degree:
+          type: string
+          nullable: true
+          enum: [vocational, college, bachelor, master, doctorate, null]
+        source:
+          type: string
+          enum: [manual, ai]
+        jd_evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evidence'
+      required: [id, criterion_key, kind, label, skill_id, canonical_skill_name, req_type, weight, min_years, min_degree, source, jd_evidence]
+    CriteriaDraftInput:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_draft_version:
+          type: integer
+          minimum: 0
+          description: 0 creates the only active draft; subsequent writes require its current version.
+        expected_revision:
+          type: integer
+          minimum: 0
+          description: Current approved revision, 0 before first approval.
+        expected_job_version:
+          $ref: '#/components/schemas/Version'
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriterionInput'
+      required: [expected_draft_version, expected_revision, expected_job_version, criteria]
+    CriteriaDraft:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        job_id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        base_revision:
+          type: integer
+          minimum: 0
+        job_version:
+          $ref: '#/components/schemas/Version'
+        jd_snapshot:
+          type: string
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/Criterion'
+        updated_at:
+          $ref: '#/components/schemas/Timestamp'
+      required: [id, job_id, version, base_revision, job_version, jd_snapshot, criteria, updated_at]
+    ApprovalInput:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_draft_version:
+          $ref: '#/components/schemas/Version'
+        expected_revision:
+          type: integer
+          minimum: 0
+        expected_job_version:
+          $ref: '#/components/schemas/Version'
+      required: [expected_draft_version, expected_revision, expected_job_version]
+    CriteriaRevision:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        job_id:
+          $ref: '#/components/schemas/Id'
+        revision:
+          $ref: '#/components/schemas/Version'
+        jd_snapshot:
+          type: string
+        dictionary_version:
+          type: string
+        approved_at:
+          $ref: '#/components/schemas/Timestamp'
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/Criterion'
+          minItems: 1
+      required: [id, job_id, revision, jd_snapshot, dictionary_version, approved_at, criteria]
+    Suggestions:
+      type: object
+      additionalProperties: false
+      properties:
+        job_id:
+          $ref: '#/components/schemas/Id'
+        job_version:
+          $ref: '#/components/schemas/Version'
+        schema_version:
+          type: string
+        model_version:
+          type: string
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriterionInput'
+        warnings:
+          type: array
+          items:
+            type: string
+      required: [job_id, job_version, schema_version, model_version, criteria, warnings]
+      description: Unapproved suggestions only. Missing/ambiguous thresholds are warnings; invalid evidence fails the request. Client merges into draft explicitly.
+    Candidate:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        full_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        latest_resume_id:
+          $ref: '#/components/schemas/Id'
+        latest_version:
+          $ref: '#/components/schemas/Version'
+      required: [id, full_name, email, phone, latest_resume_id, latest_version]
+    Resume:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        job_id:
+          $ref: '#/components/schemas/Id'
+        candidate_id:
+          $ref: '#/components/schemas/Id'
+        version:
+          $ref: '#/components/schemas/Version'
+        file_name:
+          type: string
+        media_type:
+          type: string
+          enum: [application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document]
+        size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 10485760
+        status:
+          $ref: '#/components/schemas/ResumeStatus'
+        snapshot_id:
+          $ref: '#/components/schemas/NullableId'
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        error_code:
+          type: string
+          nullable: true
+        can_screen:
+          type: boolean
+      required: [id, job_id, candidate_id, version, file_name, media_type, size_bytes, status, snapshot_id, created_at, error_code, can_screen]
+    UploadManifestItem:
+      type: object
+      additionalProperties: false
+      properties:
+        client_file_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        file_index:
+          type: integer
+          minimum: 0
+        identity_mode:
+          type: string
+          enum: [new_candidate, new_version]
+        candidate_id:
+          $ref: '#/components/schemas/NullableId'
+        identity_confirmed:
+          type: boolean
+      required: [client_file_id, file_index, identity_mode]
+    UploadOutcome:
+      type: object
+      additionalProperties: false
+      properties:
+        client_file_id:
+          type: string
+        outcome:
+          type: string
+          enum: [accepted, new_version, duplicate, rejected]
+        resume_id:
+          $ref: '#/components/schemas/NullableId'
+        status:
+          type: string
+          nullable: true
+          enum: [uploaded, parsing, parsed, parse_failed, null]
+        error_code:
+          type: string
+          nullable: true
+        message:
+          type: string
+      required: [client_file_id, outcome, resume_id, status, error_code, message]
+      description: Rejected files have no resume_id. No other-position metadata or raw filenames in messages.
+    UploadResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadOutcome'
+        accepted_count:
+          type: integer
+          minimum: 0
+        duplicate_count:
+          type: integer
+          minimum: 0
+        rejected_count:
+          type: integer
+          minimum: 0
+      required: [items, accepted_count, duplicate_count, rejected_count]
+    RunInput:
+      type: object
+      additionalProperties: false
+      properties:
+        mode:
+          type: string
+          enum: [initial, rescore]
+        criteria_revision:
+          $ref: '#/components/schemas/Version'
+        resume_ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          minItems: 1
+          maxItems: 200
+          uniqueItems: true
+        base_run_id:
+          $ref: '#/components/schemas/Id'
+      required: [mode, criteria_revision]
+      description: "Initial mode selects resume_ids; rescore selects base_run_id. Cross-field violations return 422; see README section 10."
+      example:
+        mode: initial
+        criteria_revision: 1
+        resume_ids:
+        - '21'
+        - '22'
+    Run:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        job_id:
+          $ref: '#/components/schemas/Id'
+        round:
+          $ref: '#/components/schemas/Version'
+        mode:
+          type: string
+          enum: [initial, rescore]
+        base_run_id:
+          $ref: '#/components/schemas/NullableId'
+        criteria_revision:
+          $ref: '#/components/schemas/Version'
+        policy_version:
+          type: string
+          example: v1
+        status:
+          type: string
+          enum: [queued, running, completed, completed_with_errors, failed]
+        counts:
+          type: object
+          additionalProperties: false
+          properties:
+            total:
+              type: integer
+              minimum: 0
+            pending:
+              type: integer
+              minimum: 0
+            processing:
+              type: integer
+              minimum: 0
+            succeeded:
+              type: integer
+              minimum: 0
+            failed:
+              type: integer
+              minimum: 0
+          required: [total, pending, processing, succeeded, failed]
+        created_at:
+          $ref: '#/components/schemas/Timestamp'
+        started_at:
+          $ref: '#/components/schemas/NullableTimestamp'
+        finished_at:
+          $ref: '#/components/schemas/NullableTimestamp'
+        published_at:
+          $ref: '#/components/schemas/NullableTimestamp'
+        is_current:
+          type: boolean
+        error_code:
+          type: string
+          nullable: true
+      required: [id, job_id, round, mode, base_run_id, criteria_revision, policy_version, status, counts, created_at, started_at, finished_at, published_at, is_current, error_code]
+      example:
+        id: '31'
+        job_id: '1'
+        round: 1
+        mode: initial
+        base_run_id: null
+        criteria_revision: 1
+        policy_version: v1
+        status: queued
+        counts:
+          total: 2
+          pending: 2
+          processing: 0
+          succeeded: 0
+          failed: 0
+        created_at: '2026-09-16T09:00:00Z'
+        started_at: null
+        finished_at: null
+        published_at: null
+        is_current: false
+        error_code: null
+    RunItem:
+      type: object
+      additionalProperties: false
+      properties:
+        resume_id:
+          $ref: '#/components/schemas/Id'
+        snapshot_id:
+          $ref: '#/components/schemas/NullableId'
+        status:
+          type: string
+          enum: [pending, processing, succeeded, failed]
+        attempts:
+          type: integer
+          minimum: 0
+        error_code:
+          type: string
+          nullable: true
+        error_phase:
+          type: string
+          nullable: true
+        result_id:
+          $ref: '#/components/schemas/NullableId'
+      required: [resume_id, snapshot_id, status, attempts, error_code, error_phase, result_id]
+    RankRow:
+      type: object
+      additionalProperties: false
+      properties:
+        result_id:
+          $ref: '#/components/schemas/Id'
+        resume_id:
+          $ref: '#/components/schemas/Id'
+        snapshot_id:
+          $ref: '#/components/schemas/Id'
+        candidate_id:
+          $ref: '#/components/schemas/Id'
+        candidate_name:
+          type: string
+          nullable: true
+        file_name:
+          type: string
+        resume_version:
+          $ref: '#/components/schemas/Version'
+        rank:
+          type: integer
+          minimum: 1
+        passed_mandatory:
+          type: boolean
+        displayed_total:
+          $ref: '#/components/schemas/DisplayedScore'
+        status:
+          $ref: '#/components/schemas/DecisionStatus'
+        result_version:
+          $ref: '#/components/schemas/Version'
+        failed_criteria:
+          type: array
+          items:
+            type: string
+        matched_skills:
+          type: array
+          items:
+            type: string
+        missing_skills:
+          type: array
+          items:
+            type: string
+      required: [result_id, resume_id, snapshot_id, candidate_id, candidate_name, file_name, resume_version, rank, passed_mandatory, displayed_total, status, result_version, failed_criteria, matched_skills, missing_skills]
+    Ranking:
+      type: object
+      additionalProperties: false
+      properties:
+        job_id:
+          $ref: '#/components/schemas/Id'
+        run_id:
+          $ref: '#/components/schemas/NullableId'
+        criteria_revision:
+          type: integer
+          minimum: 1
+          nullable: true
+        policy_version:
+          type: string
+          nullable: true
+        is_current:
+          type: boolean
+        decision_epoch:
+          type: integer
+          minimum: 0
+        active_run_id:
+          $ref: '#/components/schemas/NullableId'
+        latest_criteria_revision:
+          type: integer
+          minimum: 1
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RankRow'
+        page:
+          $ref: '#/components/schemas/Page'
+        failure_count:
+          type: integer
+          minimum: 0
+        eligibility_counts:
+          type: object
+          additionalProperties: false
+          properties:
+            passed:
+              type: integer
+              minimum: 0
+            failed:
+              type: integer
+              minimum: 0
+          required: [passed, failed]
+      required: [job_id, run_id, criteria_revision, policy_version, is_current, decision_epoch, active_run_id, latest_criteria_revision, items, page, failure_count, eligibility_counts]
+      description: No published run returns run_id=null, empty items and zero counts. Failed files are outside ranking. First page pins run_id and decision_epoch for continuation.
+    ResultDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        job_id:
+          $ref: '#/components/schemas/Id'
+        run_id:
+          $ref: '#/components/schemas/Id'
+        resume_id:
+          $ref: '#/components/schemas/Id'
+        snapshot_id:
+          $ref: '#/components/schemas/Id'
+        criteria_revision:
+          $ref: '#/components/schemas/Version'
+        resume_version:
+          $ref: '#/components/schemas/Version'
+        candidate:
+          $ref: '#/components/schemas/SnapshotCandidate'
+        policy_version:
+          type: string
+        result_version:
+          $ref: '#/components/schemas/Version'
+        status:
+          $ref: '#/components/schemas/DecisionStatus'
+        decision_at:
+          $ref: '#/components/schemas/NullableTimestamp'
+        is_current:
+          type: boolean
+        can_decide:
+          type: boolean
+        rank:
+          type: integer
+          minimum: 1
+        passed_mandatory:
+          type: boolean
+        total_score:
+          $ref: '#/components/schemas/Decimal'
+        displayed_total:
+          $ref: '#/components/schemas/DisplayedScore'
+        skill_score:
+          $ref: '#/components/schemas/NullableDecimal'
+        experience_score:
+          $ref: '#/components/schemas/NullableDecimal'
+        education_score:
+          $ref: '#/components/schemas/NullableDecimal'
+        semantic_score:
+          type: number
+          nullable: true
+          enum: [null]
+        summary:
+          type: string
+        experience:
+          type: object
+          additionalProperties: false
+          properties:
+            normalization_version:
+              type: string
+              enum: [months-v1]
+            as_of_date:
+              type: string
+              format: date
+            supported_months:
+              type: integer
+              minimum: 0
+          required: [normalization_version, as_of_date, supported_months]
+        criteria:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              criterion:
+                $ref: '#/components/schemas/Criterion'
+              match_status:
+                type: string
+                enum: [matched, partial, missing]
+              criterion_passed:
+                type: boolean
+              reason_code:
+                type: string
+              reason:
+                type: string
+              score_contribution:
+                $ref: '#/components/schemas/Decimal'
+              displayed_contribution:
+                $ref: '#/components/schemas/DisplayedScore'
+              evidence:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Evidence'
+            required: [criterion, match_status, criterion_passed, reason_code, reason, score_contribution, displayed_contribution, evidence]
+      required: [id, job_id, run_id, resume_id, snapshot_id, criteria_revision, resume_version, candidate, policy_version, result_version, status, decision_at, is_current, can_decide, rank, passed_mandatory, total_score, displayed_total, skill_score, experience_score, education_score, semantic_score, summary, experience, criteria]
+    SourcePreview:
+      type: object
+      additionalProperties: false
+      properties:
+        resume_id:
+          $ref: '#/components/schemas/Id'
+        snapshot_id:
+          $ref: '#/components/schemas/Id'
+        run_id:
+          $ref: '#/components/schemas/Id'
+        result_id:
+          $ref: '#/components/schemas/Id'
+        raw_text:
+          type: string
+        segments:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              segment_id:
+                type: string
+              page:
+                type: integer
+                nullable: true
+                minimum: 1
+              paragraph:
+                type: integer
+                nullable: true
+                minimum: 1
+              start_offset:
+                type: integer
+                minimum: 0
+              end_offset:
+                type: integer
+                minimum: 0
+              text:
+                type: string
+            required: [segment_id, page, paragraph, start_offset, end_offset, text]
+      required: [resume_id, snapshot_id, run_id, result_id, raw_text, segments]
+      description: Plain text preview for PDF/DOCX; never executable HTML. Source matches frozen snapshot; no contact details in URL.
+    DecisionInput:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          type: string
+          enum: [shortlisted, rejected]
+        expected_result_version:
+          $ref: '#/components/schemas/Version'
+        confirm_failed_mandatory:
+          type: boolean
+          default: false
+      required: [decision, expected_result_version]
+      example:
+        decision: shortlisted
+        expected_result_version: 1
+        confirm_failed_mandatory: true
+    Decision:
+      type: object
+      additionalProperties: false
+      properties:
+        result_id:
+          $ref: '#/components/schemas/Id'
+        run_id:
+          $ref: '#/components/schemas/Id'
+        status:
+          type: string
+          enum: [shortlisted, rejected]
+        result_version:
+          $ref: '#/components/schemas/Version'
+        decision_at:
+          $ref: '#/components/schemas/Timestamp'
+      required: [result_id, run_id, status, result_version, decision_at]
+    ComparisonValue:
+      type: object
+      additionalProperties: false
+      properties:
+        present:
+          type: boolean
+        result_id:
+          $ref: '#/components/schemas/NullableId'
+        rank:
+          type: integer
+          minimum: 1
+          nullable: true
+        displayed_total:
+          type: string
+          pattern: ^(100\.00|[0-9]{1,2}\.[0-9]{2})$
+          example: '92.94'
+          nullable: true
+        passed_mandatory:
+          type: boolean
+          nullable: true
+        status:
+          type: string
+          nullable: true
+          enum: [scored, shortlisted, rejected, null]
+      required: [present, result_id, rank, displayed_total, passed_mandatory, status]
+    Comparison:
+      type: object
+      additionalProperties: false
+      properties:
+        job_id:
+          $ref: '#/components/schemas/Id'
+        left_run_id:
+          $ref: '#/components/schemas/Id'
+        right_run_id:
+          $ref: '#/components/schemas/Id'
+        items:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              resume_id:
+                $ref: '#/components/schemas/Id'
+              snapshot_id:
+                $ref: '#/components/schemas/Id'
+              left:
+                $ref: '#/components/schemas/ComparisonValue'
+              right:
+                $ref: '#/components/schemas/ComparisonValue'
+              score_delta:
+                type: string
+                nullable: true
+                pattern: ^-?[0-9]+\.[0-9]{2}$
+              rank_delta:
+                type: integer
+                nullable: true
+              eligibility_changed:
+                type: boolean
+                nullable: true
+            required: [resume_id, snapshot_id, left, right, score_delta, rank_delta, eligibility_changed]
+        changed_criteria:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              criterion_key:
+                type: string
+              change:
+                type: string
+                enum: [added, removed, modified]
+              fields:
+                type: array
+                items:
+                  type: string
+            required: [criterion_key, change, fields]
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [job_id, left_run_id, right_run_id, items, changed_criteria, page]
+      description: Align exact resume/snapshot identity, never merge by candidate ID. Right minus left deltas; absent side has present=false and all nullable values/deltas null.
+    Skill:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        dictionary_version:
+          type: string
+      required: [id, name, aliases, dictionary_version]
+    JobList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobListItem'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    CandidateList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Candidate'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    ResumeList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resume'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    RunList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Run'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    RunItemList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunItem'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    RevisionList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriteriaRevision'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    SkillList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Skill'
+        page:
+          $ref: '#/components/schemas/Page'
+      required: [items, page]
+    SuggestionInput:
+      type: object
+      additionalProperties: false
+      properties:
+        expected_job_version:
+          $ref: '#/components/schemas/Version'
+      required: [expected_job_version]
+    RankingQuery:
+      type: object
+      additionalProperties: false
+      properties:
+        run_id:
+          $ref: '#/components/schemas/Id'
+        decision_epoch:
+          type: integer
+          minimum: 0
+        offset:
+          type: integer
+          minimum: 0
+          default: 0
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+        search:
+          type: string
+          maxLength: 200
+        passed_mandatory:
+          type: boolean
+        decision:
+          $ref: '#/components/schemas/DecisionStatus'
+      description: "Body-only search with run/decision-epoch pagination. See README section 10 for page consistency rules."
+      example:
+        run_id: '31'
+        decision_epoch: 0
+        offset: 0
+        limit: 50
+    SnapshotCandidate:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        full_name:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+      required: [id, full_name, email, phone]
+      description: Display/contact facts captured for this immutable CV snapshot; never current candidate metadata.
+    NullableId:
+      type: string
+      pattern: ^[1-9][0-9]*$
+      example: '42'
+      description: Positive database bigint encoded as a decimal string to avoid JavaScript precision loss.
+      nullable: true
+    NullableDecimal:
+      type: string
+      pattern: ^(0|[1-9][0-9]*)(\.[0-9]+)?$
+      example: '92.94'
+      description: Non-negative decimal string; do not use binary floating point for authoritative calculations.
+      nullable: true
+    Timestamp:
+      type: string
+      format: date-time
+      example: '2026-09-16T09:00:00Z'
+    NullableTimestamp:
+      type: string
+      format: date-time
+      example: '2026-09-16T09:00:00Z'
+      nullable: true
+    JobStatus:
+      type: string
+      enum: [draft, open, closed]
+    DecisionStatus:
+      type: string
+      enum: [scored, shortlisted, rejected]
+    ResumeStatus:
+      type: string
+      enum: [uploaded, parsing, parsed, parse_failed]
+  parameters:
+    job_id:
+      name: job_id
+      in: path
+      required: true
+      description: Server-issued identifier, validated against parent context.
+      schema:
+        $ref: '#/components/schemas/Id'
+    resume_id:
+      name: resume_id
+      in: path
+      required: true
+      description: Server-issued identifier, validated against parent context.
+      schema:
+        $ref: '#/components/schemas/Id'
+    run_id:
+      name: run_id
+      in: path
+      required: true
+      description: Server-issued identifier, validated against parent context.
+      schema:
+        $ref: '#/components/schemas/Id'
+    result_id:
+      name: result_id
+      in: path
+      required: true
+      description: Server-issued identifier, validated against parent context.
+      schema:
+        $ref: '#/components/schemas/Id'
+    revision:
+      name: revision
+      in: path
+      required: true
+      description: Immutable approved revision number within this position.
+      schema:
+        $ref: '#/components/schemas/Version'
+    offset:
+      name: offset
+      in: query
+      description: Zero-based offset. Non-ranking collections are live and may change between requests.
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    limit:
+      name: limit
+      in: query
+      description: Page size.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+    key:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated opaque key scoped to operation and position. Same normalized payload returns same outcome; changed payload is 409. Never include personal data.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 200
+        example: d614c3e5-8c8c-4f68-a201-cf09b5da11aa
+  responses:
+    '400':
+      description: Malformed JSON/multipart, unknown parameter or invalid cursor.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '404':
+      description: Resource missing or mismatched position/run/result context. Do not disclose other-position existence.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '409':
+      description: Stale version, active run, idempotency mismatch, final decision or changed page snapshot. No conflicting write.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '413':
+      description: 'More than 200 files: reject entire batch before acceptance; proxy request too large.'
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '415':
+      description: Unsupported request Content-Type.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '422':
+      description: Validation or business prerequisite failure. Field errors contain no submitted sensitive values.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '429':
+      description: Rate limited. Retry with backoff and the same idempotency key.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '500':
+      description: Unexpected failure; return safe correlation details only.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '503':
+      description: Storage/database/provider temporarily unavailable or request outcome unknown. Retry safely.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    JobResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Job'
+      description: Successful response.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+    CriteriaDraftResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CriteriaDraft'
+      description: Successful response.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+    CriteriaRevisionResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CriteriaRevision'
+      description: Successful response.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+    ResumeResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Resume'
+      description: Successful response.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+    RunResponse:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Run'
+      description: Successful response.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/CacheControl'
+        X-Request-Id:
+          $ref: '#/components/headers/XRequestId'
+  headers:
+    CacheControl:
+      description: Required for all responses, including errors and files.
+      schema:
+        type: string
+        enum: [no-store]
+    XRequestId:
+      description: Correlation ID without sensitive data.
+      schema:
+        type: string
+    ContentDisposition:
+      description: inline for PDF, attachment for DOCX; safe generic filename without personal data.
+      schema:
+        type: string
+    XContentTypeOptions:
+      schema:
+        type: string
+        enum: [nosniff]
+      description: Prevent MIME sniffing.
+    RetryAfter:
+      description: Delay in seconds.
+      schema:
+        type: integer
+        minimum: 1

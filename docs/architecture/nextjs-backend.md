@@ -1,0 +1,32 @@
+# Backend runtime decision — Next.js and TypeScript
+
+Version 1.0 · 2026-09-16 · Next.js selected by the project owner; deployment details below are the API design baseline.
+
+## Decision and scope
+
+**Process topology, locked:** the API Route Handler process is separate from the Worker process; they coordinate only through a lease/command table in PostgreSQL, and no message broker is introduced. C2, C3, and the deployment view show two application containers/processes, not one.
+
+Implement the public [OpenAPI 3.0 contract](../api/openapi.yaml) with Next.js App Router Route Handlers and TypeScript on the Node.js runtime. Keep three logical tiers: HTTP handlers/validation, application/domain services, and persistence repositories. AI and document parsing use server-only adapters. This records the selected technology; backend code is not present yet.
+
+Use a self-hosted Node.js server for requests and a separately supervised Node.js worker sharing application services and PostgreSQL. The worker polls durable extraction/run work and claims expiring leases. It survives HTTP request completion and resumes committed work after restart. No new broker is required for this baseline. Never rely on unawaited handler promises or browser state for durable execution. API acceptance occurs only after committing the work.
+
+Next.js supports Route Handlers for backend endpoints; some hosting environments constrain execution lifetime and shared process state. The separate durable worker is this project's design response to Q05. See [Next.js backend guide](https://nextjs.org/docs/app/guides/backend-for-frontend). A Node.js self-hosted deployment supports the full framework and permits explicit proxy configuration; see [self-hosting](https://nextjs.org/docs/app/guides/self-hosting).
+
+A static HTML export alone cannot host this API. The existing vanilla frontend remains a prototype; choosing Next.js for the API does not claim a completed React migration. Serve future UI/API behind one origin, or configure a restricted development origin explicitly.
+
+## Operational baseline
+
+- Persist files outside application build/public directories and validate nested position context before delivery.
+- Explicitly disable sensitive response caching in handlers and any proxy. Set no-store for errors and files too.
+- Stream batch uploads; configure proxy/body limits for the documented maximum. Use a streaming multipart parser rather than buffering a 200-file batch.
+- CV parsing/AI and screening run in the worker. JD suggestions are a bounded synchronous call with the existing 30-second per-attempt / three-attempt transient-retry policy. Cap inter-attempt waits at 10 seconds and the overall suggestion operation at 115 seconds; configure the self-hosted proxy above that deadline. On deadline return a safe 503 and preserve manual entry. Do not add infinite provider retries.
+- Use PostgreSQL constraints/transactions, decimal arithmetic, durable command replay and snapshot reads as specified in the API guide. API/worker share versioned scoring and extraction policy code.
+- Detailed deployment capacity, migrations, package versions and implementation test results remain to be produced.
+
+## Superseded architecture details
+
+C2, C3, and deployment now show the Next.js API and the separate Node.js/TypeScript worker described above; their earlier Python/FastAPI and in-process-worker labels are gone. The sequence documents still narrate an in-process pipeline for readability — treat their step order and invariants as authoritative and their process boundaries as superseded by this decision until they are redrawn.
+
+Earlier endpoint sketches are illustrative; [openapi.yaml](../api/openapi.yaml) now defines the canonical position-scoped paths, version fields and errors. In particular, ranking reads use POST with a query body to keep search text out of URLs. No requirement or score policy is replaced by this runtime decision.
+
+[Back to architecture](README.md)

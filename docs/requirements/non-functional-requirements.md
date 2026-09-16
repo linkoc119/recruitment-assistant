@@ -18,6 +18,6 @@ The stable identifiers remain Q01–Q11 from [arc42 §10](../architecture/arc42.
 | NFR-SEC — Security/observability | Q10 | Failures are traceable by request/run/item and cause while logs contain no raw CV, contact details or credentials; inspect logs with marked synthetic data. | US-02, US-04, US-06–08, US-15 |
 | NFR-SEC — UI data exposure | Q11 | Raw CV content and contact details do not appear in URLs, analytics labels, notifications, client-side error messages, or persistent browser storage; a resource requested under the wrong position context does not expose data from the other position. Verify with marked synthetic data, browser-storage inspection, captured client telemetry, and cross-position context tests. | US-04, US-11, US-12 |
 
-Mechanisms such as database transactions, leases, retry counts, queues, polling, optimistic locking and API status codes are specified in architecture/sequence documents and the future OpenAPI contract.
+Mechanisms such as database transactions, leases, retry counts, queues, polling, optimistic locking and API status codes are specified in architecture/sequence documents and the [OpenAPI contract](../api/openapi.yaml).
 
 Back to [requirements and user stories](README.md).

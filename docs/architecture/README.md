@@ -1,5 +1,7 @@
 # Architecture — CV Screening and Ranking against a JD
 
+**Current runtime decision:** [Next.js and TypeScript](nextjs-backend.md) supersedes earlier Python/FastAPI and in-process worker labels. [OpenAPI 3.0.3](../api/openapi.yaml) and the [API guide](../api/README.md) define canonical HTTP behavior. Backend implementation is pending.
+
 Version 1.0 · 2026-09-14
 
 ## Scope and status
@@ -52,7 +54,7 @@ The three sequence diagrams are exported with the Mermaid CLI, with their source
 ## Sources and order of precedence
 
 1. This design set is a new architecture proposal for the selected scope; the rules settled in arc42 are the basis for a future implementation.
-2. The [13-table DBML](../../sang-loc-xep-hang-v2.dbml), [ERD](../database-design-erd.svg), and [database design](../database-design.md) describe requirements-aligned persistence, snapshots and durable runs. Additional partial indexes and transaction rules are specified for future implementation; no database or migration is deployed.
+2. The [13-table DBML](../../sang-loc-xep-hang-v2.dbml), [ERD](../database-design-erd.png), and [database design](../database-design.md) describe requirements-aligned persistence, snapshots and durable runs. Additional partial indexes and transaction rules are specified for future implementation; no database or migration is deployed.
 3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the current prototype has 7 screens and the current proposed data model has 13 tables.
 4. The [interface code](../../js/app.js) and [sample data](../../js/data.js) are evidence of the current state. The sample scores are not a correctness test suite for the proposed algorithm.
 

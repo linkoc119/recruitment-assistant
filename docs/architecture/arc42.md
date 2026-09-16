@@ -1,5 +1,7 @@
 # arc42 — CV Screening and Ranking against a JD
 
+**Runtime/API update (2026-09-16):** [Next.js and TypeScript](nextjs-backend.md) supersedes earlier Python/FastAPI and in-process worker choices in this document. Business policies remain unchanged. [OpenAPI 3.0.3](../api/openapi.yaml) defines canonical HTTP behavior; the [API guide](../api/README.md#8-persistence-mapping-and-implementation-prerequisites) records operational storage gaps.
+
 Version 1.0 · 2026-09-14 · **Proposed design; the backend is not implemented**.
 
 This document set covers only the screening subsystem and the functions that directly support it. The existing prototype is HTML/CSS/JS with sample data. Every API, transaction, background job, and operational requirement described below describes a future solution; none of it claims that the current application already satisfies it. This is a design detailed enough to discuss and to prepare an implementation — not a production quality certification report.
@@ -49,8 +51,8 @@ The candidate is the subject of the CV but not a direct user within this scope. 
 | Documentation | The new design must not change the prototype, the sample data, or the v2 DBML |
 | Proposed technology | JS Web App; Python/FastAPI backend as a modular monolith; PostgreSQL; S3-compatible file store |
 | Starting scale | One recruitment team, one trial environment, one backend instance; multi-tenancy is not designed |
-| Proposed inputs | Text-layer PDF and DOCX; at most 10 MB per file and 200 CVs per batch — design limits, not measured ones |
-| AI | A vendor adapter is used; no vendor or model has been chosen; AI-generated scores are not used |
+| Proposed inputs | Text-layer PDF and DOCX; at most 10 MiB (10,485,760 bytes) per file and 200 CVs per batch — design limits, not measured ones |
+| AI | OpenAI GPT-4o mini through a server-side adapter; extraction-v1 contract under D-01; AI-generated scores are not used |
 | Technical exclusions | Automatic OCR, semantic embeddings/pgvector, a worker cluster, and a separate broker are not part of the first version |
 | Environment | Synthetic data on a restricted trial network; nothing here implies the system is ready to accept real CVs |
 
@@ -171,7 +173,7 @@ The prototype still runs directly from `index.html` or a static HTTP server. Add
 
 ### 8.2 Snapshots and persistence design
 
-The requirements-aligned design is now represented in [DBML](../../sang-loc-xep-hang-v2.dbml) and the [ERD](../database-design-erd.svg). [Database design](../database-design.md) specifies the additional PostgreSQL partial indexes, approval/publication transactions, immutable-record enforcement and JSON contracts that future migrations and services must implement.
+The requirements-aligned design is now represented in [DBML](../../sang-loc-xep-hang-v2.dbml) and the [ERD](../database-design-erd.png). [Database design](../database-design.md) specifies the additional PostgreSQL partial indexes, approval/publication transactions, immutable-record enforcement and JSON contracts that future migrations and services must implement.
 
 | Tables | Content |
 |---|---|
@@ -242,6 +244,8 @@ Score explanations use sentence templates over already-computed results; no addi
 
 ### 8.5 User decisions
 
+[D-05](../requirements/decisions.md) restricts v1 transitions to scored → shortlisted/rejected. No undo or switch is exposed. After validating current run/version, return an unchanged response for the same decision or a conflict for a different already-final decision.
+
 Shortlist/reject changes status only; it never alters the score or the mandatory status. Each update checks `expected_result_version` and the published run inside a transaction. Decisions on an earlier run are kept; a new run defaults to `scored` so the user reconfirms. This design keeps the current combined application/scoring scope; a candidate pipeline spanning several rounds or interviews would require separating the application lifecycle in a different extension.
 
 ### 8.6 Files, interface, and observability
@@ -294,11 +298,11 @@ All of these are **proposed acceptance criteria**, not test results from the pro
 | ID | Risk / limitation | Impact | Handling in the design or before implementation |
 |---|---|---|---|
 | R01 | The old README describes several functions as implemented | Readers mistake the demo for a real AI system | Add a current-state warning and point to the proposal document set |
-| R02 | DBML v2 lacks snapshots, runs/items, leases, and decision versions | Full history and background processing cannot be implemented | A dedicated migration per §8.2 before writing a backend that depends on them |
+| R02 | Requirements-aligned DBML exists but no migration/transaction implementation | Durable processing and history guarantees remain unverified | Implement the constraints and transactions specified in §8.2 |
 | R03 | The demo scores, contributions, and the old formula are inconsistent | There is no correct oracle for scoring | Policy v1 in §8.3 plus a separate acceptance data set; the demo is not modified in this documentation pass |
 | R04 | The AI returns wrong data or citations; a CV contains fake instructions | Wrong scores or explanations | The adapter validates source and schema, separates data from instructions, and is tested with annotated CVs |
 | R05 | Missing evidence is read as missing ability | The user over-interprets the results | Clear labels, the original CV retained, the user decides; no claim that bias is eliminated |
-| R06 | No AI provider chosen and no extraction-quality evaluation | Accuracy, latency, and cost are unknown | Trial the adapter on synthetic data; settle provider and model before integration |
+| R06 | GPT-4o mini selected; live extraction-quality evaluation pending | Accuracy, latency, and cost are unmeasured | Evaluate the extraction-v1 adapter on annotated synthetic PDF/DOCX data |
 | R07 | No auth/RBAC and no retention policy for real CVs | The environment is not suitable for real use | Restrict network and use synthetic data for the trial; add access control, retention/deletion, and conditions for sending data to the AI before real CVs |
 | R08 | One host, with the coordinator inside the API | Single point of failure; heavy batches affect the API | Limit concurrency, measure Q07, keep backups; consider a separate worker after measuring |
 | R09 | Uploads span two stores, and the old schema cascade-deletes | Orphan files or lost historical evidence | Compensating upload logic, soft-delete/versioned criteria, backups with a manifest |

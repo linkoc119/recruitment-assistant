@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2160" viewBox="0 0 1800 2160" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="2470" viewBox="0 0 1800 2470" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
 <title id="title">Deployment View: JD-based CV Screening and Ranking</title>
 <desc id="desc">Proposed architecture for JD-based CV screening and ranking. The backend and AI integration are not implemented. Relationships are verified against the Mermaid source in the accompanying document.</desc>
 <defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
@@ -10,19 +10,25 @@
 <rect x="110" y="60" width="600" height="285" rx="12" fill="white" stroke="#494949" stroke-width="3" stroke-dasharray="9 7"/>
 <text x="128" y="306" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Web browser</tspan></text>
 <text x="128" y="330" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="128" dy="0">[Execution environment]</tspan></text>
-<rect x="80" y="490" width="1060" height="1090" rx="12" fill="white" stroke="#494949" stroke-width="3"/>
-<text x="98" y="1541" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Internal trial server</tspan></text>
-<text x="98" y="1565" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="98" dy="0">[Deployment node · Linux VM · 4 vCPU / 8 GiB]</tspan></text>
+<rect x="80" y="490" width="1060" height="1460" rx="12" fill="white" stroke="#494949" stroke-width="3"/>
+<text x="98" y="1911" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Internal trial server</tspan></text>
+<text x="98" y="1935" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="98" dy="0">[Deployment node · Linux VM · 4 vCPU / 8 GiB]</tspan></text>
 <rect x="110" y="790" width="620" height="370" rx="12" fill="white" stroke="#494949" stroke-width="3" stroke-dasharray="9 7"/>
 <text x="128" y="1121" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Backend process</tspan></text>
 <text x="128" y="1145" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="128" dy="0">[Execution environment]</tspan></text>
+<rect x="110" y="1200" width="620" height="370" rx="12" fill="white" stroke="#494949" stroke-width="3" stroke-dasharray="9 7"/>
+<text x="128" y="1531" fill="#494949" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Worker process</tspan></text>
+<text x="128" y="1555" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="128" dy="0">[Execution environment]</tspan></text>
 <polyline data-from="WEB" data-to="EDGE" points="470,255 470,530" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <polyline data-from="EDGE" data-to="API" points="400,730 400,820" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="API" data-to="DB" points="400,1060 400,1210 340,1210 340,1240" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="API" data-to="FILES" points="600,1060 600,1210 870,1210 870,1240" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="API" data-to="AI" points="695,940 1320,940" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="DB" data-to="BACKUP" points="520,1470 520,1690" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="FILES" data-to="BACKUP" points="870,1470 870,1690" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="DB" points="145,1030 95,1030 95,1650 110,1650" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="FILES" points="695,1030 830,1030 830,1610 870,1610" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WORKER" data-to="DB" points="250,1470 250,1610" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WORKER" data-to="FILES" points="600,1470 870,1610" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="API" data-to="AI" points="695,980 1320,1050" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="WORKER" data-to="AI" points="695,1290 1320,1190" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="DB" data-to="BACKUP" points="520,1840 520,2000" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="FILES" data-to="BACKUP" points="870,1840 870,2000" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <g id="WEB"><title>WEB · Web App instance</title><rect x="150" y="85" width="520" height="170" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 150 114 H 670" stroke="#146ac4" stroke-width="5"/><circle cx="167" cy="99" r="6" fill="#146ac4"/><circle cx="187" cy="99" r="6" fill="#146ac4"/><circle cx="207" cy="99" r="6" fill="#146ac4"/></g>
 <text x="410" y="150" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="410" dy="0">Web App instance</tspan></text>
 <text x="410" y="177" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="410" dy="0">[Container instance: HTML/CSS/JavaScript]</tspan></text>
@@ -33,53 +39,66 @@
 <text x="400" y="629" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="400" dy="0">HTTPS endpoint; serves WEB files</tspan><tspan x="400" dy="25">and forwards /api requests</tspan><tspan x="400" dy="25">to the backend.</tspan></text>
 <g id="API"><title>API · Screening Backend instance</title><rect x="145" y="820" width="550" height="240" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 164 838 l 13 9 l -13 9 M 186 858 h 20" fill="none" stroke="#146ac4" stroke-width="4"/></g>
 <text x="420" y="887" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="420" dy="0">Screening Backend instance</tspan></text>
-<text x="420" y="914" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">[Container instance: Python/FastAPI]</tspan></text>
-<text x="420" y="948" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">One Python/FastAPI process;</tspan><tspan x="420" dy="25">HTTP and the RUN coordinator</tspan><tspan x="420" dy="25">execute in the same application.</tspan></text>
-<g id="DB"><title>DB · Screening Database instance</title><path d="M 110 1263 L 110 1447 A 230 23 0 0 0 570 1447 L 570 1263 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="340" cy="1263" rx="230" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="340" y="1313" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="340" dy="0">Screening Database instance</tspan></text>
-<text x="340" y="1340" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">[Container instance: PostgreSQL]</tspan></text>
-<text x="340" y="1374" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">PostgreSQL · dedicated volume;</tspan><tspan x="340" dy="25">port 5432 is available only on</tspan><tspan x="340" dy="25">the server private network.</tspan></text>
-<g id="FILES"><title>FILES · CV Store instance</title><path d="M 640 1263 L 668 1447 A 202 23 0 0 0 1072 1447 L 1100 1263 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="870" cy="1263" rx="230" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="870" y="1313" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="870" dy="0">CV Store instance</tspan></text>
-<text x="870" y="1340" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">[Container instance: S3-compatible storage]</tspan></text>
-<text x="870" y="1374" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">S3-compatible service · dedicated volume;</tspan><tspan x="870" dy="25">the CV bucket is private.</tspan></text>
-<g id="AI"><title>AI · AI Extraction Service</title><rect x="1320" y="830" width="420" height="240" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
-<text x="1530" y="868" fill="#c71025" font-size="28" font-weight="700" text-anchor="middle"><tspan x="1530" dy="0">AI Extraction Service</tspan></text>
-<text x="1530" y="895" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">[External deployment node: HTTPS endpoint]</tspan></text>
-<text x="1530" y="929" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">Operated by a vendor</tspan><tspan x="1530" dy="25">outside this deployment scope.</tspan></text>
-<g id="BACKUP"><title>BACKUP · Backup store</title><path d="M 450 1713 L 478 1897 A 232 23 0 0 0 942 1897 L 970 1713 Z" fill="white" stroke="#8a6a12" stroke-width="5"/><ellipse cx="710" cy="1713" rx="260" ry="23" fill="white" stroke="#8a6a12" stroke-width="5"/></g>
-<text x="710" y="1763" fill="#8a6a12" font-size="28" font-weight="700" text-anchor="middle"><tspan x="710" dy="0">Backup store</tspan></text>
-<text x="710" y="1790" fill="#8a6a12" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Infrastructure node: separate from server]</tspan></text>
-<text x="710" y="1824" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Database and file copies share</tspan><tspan x="710" dy="25">one recovery point; encrypted</tspan><tspan x="710" dy="25">and access restricted.</tspan></text>
+<text x="420" y="914" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">[Container instance: Next.js Route Handlers, Node.js]</tspan></text>
+<text x="420" y="948" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">One Node.js process; HTTP and</tspan><tspan x="420" dy="25">synchronous reads/writes.</tspan></text>
+<g id="WORKER"><title>WORKER · Screening Worker instance</title><rect x="145" y="1230" width="550" height="240" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 164 1248 l 13 9 l -13 9 M 186 1268 h 20" fill="none" stroke="#146ac4" stroke-width="4"/></g>
+<text x="420" y="1297" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="420" dy="0">Screening Worker instance</tspan></text>
+<text x="420" y="1324" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">[Container instance: Node.js/TypeScript]</tspan></text>
+<text x="420" y="1358" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="420" dy="0">A separate OS process from the backend;</tspan><tspan x="420" dy="25">claims durable work by lease.</tspan></text>
+<g id="DB"><title>DB · Screening Database instance</title><path d="M 110 1633 L 110 1817 A 230 23 0 0 0 570 1817 L 570 1633 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="340" cy="1633" rx="230" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="340" y="1683" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="340" dy="0">Screening Database instance</tspan></text>
+<text x="340" y="1710" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">[Container instance: PostgreSQL]</tspan></text>
+<text x="340" y="1744" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="340" dy="0">PostgreSQL · dedicated volume;</tspan><tspan x="340" dy="25">port 5432 is available only on</tspan><tspan x="340" dy="25">the server private network.</tspan></text>
+<g id="FILES"><title>FILES · CV Store instance</title><path d="M 640 1633 L 668 1817 A 202 23 0 0 0 1072 1817 L 1100 1633 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="870" cy="1633" rx="230" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="870" y="1683" fill="#146ac4" font-size="28" font-weight="700" text-anchor="middle"><tspan x="870" dy="0">CV Store instance</tspan></text>
+<text x="870" y="1710" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">[Container instance: S3-compatible storage]</tspan></text>
+<text x="870" y="1744" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="870" dy="0">S3-compatible service · dedicated volume;</tspan><tspan x="870" dy="25">the CV bucket is private.</tspan></text>
+<g id="AI"><title>AI · AI Extraction Service</title><rect x="1320" y="1000" width="420" height="240" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="1530" y="1038" fill="#c71025" font-size="28" font-weight="700" text-anchor="middle"><tspan x="1530" dy="0">AI Extraction Service</tspan></text>
+<text x="1530" y="1065" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">[External deployment node: HTTPS endpoint]</tspan></text>
+<text x="1530" y="1099" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1530" dy="0">Operated by a vendor</tspan><tspan x="1530" dy="25">outside this deployment scope.</tspan></text>
+<g id="BACKUP"><title>BACKUP · Backup store</title><path d="M 450 2023 L 478 2207 A 232 23 0 0 0 942 2207 L 970 2023 Z" fill="white" stroke="#8a6a12" stroke-width="5"/><ellipse cx="710" cy="2023" rx="260" ry="23" fill="white" stroke="#8a6a12" stroke-width="5"/></g>
+<text x="710" y="2073" fill="#8a6a12" font-size="28" font-weight="700" text-anchor="middle"><tspan x="710" dy="0">Backup store</tspan></text>
+<text x="710" y="2100" fill="#8a6a12" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Infrastructure node: separate from server]</tspan></text>
+<text x="710" y="2134" fill="#8a6a12" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Database and file copies share</tspan><tspan x="710" dy="25">one recovery point; encrypted</tspan><tspan x="710" dy="25">and access restricted.</tspan></text>
 <rect x="790" y="400" width="400" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="990" y="420" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="990" dy="0">Loads static files and calls /api</tspan></text>
 <text x="990" y="445" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="990" dy="0">[HTTPS :443]</tspan></text>
 <rect x="580" y="735" width="400" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="780" y="755" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="780" dy="0">Forwards /api to backend</tspan></text>
 <text x="780" y="780" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="780" dy="0">[HTTP loopback :8000]</tspan></text>
-<rect x="90" y="1170" width="230" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="205" y="1190" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="205" dy="0">Reads/writes and runs transactions</tspan></text>
-<text x="205" y="1215" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="205" dy="0">[SQL/TCP :5432 · private network]</tspan></text>
-<rect x="880" y="1140" width="260" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1010" y="1160" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1010" dy="0">Stores and reads CV files</tspan></text>
-<text x="1010" y="1185" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1010" dy="0">[HTTPS/S3 API :443 · private network]</tspan></text>
-<rect x="745" y="835" width="350" height="81" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="920" y="855" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">Sends text with reduced</tspan><tspan x="920" dy="25">identifying information</tspan></text>
-<text x="920" y="905" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">[HTTPS :443]</tspan></text>
-<rect x="205" y="1610" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="330" y="1630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Scheduled backup</tspan></text>
-<text x="330" y="1655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[Encrypted channel]</tspan></text>
-<rect x="955" y="1610" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1080" y="1630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">Scheduled backup</tspan></text>
-<text x="1080" y="1655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">[Encrypted channel]</tspan></text>
-<text x="30" y="1980" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Deployment View: JD-based CV Screening and Ranking</tspan></text>
-<text x="30" y="2011" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
-<rect x="30" y="2034" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="62" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">In-scope container instance</tspan></text>
-<rect x="520" y="2034" width="20" height="20" rx="3" fill="white" stroke="#8a6a12" stroke-width="3"/>
-<text x="552" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="552" dy="0">Operational infrastructure</tspan></text>
-<rect x="860" y="2034" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
-<text x="892" y="2051" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="892" dy="0">External system</tspan></text>
-<text x="30" y="2083" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: connection initiation direction; labels state responsibility, protocol, and port. Solid grey frame: deployment node; dashed grey frame: execution environment.</tspan></text>
-<text x="30" y="2110" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
+<rect x="-30" y="1130" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="95" y="1150" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="95" dy="0">Reads/writes and enqueues durable work</tspan></text>
+<text x="95" y="1175" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="95" dy="0">[SQL/TCP :5432 · private network]</tspan></text>
+<rect x="700" y="1280" width="260" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="830" y="1300" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="830" dy="0">Reads CV files</tspan></text>
+<text x="830" y="1325" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="830" dy="0">[HTTPS/S3 API :443 · private network]</tspan></text>
+<rect x="140" y="1520" width="220" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="250" y="1540" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="250" dy="0">Claims work by lease</tspan><tspan x="250" dy="25">and writes results</tspan></text>
+<text x="250" y="1590" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="250" dy="0">[SQL/TCP :5432 · private network]</tspan></text>
+<rect x="605" y="1520" width="260" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="735" y="1540" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="735" dy="0">Stores and reads CV files</tspan></text>
+<text x="735" y="1565" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="735" dy="0">[HTTPS/S3 API :443 · private network]</tspan></text>
+<rect x="860" y="940" width="280" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1000" y="960" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">Sends JD text with reduced</tspan><tspan x="1000" dy="25">identifying information</tspan></text>
+<text x="1000" y="1010" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">[HTTPS :443]</tspan></text>
+<rect x="860" y="1210" width="280" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1000" y="1230" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">Sends CV text with reduced</tspan><tspan x="1000" dy="25">identifying information</tspan></text>
+<text x="1000" y="1280" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">[HTTPS :443]</tspan></text>
+<rect x="205" y="1910" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="330" y="1930" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">Scheduled backup</tspan></text>
+<text x="330" y="1955" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="330" dy="0">[Encrypted channel]</tspan></text>
+<rect x="955" y="1910" width="250" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1080" y="1930" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">Scheduled backup</tspan></text>
+<text x="1080" y="1955" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1080" dy="0">[Encrypted channel]</tspan></text>
+<text x="30" y="2290" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Deployment View: JD-based CV Screening and Ranking</tspan></text>
+<text x="30" y="2321" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
+<rect x="30" y="2344" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="62" y="2361" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">In-scope container instance</tspan></text>
+<rect x="520" y="2344" width="20" height="20" rx="3" fill="white" stroke="#8a6a12" stroke-width="3"/>
+<text x="552" y="2361" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="552" dy="0">Operational infrastructure</tspan></text>
+<rect x="860" y="2344" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
+<text x="892" y="2361" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="892" dy="0">External system</tspan></text>
+<text x="30" y="2393" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: connection initiation direction; labels state responsibility, protocol, and port. Solid grey frame: deployment node; dashed grey frame: execution environment.</tspan></text>
+<text x="30" y="2420" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
 </svg>

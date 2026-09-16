@@ -10,11 +10,11 @@ No screen in this set is achievable with presentation code alone. SCR-01 already
 
 The phases therefore separate three different kinds of work rather than three groups of screens:
 
-| Phase | Deliverable | Completion signal |
-|---|---|---|
-| 1 — Frontend presentation | Routes, layout, components, responsive behavior, and every specified state rendered from fixtures | The full state matrix renders, not only the success path |
-| 2 — API contracts | Request/response shapes and concurrency semantics for position, criteria, CV, run, ranking, evidence, and decision | Every field the UI must display or send has a defined source |
-| 3 — Functional integration | Fixtures replaced by backend state; acceptance criteria verified | Story acceptance criteria and Q01–Q11 pass against real state |
+| Phase | Deliverable | Completion signal | Status |
+|---|---|---|---|
+| 1 — Frontend presentation | Routes, layout, components, responsive behavior, and every specified state rendered from fixtures | The full state matrix renders, not only the success path | — |
+| 2 — API contracts | Request/response shapes and concurrency semantics for position, criteria, CV, run, ranking, evidence, and decision | Every field the UI must display or send has a defined source | **Done** — see [docs/api/](../api/README.md) and [openapi.yaml](../api/openapi.yaml) |
+| 3 — Functional integration | Fixtures replaced by backend state; acceptance criteria verified | Story acceptance criteria and Q01–Q11 pass against real state | Not started |
 
 ## 2. Phase 1 — Frontend presentation
 
@@ -37,9 +37,9 @@ Phase 1 is complete for a screen when every state in [Interaction Rules §11](in
 
 Keyboard operability, focus management, and the non-color status distinctions required by Q08 are phase 1 work, not integration work. They are cheaper to build in than to retrofit.
 
-## 3. Phase 2 — API contracts
+## 3. Phase 2 — API contracts (done)
 
-One contract per resource: position, criteria revision, CV record and version, screening run, published ranking, evidence, and candidate decision.
+One contract per resource: position, criteria revision, CV record and version, screening run, published ranking, evidence, and candidate decision. This phase is complete: the contracts below are now the published [OpenAPI 3.0 document](../api/openapi.yaml) and [api/README.md](../api/README.md), not a future plan. The constraints in this section are the record of decisions already made, kept here for traceability back to the UI documents that required them.
 
 ### Two fields that shape the interface and must be decided here
 
@@ -59,17 +59,17 @@ One contract per resource: position, criteria revision, CV record and version, s
 
 ## 4. Phase 3 — Functional integration
 
-Replace fixtures with backend state one resource at a time, then verify behavior that cannot be demonstrated before integration:
+Replace fixtures with backend state one resource at a time. Backend/API-level acceptance ("API acceptance must include: source-quote validation (Q01), deterministic snapshot replay (Q02), ... Q10/Q11") is defined once, in [api/README.md §6](../api/README.md#6-security-operations-and-quality-acceptance) — this plan does not restate it, to avoid two diverging test plans. Phase 3 is done when that backend acceptance passes **and** the following UI-observable behaviors, which only end-to-end integration can demonstrate, hold for the screens in §5 below:
 
-| Verification | Requirement |
+| Verification (UI-observable, not covered by API README §6) | Story/rule reference |
 |---|---|
-| Repeated start actions produce one logical run | US-07.AC-3, BR-RUN-02, Q05 |
-| Reload during a run resumes the same run | US-08.AC-1 |
-| One technical failure does not stop the remaining CVs and is reported separately from failed eligibility | US-08.AC-2, BR-EVD-03, Q03 |
-| A ranking response never mixes two runs | US-11.AC-2, BR-RUN-03, Q04 |
-| A stale decision is rejected without writing to another run | US-13.AC-5, BR-DEC-03, Q06 |
-| A failed rescore leaves the previous published ranking current | US-15.AC-2, BR-RSC-02 |
-| A historical run is read from its own snapshots | US-16.AC-2, BR-RSC-03 |
+| Repeated start actions produce one logical run, visible to the recruiter as a single job | US-07.AC-3, BR-RUN-02 |
+| Reload during a run resumes the same run in the UI | US-08.AC-1 |
+| One technical failure does not stop the remaining CVs and is reported separately from failed eligibility, on screen | US-08.AC-2, BR-EVD-03 |
+| A ranking response never mixes two runs on screen | US-11.AC-2, BR-RUN-03 |
+| A stale decision is rejected in the UI without writing to another run | US-13.AC-5, BR-DEC-03 |
+| A failed rescore leaves the previous published ranking current on screen | US-15.AC-2, BR-RSC-02 |
+| A historical run is read from its own snapshots when displayed | US-16.AC-2, BR-RSC-03 |
 
 ## 5. Screen dependency summary
 

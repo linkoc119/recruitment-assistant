@@ -148,7 +148,7 @@ Rules:
 ### Upload area
 
 - Accept text-layer PDF and DOCX as the proposed v1 formats.
-- State maximum 10 MB per file and 200 files per batch before selection.
+- State maximum 10 MiB (10,485,760 bytes) per file and 200 files per batch before selection.
 - Validate batch count and each file's actual format/size.
 - Preserve the selection when the batch exceeds the limit so the recruiter can reduce it.
 
@@ -162,6 +162,7 @@ Required distinctions:
 - a new version identifies the prior version without overwriting it;
 - parse failure states the technical cause and is not shown as failed eligibility;
 - ambiguous identity does not auto-merge from name alone;
+- D-02: before submitting a different-content file, offer New candidate or Attach as new CV version. The latter selects a candidate already associated with this position and requires confirmation showing its existing CV/version. Cancel leaves the upload unsubmitted; no global identity search or later history-rewriting merge is provided.
 - no OCR action is offered in v1; a scanned PDF is labeled as requiring external reprocessing.
 
 ### Summary and states
@@ -288,6 +289,7 @@ Each row shows criterion snapshot label/type, mandatory/preferred, matched/parti
 - Save failure retains the intended action and does not show success.
 - A stale/conflicting write is rejected and offers to open the current result.
 - Historical runs are read-only for decisions.
+- D-05: only scored results in the current run expose shortlist/reject actions. Once decided, display the saved decision without undo/switch controls. Identical current-version retries preserve the original saved state.
 
 ---
 

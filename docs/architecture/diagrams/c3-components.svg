@@ -1,79 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="2340" height="2230" viewBox="0 0 2340 2230" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
-<title id="title">Component View: JD-based CV Screening — Screening Backend</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="2340" height="2580" viewBox="0 0 2340 2580" role="img" aria-labelledby="title desc" font-family="Segoe UI, Arial, sans-serif">
+<title id="title">Component View: JD-based CV Screening — Backend and Worker</title>
 <desc id="desc">Proposed architecture for JD-based CV screening and ranking. The backend and AI integration are not implemented. Relationships are verified against the Mermaid source in the accompanying document.</desc>
 <defs><marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M 0 0 L 12 6 L 0 12 Z" fill="#494949"/></marker></defs>
 <rect width="100%" height="100%" fill="white"/>
-<rect x="50" y="40" width="1790" height="1990" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="68" y="1991" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="68" dy="0">JD-based CV Screening and Ranking</tspan></text>
-<text x="68" y="2015" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="68" dy="0">[Software System]</tspan></text>
-<rect x="80" y="330" width="1730" height="1290" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="98" y="1581" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="98" dy="0">Screening Backend</tspan></text>
-<text x="98" y="1605" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="98" dy="0">[Container: Python/FastAPI]</tspan></text>
+<rect x="50" y="40" width="1790" height="2335" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="68" y="2336" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="68" dy="0">JD-based CV Screening and Ranking</tspan></text>
+<text x="68" y="2360" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="68" dy="0">[Software System]</tspan></text>
+<rect x="110" y="330" width="1650" height="725" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="128" y="1016" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="128" dy="0">Screening Backend</tspan></text>
+<text x="128" y="1040" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="128" dy="0">[Container: Next.js Route Handlers]</tspan></text>
+<rect x="700" y="1105" width="420" height="350" rx="12" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="718" y="1416" fill="#146ac4" font-size="23" font-weight="700" text-anchor="start"><tspan x="718" dy="0">Screening Worker</tspan></text>
+<text x="718" y="1440" fill="#146ac4" font-size="15" font-weight="400" text-anchor="start"><tspan x="718" dy="0">[Container: Node.js/TypeScript]</tspan></text>
 <polyline data-from="WEB" data-to="HTTP" points="940,270 940,400" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <polyline data-from="HTTP" data-to="CRIT" points="790,590 290,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <polyline data-from="HTTP" data-to="CV" points="875,590 710,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="HTTP" data-to="RUN" points="1005,590 1130,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <polyline data-from="HTTP" data-to="REVIEW" points="1090,590 1550,740" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="RUN" data-to="CV" points="980,865 860,865" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="CRIT" data-to="EXTRACT" points="290,945 290,1110" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="CRIT" data-to="DATA" points="140,895 105,895 105,1360 670,1360 670,1440 700,1440" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="CV" data-to="DATA" points="650,945 650,1490 700,1490" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="RUN" data-to="EXTRACT" points="980,915 920,915 920,1010 400,1010 400,1110" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="RUN" data-to="SCORE" points="1130,945 1130,1110" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="RUN" data-to="DATA" points="1280,915 1330,915 1330,1370 980,1370 980,1400" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="REVIEW" data-to="DATA" points="1550,945 1550,1505 1060,1505" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="EXTRACT" data-to="AI" points="440,1210 475,1210 475,1335 1870,1335 1870,1210 1910,1210" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="DATA" data-to="DB" points="795,1590 600,1770" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
-<polyline data-from="DATA" data-to="FILES" points="965,1590 1330,1770" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="HTTP" data-to="DATA" points="1120,550 1180,550 1180,1900 1010,1900" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="CRIT" data-to="EXTRACT" points="290,945 290,1515" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="CRIT" data-to="DATA" points="140,895 105,895 105,1810 650,1810" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="CV" data-to="DATA" points="620,945 620,1810 700,1810" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="DATA" points="900,1355 900,1810" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="EXTRACT" points="760,1250 290,1250 290,1515" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="RUN" data-to="SCORE" points="1060,1250 1400,1250 1400,1515" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="REVIEW" data-to="DATA" points="1600,945 1600,1750 1010,1750 1010,1810" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="EXTRACT" data-to="AI" points="290,1720 290,1770 2090,1770 2090,1720" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="DATA" data-to="DB" points="745,2000 600,2090" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
+<polyline data-from="DATA" data-to="FILES" points="955,2000 1330,2090" fill="none" stroke="#494949" stroke-width="2.6" stroke-dasharray="11 9" marker-end="url(#arrow)"/>
 <g id="WEB"><title>WEB · Web App</title><rect x="760" y="65" width="360" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><path d="M 760 94 H 1120" stroke="#146ac4" stroke-width="5"/><circle cx="777" cy="79" r="6" fill="#146ac4"/><circle cx="797" cy="79" r="6" fill="#146ac4"/><circle cx="817" cy="79" r="6" fill="#146ac4"/></g>
 <text x="940" y="130" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="940" dy="0">Web App</tspan></text>
 <text x="940" y="157" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[Container: HTML/CSS/JavaScript]</tspan></text>
 <text x="940" y="191" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">Sends commands, displays results,</tspan><tspan x="940" dy="25">and tracks jobs.</tspan></text>
 <g id="HTTP"><title>HTTP · API Controllers</title><rect x="760" y="400" width="360" height="190" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="745" y="418" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="745" y="448" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
 <text x="940" y="446" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="940" dy="0">API Controllers</tspan></text>
-<text x="940" y="473" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[Component: FastAPI routers]</tspan></text>
+<text x="940" y="473" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[Component: Next.js Route Handlers]</tspan></text>
 <text x="940" y="507" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">Validates requests, context,</tspan><tspan x="940" dy="25">and versions.</tspan></text>
 <g id="CRIT"><title>CRIT · Criteria Service</title><rect x="140" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="125" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="125" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
 <text x="290" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="290" dy="0">Criteria Service</tspan></text>
-<text x="290" y="813" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Component: Python]</tspan></text>
+<text x="290" y="813" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Component: TypeScript]</tspan></text>
 <text x="290" y="847" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Manages positions, JDs,</tspan><tspan x="290" dy="25">and criteria revisions.</tspan></text>
 <g id="CV"><title>CV · Resume Service</title><rect x="560" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="545" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="545" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
 <text x="710" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="710" dy="0">Resume Service</tspan></text>
-<text x="710" y="813" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Component: Python/PDF-DOCX parser]</tspan></text>
-<text x="710" y="847" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Manages files, hashes, versions,</tspan><tspan x="710" dy="25">and CV text.</tspan></text>
-<g id="RUN"><title>RUN · Screening Coordinator</title><rect x="980" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="965" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="965" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
-<text x="1130" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1130" dy="0">Screening</tspan><tspan x="1130" dy="30.72">Coordinator</tspan></text>
-<text x="1130" y="843.72" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">[Component: Python async tasks]</tspan></text>
-<text x="1130" y="877.72" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">Coordinates durable jobs, retries,</tspan><tspan x="1130" dy="25">and run publication.</tspan></text>
+<text x="710" y="813" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">[Component: TypeScript]</tspan></text>
+<text x="710" y="847" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="710" dy="0">Accepts uploads; manages files,</tspan><tspan x="710" dy="25">hashes, and versions.</tspan></text>
 <g id="REVIEW"><title>REVIEW · Ranking and Review Service</title><rect x="1400" y="740" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="1385" y="758" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="1385" y="788" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
 <text x="1550" y="786" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1550" dy="0">Ranking and</tspan><tspan x="1550" dy="30.72">Review Service</tspan></text>
-<text x="1550" y="843.72" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1550" dy="0">[Component: Python]</tspan></text>
+<text x="1550" y="843.72" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1550" dy="0">[Component: TypeScript]</tspan></text>
 <text x="1550" y="877.72" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1550" dy="0">Provides rankings, evidence,</tspan><tspan x="1550" dy="25">decisions, and comparisons.</tspan></text>
-<g id="EXTRACT"><title>EXTRACT · Extraction Adapter</title><rect x="140" y="1110" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="125" y="1128" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="125" y="1158" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
-<text x="290" y="1156" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="290" dy="0">Extraction Adapter</tspan></text>
-<text x="290" y="1183" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Component: Python HTTP client]</tspan></text>
-<text x="290" y="1217" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Calls AI; validates schemas</tspan><tspan x="290" dy="25">and source evidence.</tspan></text>
-<g id="SCORE"><title>SCORE · Scoring Engine</title><rect x="980" y="1110" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="965" y="1128" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="965" y="1158" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
-<text x="1130" y="1156" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1130" dy="0">Scoring Engine</tspan></text>
-<text x="1130" y="1183" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">[Component: Python domain module]</tspan></text>
-<text x="1130" y="1217" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">Evaluates mandatory criteria, scores,</tspan><tspan x="1130" dy="25">and criterion contributions.</tspan></text>
-<g id="DATA"><title>DATA · Repositories</title><rect x="700" y="1400" width="360" height="190" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="685" y="1418" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="685" y="1448" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
-<text x="880" y="1446" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="880" dy="0">Repositories</tspan></text>
-<text x="880" y="1473" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="880" dy="0">[Component: Python SQL/S3 clients]</tspan></text>
-<text x="880" y="1507" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="880" dy="0">Provides data and file access</tspan><tspan x="880" dy="25">and transaction boundaries.</tspan></text>
-<g id="DB"><title>DB · Screening Database</title><path d="M 420 1793 L 420 1942 A 180 23 0 0 0 780 1942 L 780 1793 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="600" cy="1793" rx="180" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="600" y="1843" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="600" dy="0">Screening Database</tspan></text>
-<text x="600" y="1870" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="600" dy="0">[Container: PostgreSQL]</tspan></text>
-<text x="600" y="1904" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="600" dy="0">Business data, jobs,</tspan><tspan x="600" dy="25">and screening-run history.</tspan></text>
-<g id="FILES"><title>FILES · CV Store</title><path d="M 1150 1793 L 1178 1942 A 152 23 0 0 0 1482 1942 L 1510 1793 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="1330" cy="1793" rx="180" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
-<text x="1330" y="1843" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1330" dy="0">CV Store</tspan></text>
-<text x="1330" y="1870" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1330" dy="0">[Container: S3-compatible storage]</tspan></text>
-<text x="1330" y="1904" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1330" dy="0">Stores original CV files</tspan><tspan x="1330" dy="25">privately.</tspan></text>
-<g id="AI"><title>AI · AI Extraction Service</title><rect x="1910" y="1110" width="365" height="205" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
-<text x="2092.5" y="1148" fill="#c71025" font-size="24" font-weight="700" text-anchor="middle"><tspan x="2092.5" dy="0">AI Extraction Service</tspan></text>
-<text x="2092.5" y="1175" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="2092.5" dy="0">[External Software System: HTTPS API]</tspan></text>
-<text x="2092.5" y="1209" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="2092.5" dy="0">Returns structured JD/CV data</tspan><tspan x="2092.5" dy="25">and evidence locations.</tspan></text>
+<g id="RUN"><title>RUN · Screening Coordinator</title><rect x="760" y="1150" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="745" y="1168" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="745" y="1198" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="910" y="1196" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="910" dy="0">Screening</tspan><tspan x="910" dy="30.72">Coordinator</tspan></text>
+<text x="910" y="1253.72" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="910" dy="0">[Component: Node.js durable worker loop]</tspan></text>
+<text x="910" y="1287.72" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="910" dy="0">Claims durable commands,</tspan><tspan x="910" dy="25">coordinates retries, and publishes.</tspan></text>
+<g id="EXTRACT"><title>EXTRACT · Extraction Adapter</title><rect x="140" y="1515" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="125" y="1533" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="125" y="1563" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="290" y="1561" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="290" dy="0">Extraction Adapter</tspan></text>
+<text x="290" y="1588" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Component: TypeScript HTTP client · shared]</tspan></text>
+<text x="290" y="1622" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Calls AI; validates schemas</tspan><tspan x="290" dy="25">and source evidence.</tspan></text>
+<g id="SCORE"><title>SCORE · Scoring Engine</title><rect x="1250" y="1515" width="300" height="205" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="1235" y="1533" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="1235" y="1563" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="1400" y="1561" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1400" dy="0">Scoring Engine</tspan></text>
+<text x="1400" y="1588" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1400" dy="0">[Component: TypeScript domain module · shared]</tspan></text>
+<text x="1400" y="1622" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1400" dy="0">Evaluates mandatory criteria, scores,</tspan><tspan x="1400" dy="25">and criterion contributions.</tspan></text>
+<g id="AI"><title>AI · AI Extraction Service</title><rect x="1910" y="1515" width="365" height="205" rx="7" fill="white" stroke="#c71025" stroke-width="5"/></g>
+<text x="2092.5" y="1553" fill="#c71025" font-size="24" font-weight="700" text-anchor="middle"><tspan x="2092.5" dy="0">AI Extraction Service</tspan></text>
+<text x="2092.5" y="1580" fill="#c71025" font-size="14" font-weight="400" text-anchor="middle"><tspan x="2092.5" dy="0">[External Software System: HTTPS API]</tspan></text>
+<text x="2092.5" y="1614" fill="#c71025" font-size="20" font-weight="400" text-anchor="middle"><tspan x="2092.5" dy="0">Returns structured JD/CV data</tspan><tspan x="2092.5" dy="25">and evidence locations.</tspan></text>
+<g id="DATA"><title>DATA · Repositories</title><rect x="650" y="1810" width="360" height="190" rx="7" fill="white" stroke="#146ac4" stroke-width="5"/><rect x="635" y="1828" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/><rect x="635" y="1858" width="36" height="21" rx="2" fill="white" stroke="#146ac4" stroke-width="4"/></g>
+<text x="830" y="1856" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="830" dy="0">Repositories</tspan></text>
+<text x="830" y="1883" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="830" dy="0">[Component: TypeScript SQL/S3 clients · shared]</tspan></text>
+<text x="830" y="1917" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="830" dy="0">Provides data and file access</tspan><tspan x="830" dy="25">and transaction boundaries.</tspan></text>
+<g id="DB"><title>DB · Screening Database</title><path d="M 420 2113 L 420 2262 A 180 23 0 0 0 780 2262 L 780 2113 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="600" cy="2113" rx="180" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="600" y="2163" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="600" dy="0">Screening Database</tspan></text>
+<text x="600" y="2190" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="600" dy="0">[Container: PostgreSQL]</tspan></text>
+<text x="600" y="2224" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="600" dy="0">Business data, durable commands,</tspan><tspan x="600" dy="25">jobs, and screening-run history.</tspan></text>
+<g id="FILES"><title>FILES · CV Store</title><path d="M 1150 2113 L 1178 2262 A 152 23 0 0 0 1482 2262 L 1510 2113 Z" fill="white" stroke="#146ac4" stroke-width="5"/><ellipse cx="1330" cy="2113" rx="180" ry="23" fill="white" stroke="#146ac4" stroke-width="5"/></g>
+<text x="1330" y="2163" fill="#146ac4" font-size="24" font-weight="700" text-anchor="middle"><tspan x="1330" dy="0">CV Store</tspan></text>
+<text x="1330" y="2190" fill="#146ac4" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1330" dy="0">[Container: S3-compatible storage]</tspan></text>
+<text x="1330" y="2224" fill="#146ac4" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1330" dy="0">Stores original CV files</tspan><tspan x="1330" dy="25">privately.</tspan></text>
 <rect x="765" y="272" width="350" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="940" y="292" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">Sends commands and queries</tspan></text>
 <text x="940" y="317" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="940" dy="0">[HTTPS/JSON or multipart]</tspan></text>
@@ -83,52 +85,50 @@
 <rect x="545" y="658" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="680" y="678" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="680" dy="0">Uploads or reads a CV file</tspan></text>
 <text x="680" y="703" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="680" dy="0">[Internal function call]</tspan></text>
-<rect x="975" y="640" width="290" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1120" y="660" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1120" dy="0">Creates jobs and reads progress</tspan></text>
-<text x="1120" y="685" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1120" dy="0">[Internal function call]</tspan></text>
 <rect x="1355" y="610" width="310" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="1510" y="630" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1510" dy="0">Reads results and records decisions</tspan></text>
 <text x="1510" y="655" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1510" dy="0">[Internal function call]</tspan></text>
-<rect x="865" y="803" width="110" height="60" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="920" y="823" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="920" dy="0">Reads CV</tspan><tspan x="920" dy="25">text</tspan></text>
-<rect x="172.5" y="1000" width="235" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="290" y="1020" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Extracts JD data</tspan></text>
-<text x="290" y="1045" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Internal function call]</tspan></text>
-<rect x="200" y="1340" width="330" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="365" y="1360" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="365" dy="0">Reads/writes positions and criteria</tspan></text>
-<text x="365" y="1385" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="365" dy="0">[Internal function call]</tspan></text>
-<rect x="532.5" y="1205" width="235" height="81" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="650" y="1225" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">Stores file, hash,</tspan><tspan x="650" dy="25">and CV version</tspan></text>
-<text x="650" y="1275" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">[Internal function call]</tspan></text>
-<rect x="472.5" y="985" width="355" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="650" y="1005" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">Extracts CV without a snapshot</tspan></text>
-<text x="650" y="1030" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="650" dy="0">[Internal function call]</tspan></text>
-<rect x="982.5" y="1010" width="295" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1130" y="1030" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">Scores snapshot under policy</tspan></text>
-<text x="1130" y="1055" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1130" dy="0">[Internal function call]</tspan></text>
-<rect x="1062.5" y="1342" width="315" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1220" y="1362" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1220" dy="0">Stores jobs/snapshots and publishes</tspan></text>
-<text x="1220" y="1387" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1220" dy="0">[Internal function call]</tspan></text>
-<rect x="1257.5" y="1480" width="305" height="81" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1410" y="1500" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1410" dy="0">Reads runs and evidence</tspan><tspan x="1410" dy="25">and records decisions</tspan></text>
-<text x="1410" y="1550" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1410" dy="0">[Internal function call]</tspan></text>
-<rect x="1485" y="1283" width="310" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1640" y="1303" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1640" dy="0">Extracts data from JD/CV text</tspan></text>
-<text x="1640" y="1328" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1640" dy="0">[HTTPS/JSON]</tspan></text>
-<rect x="500" y="1665" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="635" y="1685" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="635" dy="0">Reads/writes and runs transactions</tspan></text>
-<text x="635" y="1710" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="635" dy="0">[SQL/TCP]</tspan></text>
-<rect x="1080" y="1665" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="1215" y="1685" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1215" dy="0">Stores and reads CV files</tspan></text>
-<text x="1215" y="1710" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1215" dy="0">[HTTPS/S3 API]</tspan></text>
-<text x="30" y="2075" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Component View: JD-based CV Screening — Screening Backend</tspan></text>
-<text x="30" y="2106" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
-<rect x="30" y="2129" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
-<text x="62" y="2146" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · User</tspan></text>
-<rect x="360" y="2129" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
-<text x="392" y="2146" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Software in scope</tspan></text>
-<rect x="735" y="2129" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
-<text x="767" y="2146" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">External system</tspan></text>
-<text x="30" y="2178" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: directed relationship; its label states the responsibility and protocol. Large frame: system/container boundary.</tspan></text>
-<text x="30" y="2205" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
+<rect x="1040" y="850" width="280" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1180" y="870" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1180" dy="0">Writes a durable run command</tspan><tspan x="1180" dy="25">and reads progress</tspan></text>
+<text x="1180" y="920" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1180" dy="0">[Internal function call]</tspan></text>
+<rect x="172.5" y="1180" width="235" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="290" y="1200" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">Extracts JD data</tspan></text>
+<text x="290" y="1225" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="290" dy="0">[Internal function call]</tspan></text>
+<rect x="10" y="1380" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="150" y="1400" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="150" dy="0">Reads/writes positions and criteria</tspan></text>
+<text x="150" y="1425" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="150" dy="0">[Internal function call]</tspan></text>
+<rect x="520" y="1480" width="200" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="620" y="1500" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="620" dy="0">Stores file, hash,</tspan><tspan x="620" dy="25">and CV version</tspan></text>
+<text x="620" y="1550" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="620" dy="0">[Internal function call]</tspan></text>
+<rect x="760" y="1580" width="280" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="900" y="1600" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="900" dy="0">Claims commands, stores</tspan><tspan x="900" dy="25">jobs/snapshots, and publishes</tspan></text>
+<text x="900" y="1650" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="900" dy="0">[Internal function call]</tspan></text>
+<rect x="350" y="1230" width="300" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="500" y="1250" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="500" dy="0">Extracts a CV without a snapshot</tspan></text>
+<text x="500" y="1275" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="500" dy="0">[Internal function call]</tspan></text>
+<rect x="1130" y="1230" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1270" y="1250" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1270" dy="0">Scores a snapshot under policy</tspan></text>
+<text x="1270" y="1275" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1270" dy="0">[Internal function call]</tspan></text>
+<rect x="1147.5" y="1730" width="305" height="81" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1300" y="1750" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1300" dy="0">Reads runs and evidence</tspan><tspan x="1300" dy="25">and records decisions</tspan></text>
+<text x="1300" y="1800" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1300" dy="0">[Internal function call]</tspan></text>
+<rect x="560" y="1750" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="700" y="1770" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="700" dy="0">Extracts data from JD/CV text</tspan></text>
+<text x="700" y="1795" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="700" dy="0">[HTTPS/JSON]</tspan></text>
+<rect x="415" y="2030" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="550" y="2050" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="550" dy="0">Reads/writes and runs transactions</tspan></text>
+<text x="550" y="2075" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="550" dy="0">[SQL/TCP]</tspan></text>
+<rect x="1080" y="2030" width="270" height="56" rx="3" fill="white" fill-opacity="0.98"/>
+<text x="1215" y="2050" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1215" dy="0">Stores and reads CV files</tspan></text>
+<text x="1215" y="2075" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="1215" dy="0">[HTTPS/S3 API]</tspan></text>
+<text x="30" y="2420" fill="#494949" font-size="29" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Component View: JD-based CV Screening — Backend and Worker</tspan></text>
+<text x="30" y="2451" fill="#494949" font-size="18" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Proposed architecture · JD-based CV screening and ranking only · Backend/AI not implemented</tspan></text>
+<rect x="30" y="2474" width="20" height="20" rx="3" fill="white" stroke="#2b8205" stroke-width="3"/>
+<text x="62" y="2491" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="62" dy="0">Person · User</tspan></text>
+<rect x="360" y="2474" width="20" height="20" rx="3" fill="white" stroke="#146ac4" stroke-width="3"/>
+<text x="392" y="2491" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="392" dy="0">Software in scope</tspan></text>
+<rect x="735" y="2474" width="20" height="20" rx="3" fill="white" stroke="#c71025" stroke-width="3"/>
+<text x="767" y="2491" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="767" dy="0">External system</tspan></text>
+<text x="30" y="2523" fill="#494949" font-size="17" font-weight="400" text-anchor="start"><tspan x="30" dy="0">Dashed arrow: directed relationship; its label states the responsibility and protocol. Large frame: system/container boundary.</tspan></text>
+<text x="30" y="2550" fill="#494949" font-size="15" font-weight="400" text-anchor="start"><tspan x="30" dy="0">JD: job description · CV: candidate application file · Presentation style references Simon Brown&apos;s C4 examples (c4model.com).</tspan></text>
 </svg>

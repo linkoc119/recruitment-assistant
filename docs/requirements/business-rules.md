@@ -54,6 +54,7 @@ These rules apply across user stories. They describe business invariants and obs
 | BR-DEC-02 | A recruiter may shortlist a candidate who failed mandatory eligibility after seeing the failed criteria and confirming. A recruiter may reject a candidate who passed or has a high score. | F05, SEQ-02 |
 | BR-DEC-03 | A decision can be recorded only against the currently published run and current result version. A decision based on stale data is rejected without writing it to another run. | Q06, arc42 §8.5 |
 | BR-DEC-04 | Concurrent decision changes must not silently overwrite one another. Repeating the same decision against the current result may return the existing state. | arc42 §8.5 |
+| BR-DEC-06 | In v1, only scored → shortlisted/rejected is allowed. No undo or switch is allowed; a current-version identical retry may return the existing state without changing its timestamp/version. | D-05 |
 | BR-DEC-05 | Decisions remain readable in their original run. A newly published run starts each result in `scored`; decisions are not carried forward automatically. | ADR-06 |
 
 ## Rescoring and history

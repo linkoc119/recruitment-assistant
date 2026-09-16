@@ -1,0 +1,160 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "extraction-v1"
+      ]
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "usage": {
+            "type": "string",
+            "enum": [
+              "evidenced_use",
+              "listed_only"
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "segment_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "segment_id",
+                "quote"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "name",
+          "usage",
+          "evidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "employment": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "start_raw": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "end_raw": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ongoing": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "segment_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "segment_id",
+                "quote"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "start_raw",
+          "end_raw",
+          "ongoing",
+          "evidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "education": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "degree_raw": {
+            "type": "string"
+          },
+          "degree_level": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "vocational",
+              "college",
+              "bachelor",
+              "master",
+              "doctorate",
+              null
+            ]
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "segment_id": {
+                  "type": "string"
+                },
+                "quote": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "segment_id",
+                "quote"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "degree_raw",
+          "degree_level",
+          "evidence"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "skills",
+    "employment",
+    "education"
+  ],
+  "additionalProperties": false
+}

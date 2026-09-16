@@ -18,7 +18,7 @@ This matrix connects the requirement levels without forcing every story to inven
 | F03 | US-10 — Calculate Score & Contributions | UC-08 | BR-SCR-01, BR-SCR-02, BR-SCR-03, BR-SCR-04 | Q02 |
 | F03 | US-11 — View Ranking | UC-09 | BR-RNK-01, BR-RUN-03 | Q04, Q07, Q08, Q11 |
 | F04 | US-12 — Inspect Candidate Evidence | UC-10 | BR-EVD-01, BR-EVD-02, BR-EVD-03, BR-RSC-03 | Q01, Q08, Q11 |
-| F05 | US-13 — Record Candidate Decision | UC-11, UC-12 | BR-ELG-02, BR-DEC-01, BR-DEC-02, BR-DEC-03, BR-DEC-04, BR-DEC-05 | Q06, Q08 |
+| F05 | US-13 — Record Candidate Decision | UC-11, UC-12 | BR-ELG-02, BR-DEC-01, BR-DEC-02, BR-DEC-03, BR-DEC-04, BR-DEC-05, BR-DEC-06 | Q06, Q08 |
 | F06 | US-14 — Adjust & Version Criteria | UC-13 | BR-CRI-01, BR-CRI-02, BR-CRI-03, BR-CRI-04, BR-CRI-05 | Q08 |
 | F06 | US-15 — Rescore Existing CV Set | UC-14 | BR-RUN-03, BR-RSC-01, BR-RSC-02 | Q02, Q04, Q10 |
 | F06 | US-16 — View Screening History | UC-15 | BR-DEC-05, BR-RSC-03 | Q01, Q08 |
