@@ -273,7 +273,7 @@ The ADRs below have the status **proposed in design 1.0** and are not yet proven
 | ADR-06 | Keep the screening scope: decisions belong to a run and do not carry over automatically | A separate application entity with cross-run state | Easy to explain today; must be separated if the candidate pipeline is extended |
 | ADR-07 | The old formula and the UI scores are interpreted differently: settle policy v1 and normalised contributions | Bending the formula to match each demo number | The demo is not an oracle; the UI must distinguish weight from maximum contribution; experience/education weights do not affect the score in v1, so the what-if screen must reflect that |
 | ADR-08 | No load data yet: a one-host trial with no broker or cluster | HA infrastructure from the start | Low cost, single point of failure; no claim of production readiness |
-| ADR-08 | Use `resume_extraction_jobs` separately from scoring runs; one active extraction per resume | Run-item-only extraction; process-local queue | Durable upload/reprocess and shared extraction; fenced completion and bounded retries. See [decision](extraction-jobs.md). |
+| ADR-09 | Use `resume_extraction_jobs` separately from scoring runs; one active extraction per resume | Run-item-only extraction; process-local queue | Durable upload/reprocess and shared extraction; fenced completion and bounded retries. See [decision](extraction-jobs.md). |
 
 The original data decisions are carried over: candidates and resumes are separate, canonical skills are used, a score belongs to a CV–position pair, and the details hold the evidence. See [the requirements-aligned data model](../../sang-loc-xep-hang-v2.dbml).
 
