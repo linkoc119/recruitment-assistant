@@ -1,0 +1,17 @@
+{
+  "name": "@app/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@app/api-types": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

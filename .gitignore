@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+
+# UI redesign track (prompts/plan/screenshots for the old prototype UI, not the new frontend/ scaffold)
+FRONTEND_PLAN.md
+frontend-redesign-prompt.md
+prompt-claude-design.md
+docs/screenshots/before-redesign/
+docs/screenshots/after-redesign/

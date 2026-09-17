@@ -1,0 +1,13 @@
+{
+  "name": "recruitment-assistant",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "backend",
+    "backend/worker",
+    "frontend"
+  ],
+  "scripts": {
+    "generate:types": "npm run generate -w @app/api-types"
+  }
+}
