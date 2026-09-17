@@ -2,7 +2,7 @@
 
 **Status:** proposed; these types do not exist in the current code.
 
-**Scope:** the TypeScript domain types under `backend/src/domain`, derived from the [13-table schema](../database-design.md) and the [OpenAPI schemas](../api/openapi.yaml). Behaviour lives in the services of [CLS-02](class-services.md); this view is the data these services operate on.
+**Scope:** the TypeScript domain types under `backend/src/domain`, derived from the [14-table schema](../database-design.md) and the [OpenAPI schemas](../api/openapi.yaml). Behaviour lives in the services of [CLS-02](class-services.md); this view is the data these services operate on.
 
 **Audience:** backend designers and developers.
 
@@ -98,6 +98,26 @@ classDiagram
         +string dictionary_version
         +string created_at
     }
+    class ResumeExtractionJob {
+        +string id
+        +string job_id
+        +string resume_id
+        +string trigger_source
+        +ExtractionJobStatus status
+        +ExtractionConfig extraction_config
+        +number attempts
+        +number max_attempts
+        +string available_at
+        +Nullable~string~ lease_owner
+        +Nullable~string~ lease_expires_at
+        +string lease_token
+        +Nullable~string~ snapshot_id
+        +Nullable~string~ error_code
+        +string created_at
+        +Nullable~string~ started_at
+        +Nullable~string~ finished_at
+        +string updated_at
+    }
     class ResumeSkill {
         +string id
         +string snapshot_id
@@ -125,6 +145,7 @@ classDiagram
         +string job_id
         +string resume_id
         +Nullable~string~ snapshot_id
+        +Nullable~string~ extraction_job_id
         +ItemStatus status
         +number attempts
         +Nullable~string~ error_code
@@ -176,6 +197,7 @@ classDiagram
     }
     class Enumerations {
         <<union types>>
+        +ExtractionJobStatus queued/running/succeeded/failed
         +EvidenceSource jd/cv
         +JobStatus draft/open/closed
         +RequirementKind skill/experience/education
@@ -187,6 +209,9 @@ classDiagram
         +DecisionStatus scored/shortlisted/rejected
         +MatchStatus matched/partial/missing
     }
+    PositionResume "1" --> "0..*" ResumeExtractionJob : originating membership
+    ResumeExtractionJob "0..1" --> "0..1" ResumeSnapshot : committed output
+    ScreeningRunItem "0..*" --> "0..1" ResumeExtractionJob : internal recovery only
     Job "1" *-- "0..*" CriteriaVersion : revisions
     CriteriaVersion "1" *-- "0..*" JobRequirement : criteria
     JobRequirement "0..*" --> "0..1" Skill : canonical
@@ -210,6 +235,10 @@ classDiagram
 ```
 
 </details>
+
+`ResumeExtractionJob` is the durable extraction lifecycle, separate from scoring runs. `ExtractionJobStatus` uses queued/running/succeeded/failed; the config freezes parser/model/prompt/schema/dictionary/normalization versions and UTC as_of_date. `lease_token` is represented as a decimal integer string to preserve PostgreSQL bigint precision. Full columns/checks are in DBML and the [accepted job decision](extraction-jobs.md). One active job per resume is enforced by a partial unique index. Originating membership is recorded, but shared-file deduplication across positions never exposes that origin. Only successful completion supplies a snapshot; the job/snapshot resume IDs must match.
+
+`ScreeningRunItem.extraction_job_id` is optional for internal initial-run recovery; public start-run acceptance freezes parsed snapshots directly. Rescore always uses base-run snapshots and has no extraction-job reference. Assigned job and snapshot IDs never switch to a newer reprocess result.
 
 ## Reading the relationships
 

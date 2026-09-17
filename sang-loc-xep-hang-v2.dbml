@@ -1,4 +1,4 @@
-// JD-based CV screening and ranking — 13-table proposed schema.
+// JD-based CV screening and ranking — 14-table proposed schema.
 // Requirements: US-01–US-17. Design only, no deployed DB or migrations.
 // Additional constraints and JSON contracts: docs/database-design.md.
 Project cv_screening {
@@ -48,6 +48,13 @@ Enum run_status {
 Enum item_status {
   pending
   processing
+  succeeded
+  failed
+}
+
+Enum extraction_job_status {
+  queued
+  running
   succeeded
   failed
 }
@@ -191,6 +198,45 @@ Table resume_snapshots {
   Note: 'Immutable validated extraction; includes employment, education and source mapping. Criteria-only rescore reuses exact snapshot ID.'
 }
 
+Table resume_extraction_jobs {
+  id bigint [pk, increment]
+  job_id bigint [not null]
+  resume_id bigint [not null]
+  trigger_source varchar(20) [not null]
+  status extraction_job_status [not null, default: 'queued']
+  extraction_config jsonb [not null]
+  attempts integer [not null, default: 0]
+  max_attempts integer [not null, default: 3]
+  available_at timestamptz [not null, default: `now()`]
+  lease_owner varchar(200)
+  lease_expires_at timestamptz
+  lease_token bigint [not null, default: 0]
+  snapshot_id bigint [unique]
+  error_code varchar(100)
+  created_at timestamptz [not null, default: `now()`]
+  started_at timestamptz
+  finished_at timestamptz
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    (id, resume_id) [unique]
+    (status, available_at, created_at)
+    (status, lease_expires_at)
+    (job_id, resume_id, created_at)
+  }
+  checks {
+    `trigger_source IN ('upload', 'reprocess', 'screening')`
+    `max_attempts = 3 AND attempts >= 0 AND attempts <= max_attempts AND lease_token >= 0`
+    `status <> 'running' OR (attempts > 0 AND lease_token > 0)`
+    `status <> 'queued' OR attempts < max_attempts`
+    `(status = 'running' AND lease_owner IS NOT NULL AND lease_expires_at IS NOT NULL) OR (status <> 'running' AND lease_owner IS NULL AND lease_expires_at IS NULL)`
+    `(status IN ('succeeded', 'failed') AND finished_at IS NOT NULL) OR (status IN ('queued', 'running') AND finished_at IS NULL)`
+    `(status = 'succeeded' AND snapshot_id IS NOT NULL AND error_code IS NULL) OR (status <> 'succeeded' AND snapshot_id IS NULL)`
+    `status <> 'failed' OR error_code IS NOT NULL`
+    `(attempts = 0 AND started_at IS NULL) OR (attempts > 0 AND started_at IS NOT NULL)`
+  }
+  Note: 'Durable CV extraction, separate from scoring. One active job per resume globally uses a partial unique index. job_id is originating membership, not authorization for other positions. Frozen config, fenced atomic completion, retry and command replay rules: docs/architecture/extraction-jobs.md.'
+}
+
 Table resume_skills {
   id bigint [pk, increment]
   snapshot_id bigint [not null]
@@ -245,6 +291,7 @@ Table screening_run_items {
   job_id bigint [not null]
   resume_id bigint [not null]
   snapshot_id bigint
+  extraction_job_id bigint
   status item_status [not null, default: 'pending']
   attempts integer [not null, default: 0]
   error_code varchar(100)
@@ -326,6 +373,9 @@ Ref: resumes.candidate_id > candidates.id [delete: restrict]
 Ref: position_resumes.job_id > jobs.id [delete: restrict]
 Ref: position_resumes.resume_id > resumes.id [delete: restrict]
 Ref: resume_snapshots.resume_id > resumes.id [delete: restrict]
+Ref: resume_extraction_jobs.(job_id, resume_id) > position_resumes.(job_id, resume_id) [delete: restrict]
+Ref: resume_extraction_jobs.(snapshot_id, resume_id) > resume_snapshots.(id, resume_id) [delete: restrict]
+Ref: screening_run_items.(extraction_job_id, resume_id) > resume_extraction_jobs.(id, resume_id) [delete: restrict]
 Ref: resume_skills.snapshot_id > resume_snapshots.id [delete: restrict]
 Ref: resume_skills.skill_id > skills.id [delete: restrict]
 Ref: screening_runs.job_id > jobs.id [delete: restrict]

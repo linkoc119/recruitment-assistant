@@ -104,7 +104,7 @@
 <text x="900" y="1600" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="900" dy="0">Claims commands, stores</tspan><tspan x="900" dy="25">jobs/snapshots, and publishes</tspan></text>
 <text x="900" y="1650" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="900" dy="0">[Internal function call]</tspan></text>
 <rect x="350" y="1230" width="300" height="56" rx="3" fill="white" fill-opacity="0.98"/>
-<text x="500" y="1250" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="500" dy="0">Extracts a CV without a snapshot</tspan></text>
+<text x="500" y="1250" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="500" dy="0">Executes a claimed extraction job</tspan></text>
 <text x="500" y="1275" fill="#494949" font-size="14" font-weight="400" text-anchor="middle"><tspan x="500" dy="0">[Internal function call]</tspan></text>
 <rect x="1130" y="1230" width="280" height="56" rx="3" fill="white" fill-opacity="0.98"/>
 <text x="1270" y="1250" fill="#494949" font-size="20" font-weight="400" text-anchor="middle"><tspan x="1270" dy="0">Scores a snapshot under policy</tspan></text>

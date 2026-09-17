@@ -97,3 +97,7 @@ A single server is a single point of failure. No high availability or automatic 
 The current prototype is opened directly as `index.html`, or served by a static HTTP server as described in the [README](../../README.md). It does not use Nginx, Next.js, a separate worker process, PostgreSQL, S3, or the AI service shown in the proposal above. None of this infrastructure is needed to run the existing demo.
 
 Related: [C2 — the containers being deployed](c2-containers.md), [operations and quality goals in arc42](arc42.md#9-architecture-decisions).
+
+## Durable extraction and scoring storage
+
+[The accepted extraction-job decision](extraction-jobs.md) uses `resume_extraction_jobs` for CV extraction and `screening_runs` / `screening_run_items` for scoring. Workers poll both durable work types without blocking an execution slot while awaiting extraction. One active extraction is shared per immutable resume; each work type has its own fenced lease. Upload/reprocess commit extraction work before acknowledgment; public screening still requires parsed CVs and rescore never enqueues extraction. Production adapters and migrations remain to be implemented.

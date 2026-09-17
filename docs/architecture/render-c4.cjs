@@ -175,7 +175,7 @@ class Diagram {
   d.edge('CRIT', 'DATA', [[140,895],[105,895],[105,1810],[650,1810]], 150, 1400, ['Reads/writes positions and criteria'], 'Internal function call', 280);
   d.edge('CV', 'DATA', [[620,945],[620,1810],[700,1810]], 620, 1500, ['Stores file, hash,', 'and CV version'], 'Internal function call', 200);
   d.edge('RUN', 'DATA', [[900,1355],[900,1810]], 900, 1600, ['Claims commands, stores', 'jobs/snapshots, and publishes'], 'Internal function call', 280);
-  d.edge('RUN', 'EXTRACT', [[760,1250],[290,1250],[290,1515]], 500, 1250, ['Extracts a CV without a snapshot'], 'Internal function call', 300);
+  d.edge('RUN', 'EXTRACT', [[760,1250],[290,1250],[290,1515]], 500, 1250, ['Executes a claimed extraction job'], 'Internal function call', 300);
   d.edge('RUN', 'SCORE', [[1060,1250],[1400,1250],[1400,1515]], 1270, 1250, ['Scores a snapshot under policy'], 'Internal function call', 280);
   d.edge('REVIEW', 'DATA', [[1600,945],[1600,1750],[1010,1750],[1010,1810]], 1300, 1750, ['Reads runs and evidence', 'and records decisions'], 'Internal function call', 305);
   d.edge('EXTRACT', 'AI', [[290,1720],[290,1770],[2090,1770],[2090,1720]], 700, 1770, ['Extracts data from JD/CV text'], 'HTTPS/JSON', 280);

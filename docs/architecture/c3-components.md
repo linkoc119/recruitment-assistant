@@ -38,7 +38,7 @@ flowchart TB
     subgraph WORKER["WORKER · Screening Worker — Node.js/TypeScript Container"]
         RUN["RUN · Screening Coordinator<br/>[Component · Node.js durable worker loop]<br/>Claims durable commands, coordinates retries, and publishes runs"]
         RUN -->|"Claims durable commands, stores jobs/snapshots, and publishes transactionally · function call"| DATA
-        RUN -->|"Extracts a CV without a snapshot · function call"| EXTRACT
+        RUN -->|"Executes a claimed CV extraction job · function call"| EXTRACT
         RUN -->|"Scores a snapshot under the policy · function call"| SCORE
     end
     SCORE["SCORE · Scoring Engine<br/>[Component · TypeScript domain module · shared]<br/>Evaluates eligibility, scores, and criterion contributions"]
@@ -98,3 +98,7 @@ See [the three runtime flows](arc42.md#6-runtime-view) and [the scoring rules](a
 ## One level below: the class views
 
 [CLS-02 — services and ports](class-services.md) opens these components into the classes that implement them: each service stereotype there carries the component ID used above (`CRIT`, `CV`, `RUN`, `SCORE`, `REVIEW`, `EXTRACT`, `DATA`), so a component on this page maps to a named module under `backend/src`. The rule that no service calls the database directly appears there as the `Repository<T>` port that every service depends on, and the separation of `EXTRACT` from `SCORE` appears as `AiExtractionService` and `ScoringEngine` having no relationship to each other. [CLS-01 — domain model](class-domain.md) gives the data those classes operate on.
+
+## Durable extraction and scoring storage
+
+[The accepted extraction-job decision](extraction-jobs.md) uses `resume_extraction_jobs` for CV extraction and `screening_runs` / `screening_run_items` for scoring. Workers poll both durable work types without blocking an execution slot while awaiting extraction. One active extraction is shared per immutable resume; each work type has its own fenced lease. Upload/reprocess commit extraction work before acknowledgment; public screening still requires parsed CVs and rescore never enqueues extraction. Production adapters and migrations remain to be implemented.

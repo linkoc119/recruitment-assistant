@@ -10,7 +10,7 @@ The contract implements [US-01–US-17](../requirements/README.md), [business ru
 
 `job` means recruitment position. UI routes may use `positions`; API routes use `jobs` to match the database. Base path: `/api`. Scope includes JD criteria, CV ingestion, deterministic ranking, evidence, decisions and historical comparison. No lifecycle mutation, location field, candidate merge, interviews, reporting, authentication/RBAC or semantic scoring is added.
 
-The selected runtime and differences from the earlier Python design are recorded in [Next.js backend decision](../architecture/nextjs-backend.md). The existing [13-table DBML](../../sang-loc-xep-hang-v2.dbml) remains a domain design; section 8 identifies storage additions required before implementation.
+The selected runtime and differences from the earlier Python design are recorded in [Next.js backend decision](../architecture/nextjs-backend.md). The existing [14-table DBML](../../sang-loc-xep-hang-v2.dbml) remains a domain design; section 8 identifies storage additions required before implementation.
 
 ## 2. HTTP and data conventions
 
@@ -169,7 +169,7 @@ Open the YAML in a local Swagger Editor/UI installation. A deployed Swagger UI r
 | Position/readiness | jobs, position_resumes | Add metadata `version`, `updated_at`; derive readiness; no lifecycle write endpoint |
 | Draft and approval | job_criteria_versions, job_requirements | Add draft edit version and base job version; stable criterion_key across revisions; atomic approval validation |
 | Identity/version | candidates, resumes, position_resumes | Candidate lock and version uniqueness; never expose cross-position membership |
-| Extraction queue | resumes, resume_snapshots, resume_skills | Durable extraction tasks/leases and attempts are needed before screening, separate from run items; snapshot-local candidate display facts/source mapping |
+| Extraction queue | resume_extraction_jobs, resumes, resume_snapshots, resume_skills | Queue/attempts/leases and same-resume FKs now designed; implement the partial active-job index, fenced transactions and snapshot-local display/source mapping |
 | Command replay | screening_runs has run idempotency | Durable command/outcome records also needed for uploads, job edits, draft save, approval and reprocess; do not overload run-only keys |
 | Run/publication | screening_runs, screening_run_items, screenings | Active-run uniqueness, transactional publication and recovery leases; preserve all frozen inputs |
 | Decision pagination | screenings.version | Add run decision_epoch (starts 0), atomically increment on actual decision writes |
@@ -178,6 +178,8 @@ Open the YAML in a local Swagger Editor/UI installation. A deployed Swagger UI r
 These gaps are explicit follow-up schema/migration work; this API documentation does not claim the current DBML already defines every operational field/table. ORM choice, detailed three-tier folder structure and class/sequence design are the next implementation-design tasks. They must preserve this contract and the accepted business rules.
 
 [Back to project](../../README.md) · [Architecture](../architecture/README.md) · [Requirements](../requirements/README.md)
+
+The extraction queue design is accepted in [extraction-jobs.md](../architecture/extraction-jobs.md): upload, reprocess and internal initial-run recovery share one active job per resume, with bounded retry and fenced atomic completion. Public start-run eligibility still requires parsed CVs with validated snapshots. Rescore never enqueues extraction. This introduces no endpoint, request/response field or HTTP status change. Generic command replay storage remains necessary; active-job deduplication does not replace it.
 
 ## 9. Endpoint behavior details
 
@@ -279,7 +281,7 @@ Both runs must be distinct and belong to this position; may be any published his
 
 `POST /jobs/{job_id}/resumes/{resume_id}/reprocess`
 
-Only parse_failed resumes without a validated snapshot can be queued again. Corrupt/textless input requires a corrected upload. Lock the resume and persist one extraction task before 202. Parsed/active resumes conflict. Never mutate a snapshot used by a run. Same idempotency key replays the outcome.
+Only parse_failed resumes without a validated snapshot can be queued again. Corrupt/textless input requires a corrected upload. Lock the resume and persist one `resume_extraction_jobs` row before 202, atomically with the resume state change and durable command outcome. Parsed/active resumes conflict. Never mutate a snapshot used by a run. Same idempotency key replays the outcome.
 
 
 ## 10. Cross-field schema rules

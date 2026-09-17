@@ -25,8 +25,12 @@ A static HTML export alone cannot host this API. The existing vanilla frontend r
 
 ## Superseded architecture details
 
-C2, C3, and deployment now show the Next.js API and the separate Node.js/TypeScript worker described above; their earlier Python/FastAPI and in-process-worker labels are gone. The sequence documents still narrate an in-process pipeline for readability — treat their step order and invariants as authoritative and their process boundaries as superseded by this decision until they are redrawn.
+C2, C3, and deployment now show the Next.js API and the separate Node.js/TypeScript worker described above; their earlier Python/FastAPI and in-process-worker labels are gone. SEQ-01 now shows the separate worker and durable extraction queue. The older SEQ-02/SEQ-03 views still narrate an in-process pipeline for readability — treat their step order and invariants as authoritative and their process boundaries as superseded by this decision until they are redrawn.
 
 Earlier endpoint sketches are illustrative; [openapi.yaml](../api/openapi.yaml) now defines the canonical position-scoped paths, version fields and errors. In particular, ranking reads use POST with a query body to keep search text out of URLs. No requirement or score policy is replaced by this runtime decision.
 
 [Back to architecture](README.md)
+
+## Durable extraction and scoring storage
+
+[The accepted extraction-job decision](extraction-jobs.md) uses `resume_extraction_jobs` for CV extraction and `screening_runs` / `screening_run_items` for scoring. Workers poll both durable work types without blocking an execution slot while awaiting extraction. One active extraction is shared per immutable resume; each work type has its own fenced lease. Upload/reprocess commit extraction work before acknowledgment; public screening still requires parsed CVs and rescore never enqueues extraction. Production adapters and migrations remain to be implemented.

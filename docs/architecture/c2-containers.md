@@ -55,7 +55,7 @@ flowchart TB
 | WEB | Rendering, position-status display/filter, data entry, action confirmation, job polling | Holds no AI key, computes no authoritative score, has no direct database access; applies Q11 data-handling rules |
 | API | Creates/reads positions; validates input and position context; serves synchronous reads (ranking, evidence, decisions); enqueues durable extraction/run commands; serves files to the CV viewer | Never computes an authoritative score itself; no position-status transition operation in v1 |
 | WORKER | Claims durable extraction and screening commands by lease; parses CVs, scores snapshots, and publishes runs transactionally | Separate process from API; survives request completion and resumes after restart ([Q05](../requirements/non-functional-requirements.md)); shares domain/scoring code with API, not a copy |
-| DB | Position metadata and stored lifecycle status, immutable snapshots, durable command/lease records, job state, and the run-publication transaction | Defined by the 13-table DBML plus the storage gaps in [api/README.md §8](../api/README.md#8-persistence-mapping-and-implementation-prerequisites); transaction/immutability enforcement requires implementation |
+| DB | Position metadata and stored lifecycle status, immutable snapshots, durable command/lease records, job state, and the run-publication transaction | Defined by the 14-table DBML plus the storage gaps in [api/README.md §8](../api/README.md#8-persistence-mapping-and-implementation-prerequisites); transaction/immutability enforcement requires implementation |
 | FILES | Original PDF/DOCX files, identified by object key and hash | Private bucket; in this design WEB reads through the API |
 | AI | Extracts criteria, CV information, and citation positions | Output is untrusted by default; the API validates the schema and cross-checks it against the source text |
 
@@ -78,3 +78,7 @@ No message broker (Redis, RabbitMQ, SQS, ...) is introduced: the PostgreSQL comm
 The current prototype implements only the interface corresponding to `WEB`, using `js/data.js` and state variables in place of the connections above.
 
 Next: [C3 — opening up API and WORKER](c3-components.md), [Deployment](deployment.md), [arc42](arc42.md).
+
+## Durable extraction and scoring storage
+
+[The accepted extraction-job decision](extraction-jobs.md) uses `resume_extraction_jobs` for CV extraction and `screening_runs` / `screening_run_items` for scoring. Workers poll both durable work types without blocking an execution slot while awaiting extraction. One active extraction is shared per immutable resume; each work type has its own fenced lease. Upload/reprocess commit extraction work before acknowledgment; public screening still requires parsed CVs and rescore never enqueues extraction. Production adapters and migrations remain to be implemented.

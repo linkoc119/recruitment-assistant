@@ -30,7 +30,7 @@ It is not a design for the whole recruitment system. Interviews, offers, executi
 | [SEQ-01 — First screening run](sequence-01-screening.md) | From JD, criteria confirmation, and CV upload through to publishing results |
 | [SEQ-02 — Verification and decision](sequence-02-review.md) | Reviewing evidence, shortlisting or rejecting, handling stale results |
 | [SEQ-03 — Re-scoring](sequence-03-rescore.md) | Creating a new run, preserving history, atomic publication, and comparison |
-| [CLS-01 — Class: domain model](class-domain.md) | The proposed domain types behind the 13 tables, their relationships, and the invariants they encode |
+| [CLS-01 — Class: domain model](class-domain.md) | The proposed domain types behind the 14 tables, their relationships, and the invariants they encode |
 | [CLS-02 — Class: services and ports](class-services.md) | Handlers, domain services, ports and adapters, arranged by the backend folder tiers |
 
 Every diagram has an **SVG version in the `diagrams/` directory** that can be opened directly or embedded in a report. C1–C3 and the deployment diagram follow one shared C4 style: white background, green person figures, blue outlines for applications/components/data stores, red outlines for external systems, and labelled dashed arrows. Operational infrastructure uses an amber outline. The SVG appears at the top of each file. In C1–C3 the equivalent Mermaid source sits in a collapsed section below it; in the deployment and sequence files the Mermaid block is shown open.
@@ -58,15 +58,17 @@ The three sequence diagrams are exported with the Mermaid CLI, with their source
 - C3 opens only `API` into its internal modules. `WEB`, `DB`, `FILES`, and `AI` remain external to that container.
 - Deployment places instances of exactly those containers onto devices and servers.
 - The three sequence diagrams use the C2/C3 names; the backend is collapsed where module-level call detail is not needed.
-- The two class diagrams open one more level below C3: CLS-02 gives the classes inside the C3 components — each service stereotype names its C3 component ID — and CLS-01 gives the data those classes operate on. They are the design-level bridge between C3 and the [13-table schema](../database-design.md).
+- The two class diagrams open one more level below C3: CLS-02 gives the classes inside the C3 components — each service stereotype names its C3 component ID — and CLS-01 gives the data those classes operate on. They are the design-level bridge between C3 and the [14-table schema](../database-design.md).
 
 ## Sources and order of precedence
 
 1. This design set is a new architecture proposal for the selected scope; the rules settled in arc42 are the basis for a future implementation.
-2. The [13-table DBML](../../sang-loc-xep-hang-v2.dbml), [ERD](../database-design-erd.png), and [database design](../database-design.md) describe requirements-aligned persistence, snapshots and durable runs. Additional partial indexes and transaction rules are specified for future implementation; no database or migration is deployed.
-3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the current prototype has 7 screens and the current proposed data model has 13 tables.
+2. The [14-table DBML](../../sang-loc-xep-hang-v2.dbml), [ERD](../database-design-erd.png), and [database design](../database-design.md) describe requirements-aligned persistence, snapshots and durable runs. Additional partial indexes and transaction rules are specified for future implementation; no database or migration is deployed.
+3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the current prototype has 7 screens and the current proposed data model has 14 tables.
 4. The [interface code](../../js/app.js) and [sample data](../../js/data.js) are evidence of the current state. The sample scores are not a correctness test suite for the proposed algorithm.
 
 ## Methodological sources
 
 C4 defines the Context, Container, and Component levels of view; the model is independent of drawing notation: [Container](https://c4model.com/diagrams/container), [Component](https://c4model.com/diagrams/component), [Notation](https://c4model.com/diagrams/notation). The document structure follows [the 12 arc42 sections](https://arc42.org/overview/). The system description and the specific decisions in this set are design choices for this project, not mandatory requirements of C4 or arc42.
+
+Accepted storage decision: [Durable CV extraction jobs](extraction-jobs.md) adds the 14th table and defines shared extraction, retries, leases and screening integration.

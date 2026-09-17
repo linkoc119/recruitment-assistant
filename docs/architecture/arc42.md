@@ -106,7 +106,7 @@ The solution keeps the underlying formulas of the v2 design but additionally fix
 
 ### 5.3 Data foundation
 
-[DBML](../../sang-loc-xep-hang-v2.dbml) defines 13 tables. The [ERD and data design](../database-design.md) cover position/JD and criteria revisions; candidate/file identity and position membership; validated extraction snapshots; durable runs/items; and scored results/details. These are proposed persistence structures for the screening subsystem. No database or migration has been deployed.
+[DBML](../../sang-loc-xep-hang-v2.dbml) defines 14 tables. The [ERD and data design](../database-design.md) cover position/JD and criteria revisions; candidate/file identity and position membership; validated extraction snapshots; durable runs/items; and scored results/details. These are proposed persistence structures for the screening subsystem. No database or migration has been deployed.
 
 ### 5.4 Comparison with the existing code
 
@@ -181,6 +181,7 @@ The requirements-aligned design is now represented in [DBML](../../sang-loc-xep-
 | `job_criteria_versions`, `job_requirements` | Versioned JD, stable criterion keys, weights and thresholds; immutable after approval |
 | `candidates`, `resumes`, `position_resumes` | Identity, immutable file versions, and position association before scoring |
 | `resume_snapshots`, `resume_skills`, `skills` | Validated source text, employment/education facts, skill evidence and dictionary version |
+| `resume_extraction_jobs` | Shared CV extraction queue, retry budget, frozen config, fenced lease and resulting snapshot |
 | `screening_runs`, `screening_run_items` | Frozen CV set, criteria/policy, source run, lease, idempotency and per-file status/error |
 | `screenings`, `screening_details` | Scores at calculation precision, separate display values, evidence/reasons, result_version and decision_at |
 
@@ -265,13 +266,14 @@ The ADRs below have the status **proposed in design 1.0** and are not yet proven
 | ADR | Context and choice | Alternatives considered | Consequence |
 |---|---|---|---|
 | ADR-01 | A single-flow scope with few operators: use a Python/FastAPI modular monolith | A microservice per step | Easy to deploy, but module boundaries must be maintained; backend resources are shared |
-| ADR-02 | Long batches: durable jobs in PostgreSQL with the coordinator inside the API | A synchronous request; a separate queue/worker | Recoverable, but leases and idempotency are required; a worker can be split out once load figures exist |
+| ADR-02 | Separate API and worker processes coordinate through PostgreSQL, per the Next.js runtime decision | Synchronous requests; an external broker | Durable recovery without coupling processing to HTTP request lifetime |
 | ADR-03 | Scores must be verifiable: the AI only extracts, SCORE computes under a fixed policy | An LLM scoring and ranking directly | Reproducible from a snapshot; quality still depends on extraction and criteria |
 | ADR-04 | Criteria change: immutable snapshots and atomic per-run publication | Editing requirements in place and overwriting results | More tables and storage; history is preserved and half-old rankings avoided |
 | ADR-05 | A CV is a file: separate object storage, metadata in PostgreSQL | A blob in the database; public files on the web server | Needs compensation when the metadata write fails, and backups of both stores |
 | ADR-06 | Keep the screening scope: decisions belong to a run and do not carry over automatically | A separate application entity with cross-run state | Easy to explain today; must be separated if the candidate pipeline is extended |
 | ADR-07 | The old formula and the UI scores are interpreted differently: settle policy v1 and normalised contributions | Bending the formula to match each demo number | The demo is not an oracle; the UI must distinguish weight from maximum contribution; experience/education weights do not affect the score in v1, so the what-if screen must reflect that |
 | ADR-08 | No load data yet: a one-host trial with no broker or cluster | HA infrastructure from the start | Low cost, single point of failure; no claim of production readiness |
+| ADR-08 | Use `resume_extraction_jobs` separately from scoring runs; one active extraction per resume | Run-item-only extraction; process-local queue | Durable upload/reprocess and shared extraction; fenced completion and bounded retries. See [decision](extraction-jobs.md). |
 
 The original data decisions are carried over: candidates and resumes are separate, canonical skills are used, a score belongs to a CV–position pair, and the details hold the evidence. See [the requirements-aligned data model](../../sang-loc-xep-hang-v2.dbml).
 

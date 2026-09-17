@@ -1,7 +1,8 @@
 ---
-title: CV Screening Database — 13 Tables (Proposed)
+title: CV Screening Database — 14 Tables (Proposed)
 config:
   layout: elk
+  htmlLabels: false
 ---
 erDiagram
   skills {
@@ -80,6 +81,26 @@ erDiagram
     varchar dictionary_version
     timestamptz created_at
   }
+  resume_extraction_jobs {
+    bigint id PK
+    bigint job_id FK
+    bigint resume_id FK
+    varchar trigger_source
+    extraction_job_status status
+    jsonb extraction_config
+    integer attempts
+    integer max_attempts
+    timestamptz available_at
+    varchar lease_owner
+    timestamptz lease_expires_at
+    bigint lease_token
+    bigint snapshot_id FK
+    varchar error_code
+    timestamptz created_at
+    timestamptz started_at
+    timestamptz finished_at
+    timestamptz updated_at
+  }
   resume_skills {
     bigint id PK
     bigint snapshot_id FK
@@ -114,6 +135,7 @@ erDiagram
     bigint job_id FK
     bigint resume_id PK,FK
     bigint snapshot_id FK
+    bigint extraction_job_id FK
     item_status status
     integer attempts
     varchar error_code
@@ -164,6 +186,9 @@ erDiagram
   jobs ||..o{ position_resumes : "job_id"
   resumes ||..o{ position_resumes : "resume_id"
   resumes ||..o{ resume_snapshots : "resume_id"
+  position_resumes ||..o{ resume_extraction_jobs : "job_id, resume_id"
+  resume_snapshots |o..o| resume_extraction_jobs : "snapshot_id, resume_id"
+  resume_extraction_jobs |o..o{ screening_run_items : "extraction_job_id, resume_id"
   resume_snapshots |o..o{ resume_skills : "snapshot_id"
   skills |o..o{ resume_skills : "skill_id"
   jobs ||..o{ screening_runs : "job_id"

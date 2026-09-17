@@ -23,3 +23,5 @@ The component names match C3; the database is reached through DATA. A solid line
 - "Docker becomes mandatory and a candidate therefore moves to not-passed" is a business case that must be tested. The sample figures 92 → 86 and 31 → 19 in the prototype are not commitments made by the implemented formula.
 
 Related: [snapshots and transactions in arc42](arc42.md#8-cross-cutting-concepts).
+
+With [resume_extraction_jobs](extraction-jobs.md), criteria-only rescore still uses only the exact successful base-run snapshots. It never inserts or waits for an extraction job; its item extraction_job_id stays null. An unrelated extraction job cannot change its frozen inputs.

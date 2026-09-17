@@ -54,3 +54,5 @@ Validated JD facts populate draft criteria and JD evidence. Validated CV facts p
 Use [synthetic cases](fixtures/extraction-cases.json) as human-authored gold examples. Integration must validate semantic facts/quotes, not exact ordering or generated prose. Live model evaluation, parser checks and backend unit tests remain separate work.
 
 Sources: [GPT-4o mini](https://developers.openai.com/api/docs/models/gpt-4o-mini), [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+CV execution uses [durable extraction jobs](../architecture/extraction-jobs.md). Each claim allows one provider attempt; queue retries and adapter retries must not multiply the three-attempt budget. Parser/model/prompt/schema/dictionary/normalization versions and as_of_date are frozen in job config, then persisted with the validated snapshot. JD suggestions retain their separate synchronous retry/deadline policy.

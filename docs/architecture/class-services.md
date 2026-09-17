@@ -74,7 +74,8 @@ classDiagram
         +listResumes(repo, jobId) Promise~Page~
         +reprocess(deps, cvCtx) Promise~ResumeDto~
         +listCandidates(repos, jobId) Promise~Page~
-        +extractResume(deps, cvCtx, lease) Promise~void~
+        +ensureExtraction(deps, cvCtx) Promise~ExtractionState~
+        +extractResume(deps, extractionCtx, lease) Promise~void~
     }
     class RunService {
         <<domain/runs · C3 RUN>>
@@ -150,7 +151,7 @@ classDiagram
     }
     class ExtractResumeTask {
         <<worker/src/tasks/extract-resume>>
-        +execute(cvCtx, lease) Promise~void~
+        +execute(extractionCtx, lease) Promise~void~
     }
     class RunScreeningTask {
         <<worker/src/tasks/run-screening>>
@@ -177,7 +178,7 @@ classDiagram
     ResumeService ..> AiExtractionService
     ResumeService ..> FileStore
     RunService ..> IdempotencyStore : one active run
-    RunService ..> AiExtractionService : initial extraction only
+    RunService ..> ResumeService : resolve shared extraction
     RunService ..> ScoringEngine : snapshot in, score out
     OpenAiExtractionAdapter ..|> AiExtractionService
     PostgresRepository ..|> Repository
@@ -211,13 +212,13 @@ The 21 `route.ts` files cover the 26 `operationId` values in [openapi.yaml](../a
 
 Services are **modules of exported functions**. Repositories and adapters arrive as ordinary function parameters, so a unit test constructs a fresh repository per case and calls the function directly — no container, no mocking framework, no HTTP.
 
-`ScoringEngine` is drawn apart from the other five because it performs no I/O at all: it takes an approved criteria set and an extraction snapshot, and returns numbers. That purity is what makes the scoring rules of [BR-SCR](../requirements/business-rules.md) directly testable, and it is the structural expression of the rule that **the AI never assigns a score** — `RunService` calls `AiExtractionService` to obtain facts and `ScoringEngine` to turn those facts into a score, and the two never talk to each other.
+`ScoringEngine` is drawn apart from the other five because it performs no I/O at all: it takes an approved criteria set and an extraction snapshot, and returns numbers. That purity is what makes the scoring rules of [BR-SCR](../requirements/business-rules.md) directly testable, and it is the structural expression of the rule that **the AI never assigns a score** — `ExtractResumeTask` calls `ResumeService.extractResume` to obtain validated facts through the AI port; `RunService` only resolves snapshots through `ResumeService` and passes them to `ScoringEngine`. The scoring path never calls AI directly.
 
-`ReviewService` is marked *position-scoped*: `CvContext = { jobId, resumeId }`, `RunContext = { jobId, runId }`, and `ResultContext = { jobId, runId, resultId }`. Parameters named `cvCtx`, `runCtx`, and `resultCtx` carry these complete contexts. `deps` bundles the required ports, not concrete adapters. Services verify every association before returning content; a context mismatch returns generic `404`. Run comparisons explicitly receive `jobId` and validate both runs within it. Worker contexts come from durable work records. See [Q11](class-domain.md#q11--position-scoping).
+`ReviewService` is marked *position-scoped*: `CvContext = { jobId, resumeId }`, `RunContext = { jobId, runId }`, and `ResultContext = { jobId, runId, resultId }`. `ExtractionContext = { extractionJobId, jobId, resumeId }` identifies the claimed durable extraction row. Parameters named `cvCtx`, `runCtx`, `resultCtx` and `extractionCtx` carry these complete contexts. `deps` bundles the required ports, not concrete adapters. Services verify every association before returning content; a context mismatch returns generic `404`. Run comparisons explicitly receive `jobId` and validate both runs within it. Worker contexts come from durable work records. See [Q11](class-domain.md#q11--position-scoping).
 
 All I/O operations return `Promise`; `planUpload` and `ScoringEngine` remain synchronous and pure. `JobDto`, `ResumeDto`, `RunDto`, `ResultDetail`, ranking, source and comparison outputs use the corresponding generated OpenAPI schemas. Services assemble these read models from scoped repositories, including derived flags/counts and immutable evidence, then handlers serialize them. `Page`, `Outcome`, `Lease` and the input/context names are schematic port contracts, not additional public schemas. The operation list is representative, not a replacement for all 26 OpenAPI operations (including file delivery and individual revision/run reads).
 
-`reprocess` only commits durable extraction work and returns the accepted resume DTO. `ExtractResumeTask` calls `extractResume`; initial run execution may extract a CV without a selected snapshot through `AiExtractionService`. A criteria-only rescore never calls AI and retains exactly the base run's successful snapshot pairs and policy.
+`reprocess` only commits durable extraction work and returns the accepted resume DTO. `ExtractResumeTask` calls `extractResume` under the extraction job lease; `ensureExtraction` is shared by upload/reprocess and internal initial-run recovery. Public screening still requires parsed snapshots. Recovery waits on a pinned extraction job without occupying a worker slot and never invokes AI directly. A criteria-only rescore never calls AI and retains exactly the base run's successful snapshot pairs and policy.
 
 ## Tier 3 — `backend/src/infrastructure`
 
@@ -225,14 +226,14 @@ The four interfaces are proposed **ports**, with production adapters matching C2
 
 | Port | Target adapter | Responsibility |
 |---|---|---|
-| `Repository<T>` | `PostgresRepository<T>` | Scoped reads and transaction-bound writes across the 13-table model |
+| `Repository<T>` | `PostgresRepository<T>` | Scoped reads and transaction-bound writes across the 14-table model |
 | `AiExtractionService` | `OpenAiExtractionAdapter` | Server-only HTTPS extraction, schema/source validation and bounded retries |
 | `FileStore` | `S3FileStore` | Private original files; only resolve keys after membership checks |
 | `IdempotencyStore` | `PostgresIdempotencyStore` | Atomic run replay/creation and durable lease acquisition, renewal and release |
 
-`Repository<T>` is shorthand for the repository family, not a promise that generic CRUD is sufficient. `transaction(jobId, work)` locks the position and supplies one shared transaction handle to all participating repositories and the idempotency port. `saveGuarded(tx, entity, guard)` stands for domain-specific conditional writes: approval checks the expected revision; decisions check the published pointer, expected result version and final-decision rules; worker writes check owner, token and unexpired lease inside the same transaction. Immutable inputs/snapshots cannot be overwritten through this port.
+`Repository<T>` is shorthand for the repository family, not a promise that generic CRUD is sufficient. `transaction(jobId, work)` is the position-scoped transaction; extraction repository operations additionally provide resume-scoped transactions in the lock order documented in the extraction decision. Position mutations lock the position and supply one shared transaction handle to all participating repositories and the idempotency port. `saveGuarded(tx, entity, guard)` stands for domain-specific conditional writes: approval checks the expected revision; decisions check the published pointer, expected result version and final-decision rules; worker writes check owner, token and unexpired lease inside the same transaction. Immutable inputs/snapshots cannot be overwritten through this port.
 
-Run creation uses `createOrReplay` within that transaction: bind `(job_id, idempotency_key)` to the normalized payload hash and atomically insert the run and its selected items; enforce the partial unique index for one active run. The current schema stores these fields and run leases on `screening_runs`; it has **no separate `idempotency_keys` table**. Durable standalone extraction work/lease storage still needs its migration design; this view does not claim that the 13-table schema already defines it.
+Run creation uses `createOrReplay` within that transaction: bind `(job_id, idempotency_key)` to the normalized payload hash and atomically insert the run and its selected items; enforce the partial unique index for one active run. The current schema stores these fields and run leases on `screening_runs`; it has **no separate `idempotency_keys` table**. Extraction rows, retries, frozen config and leases are now defined in `resume_extraction_jobs`. See [the accepted extraction-job decision](extraction-jobs.md) for resume-level locking, global active-job deduplication and atomic completion. The generic API command/outcome replay store remains an explicit separate gap; this job table does not replace it.
 
 Publication is a single transaction: verify terminal items, the lease and expected base pointer, require all source items for rescore (or at least one success for an initial run), finalize ranks/status, update latest flags and switch `published_run_id` together. Decision writes take the same position lock. Failed transactions leave the previous ranking and decisions intact. Adapters must support these semantics; replacing storage cannot be reduced to implementing three CRUD methods.
 
@@ -242,7 +243,7 @@ The API and worker are **separate OS processes**, coordinated through durable Po
 
 A `Lease` includes owner, monotonically increasing token and expiry. Long-running work renews it; acquisition/reclaim increments the token. Every item/result write and publication validates owner/token/expiry transactionally. An expired worker may still be executing, but its stale token cannot commit writes; acquiring a lease alone does not guarantee that old computation has stopped. Release is conditional on the current owner/token.
 
-`ExtractResumeTask` calls `ResumeService.extractResume`; run tasks call `RunService.executeRun` with frozen inputs. `RescoreTask` reuses source snapshots and never extracts again. These are proposed contracts: the present worker tasks and lease functions remain placeholders, and no implemented behavior or passing unit tests are claimed here.
+`taskCtx` discriminates run versus extraction work, so lease methods access `screening_runs` or `resume_extraction_jobs` without confusing their IDs. `WorkerLoop` schedules both queues fairly. `ExtractResumeTask` calls `ResumeService.extractResume`; run tasks call `RunService.executeRun` with frozen inputs. `RescoreTask` reuses source snapshots and never extracts again. These are proposed contracts: the present worker tasks and lease functions remain placeholders, and no implemented behavior or passing unit tests are claimed here.
 
 ## Rendering
 

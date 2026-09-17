@@ -1,24 +1,79 @@
-# SEQ-01 — JD setup and the first screening run
+# SEQ-01 - JD setup, durable extraction and initial screening
 
-**Runtime/API update (2026-09-16):** Technology/process labels and illustrative endpoints in this view and its SVG predate the [Next.js backend decision](nextjs-backend.md). That decision and [OpenAPI](../api/openapi.yaml) supersede those details; business invariants remain applicable.
+**Updated 2026-09-17. Proposed behavior, not implemented.** API and worker are separate processes. PostgreSQL stores extraction jobs and screening runs; the shared domain/repository code is called inside each process, never across their boundary. Public API paths and responses remain governed by [OpenAPI](../api/openapi.yaml).
 
-**Status:** proposed backend behaviour. **Preconditions:** the user has a JD and the CVs; the position has no active job. **Outcome:** one published run, holding results and evidence for the CVs that succeeded plus a separate list of failed CVs.
+[Open the SVG](diagrams/sequence-01-screening.svg)
 
-[Open the SVG](diagrams/sequence-01-screening.svg) to zoom in or embed it in a report.
+![SEQ-01 - Durable extraction and initial screening](diagrams/sequence-01-screening.svg)
 
-![SEQ-01 — JD setup and the first screening run](diagrams/sequence-01-screening.svg)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor REC as Recruiter
+    participant WEB as Web app
+    participant API as Next.js API
+    participant DB as PostgreSQL via repositories
+    participant WORKER as Separate worker process
+    participant FILES as Private file store
+    participant AI as AI extraction adapter
+    participant SCORE as Pure scoring engine
+    REC->>WEB: Create position, enter JD and approve criteria
+    WEB->>API: Position and criteria commands
+    API->>DB: Validate versions and freeze approved criteria
+    API-->>WEB: Position and approved revision
+    REC->>WEB: Upload PDF/DOCX batch
+    WEB->>API: POST /jobs/{job_id}/resume-batches
+    API->>FILES: Stage and validate accepted files
+    API->>DB: Lock resumes, accept membership, reuse snapshot/job or enqueue extraction
+    Note over API,DB: Commit metadata + extraction work + command outcome before response
+    API-->>WEB: Existing batch outcome DTO (200)
+    loop Due extraction jobs and expired leases
+        WORKER->>DB: Lock resume then job, claim/reclaim and increment token/attempts
+        WORKER->>FILES: Read immutable CV file
+        WORKER->>AI: Extract using frozen config, one provider attempt
+        AI-->>WORKER: Facts and evidence, or safe error
+        alt Valid schema and source evidence
+            WORKER->>DB: Fence lease, commit snapshot + skills + job success + resume parsed
+        else Transient error with remaining budget
+            WORKER->>DB: Fence lease, requeue with available_at, clear lease
+        else Permanent error or exhausted budget
+            WORKER->>DB: Mark failed + resume parse_failed, no scoring result
+        end
+    end
+    WEB->>API: GET /jobs/{job_id}/resumes
+    API->>DB: Read position-scoped resume states
+    API-->>WEB: Existing states and can_screen
+    opt Explicit eligible retry
+        WEB->>API: POST /jobs/{job_id}/resumes/{resume_id}/reprocess
+        API->>DB: Replay prior command or atomically enqueue new job for failed CV
+        API-->>WEB: Existing accepted resume DTO (202) or conflict
+        Note over DB,WORKER: Same extraction queue, retry budget and fenced completion
+    end
+    REC->>WEB: Select parsed CVs and start screening
+    WEB->>API: POST /jobs/{job_id}/screening-runs
+    API->>DB: Lock position, freeze criteria, policy and parsed snapshots, insert run/items
+    API-->>WEB: 202 with run_id
+    WORKER->>DB: Claim run lease, read frozen inputs
+    loop Each selected snapshot
+        WORKER->>SCORE: Score immutable snapshot under frozen criteria/policy
+        SCORE-->>WORKER: Score, eligibility, contributions and evidence
+        WORKER->>DB: Fence run lease, commit staged result and item state
+    end
+    WORKER->>DB: Lock position, publish ranks + flags + pointer atomically
+    Note over DB,WORKER: At least one success for initial run, otherwise preserve previous ranking
+    WEB->>API: Poll run/items then POST /jobs/{job_id}/ranking/query
+    API->>DB: Read scoped progress and published pointer
+    API-->>WEB: Consistent counts, ranking and separate failures
+```
 
 ## Rules and exceptions
 
-- [US-01 AC-4](../requirements/README.md#us-01--create-position-and-jd): CRIT owns position creation and status reads through DATA. New positions start as `draft`; stored `draft`/`open`/`closed` status is displayed and filterable, with no transition control or API command in v1. Lifecycle status does not gate screening.
-- [Q11](../requirements/non-functional-requirements.md): uploads and run reads carry the position context. The API checks each selected CV/run belongs to that position before accepting or returning data. WEB keeps raw CV/contact data out of URLs, telemetry labels, notifications, errors, and persistent storage. Failure messages contain safe codes/IDs, not file contents or contact details. Sensitive responses are not cached.
+- [Extraction-job decision](extraction-jobs.md) defines one active job per immutable resume globally, lease renewal/fencing, three total attempts and atomic completion. Duplicate uploads do not reset failed jobs. Reprocess applies only to a parse-failed CV without a validated snapshot; command replay precedes current-state checks.
+- The API never starts unawaited parsing work. Worker polling and browser polling can proceed concurrently; neither depends on the original request staying open. A failed metadata transaction compensates/cleans up only newly staged files.
+- The public v1 start-run command still accepts parsed CVs only. The defensive internal recovery path for an unassigned initial item resolves the shared extraction job, pins its ID, then yields its run lease while waiting. It never calls AI directly or blocks the only worker slot. A bound extraction failure fails the item; a later reprocess cannot silently change its inputs.
+- No extraction job publishes rankings or writes screening results. A technical extraction/scoring failure is separate from missing evidence and mandatory eligibility; it never creates a zero-score candidate or automatic rejection. Initial runs may publish successes with separate errors; no success means no publication.
+- Same run key/payload replays the logical run; different payload conflicts. Rescore uses the exact successful base-run snapshots and policy with no extraction jobs, and publishes only when all required items succeed.
+- New positions start draft; lifecycle remains display/filter only. Q11 checks position membership before lookup and before returning files/evidence. Cross-position shared-job origin stays internal. Sensitive responses use no-store; raw CV/contact data stays out of URLs, logs, notifications and persistent browser storage.
+- Corrupt/textless documents require corrected uploads; OCR is outside scope. Missing information in a readable CV remains insufficient evidence, not proof of absent ability.
 
-- The `API` lane collapses the `HTTP`, `CRIT`, and `CV` components into their container; `RUN` and `SCORE` are kept separate because the flow turns on their interaction. Participants annotated `via DATA` or `via EXTRACT` collapse the C3 adapter calls to keep the diagram readable; no service bypasses the repository on its own. RUN is a module inside the API, not a separate process or service. A solid line is a request, a dashed line a response; `alt` is a conditional branch and `loop` an iteration.
-- The `par` block shows background processing and polling happening concurrently. WEB does not have to wait for scoring to finish before asking for progress; once the run ends, the interface can fetch the results or display the error.
-- A missing, invalid, or superseded criteria set returns `422`/`409` and no job is created. Resending the same idempotency key with the same payload returns the same run; a different payload returns `409`.
-- A PDF with no text layer is flagged as needing reprocessing; automatic OCR is not part of this first proposal. A failed file is never counted as a candidate who did not meet the criteria.
-- If the file is stored successfully but the metadata write fails, the API deletes the object just created or records it for orphan cleanup; it never touches files belonging to another CV record. A unique constraint handles concurrent duplicate uploads.
-- A run may end as `completed_with_errors`; the ranking contains only successful items and always states the number of failed CVs. If every CV fails, no empty ranking table is published as though scoring had completed.
-- Information missing from a readable CV is recorded as insufficient evidence, which is distinct from a technical failure to read the file. The scoring rules are in [arc42 §8](arc42.md#8-cross-cutting-concepts).
-
-Related: [C3](c3-components.md), [SEQ-02](sequence-02-review.md).
+Related: [C3](c3-components.md), [database design](../database-design.md), [review](sequence-02-review.md), [rescore](sequence-03-rescore.md).

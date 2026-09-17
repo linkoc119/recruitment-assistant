@@ -1,10 +1,10 @@
 # Database design — CV screening and ranking
 
-Version 3.0 · 2026-09-16 · Proposed schema, not a deployed database.
+Version 3.1 · 2026-09-17 · Proposed schema, not a deployed database.
 
 [DBML source](../sang-loc-xep-hang-v2.dbml) · [ERD PNG](database-design-erd.png)
 
-The retained v2 filename is a stable repository link. The current model has 13 tables and covers the screening subsystem only. DBML defines columns, enums, checks, indexes and composite foreign keys. This document specifies the cross-row invariants required when implementing PostgreSQL migrations and services. No backend or applied migration is claimed.
+The retained v2 filename is a stable repository link. The current model has 14 tables and covers the screening subsystem only. DBML defines columns, enums, checks, indexes and composite foreign keys. This document specifies the cross-row invariants required when implementing PostgreSQL migrations and services. No backend or applied migration is claimed.
 
 ## Tables and requirement coverage
 
@@ -15,6 +15,7 @@ The retained v2 filename is a stable repository link. The current model has 13 t
 | skills | Canonical vocabulary; aliases remain versioned configuration | BR-EVD-02 |
 | candidates, resumes | Identity and immutable file versions; identity confirmation follows accepted D-02 | BR-CV-01–03 |
 | position_resumes | Accepted CV membership before any screening | US-04–05, Q11 |
+| resume_extraction_jobs | Durable extraction queue, retry budget, fenced leases and atomic snapshot completion | US-04–06, Q05, Q11 |
 | resume_snapshots, resume_skills | Immutable validated extraction and normalized skill facts | US-06, BR-EVD-01–03 |
 | screening_runs, screening_run_items | Frozen inputs, durable processing, failures, idempotency and source-run reuse | BR-RUN-01–04, BR-RSC-01–02 |
 | screenings, screening_details | Successful scores, evidence, decisions and historical comparison | BR-SCR, BR-RNK, BR-DEC, BR-RSC-03–04 |
@@ -26,6 +27,9 @@ Position status is stored as draft/open/closed, with draft as the creation defau
 The following PostgreSQL indexes are required in a future migration, in addition to the DBML indexes:
 
 ```sql
+CREATE UNIQUE INDEX ux_active_extraction_per_resume
+ON resume_extraction_jobs (resume_id) WHERE status IN ('queued', 'running');
+
 CREATE UNIQUE INDEX ux_active_run_per_job
 ON screening_runs (job_id) WHERE status IN ('queued', 'running');
 
@@ -43,13 +47,19 @@ Composite foreign keys enforce matching position, criteria revision and CV acros
 
 - **Approval (BR-CRI):** lock the position and verify expected revision. Draft weights may be zero; approval requires at least one criterion, all weights positive and sum exactly 100. Validate kind/threshold, unique canonical skills and evidence. Freeze the revision and its criteria, set approved_at and update jobs.criteria_revision atomically. First approval is revision 1; later approval is N+1. Concurrent draft/approval requests cannot allocate the same revision. Once approved, prohibit UPDATE/DELETE of criteria content.
 - **Upload (BR-CV, Q11):** accept at most 200 PDF/DOCX files of at most 10 MiB (10,485,760 bytes) each, validating actual format. Resolve candidate identity without automatic name/email merging; an unresolved identity record may have NULL name/contact fields until extraction or review. Hash reuse is internal: attach an existing file through position_resumes without exposing another position's metadata. Duplicate membership returns the existing association. Immutable file content/object key/hash/version must not be overwritten.
-- **Extraction:** store only schema- and evidence-validated snapshots. Freeze resume_snapshots and their resume_skills together. A parsed CV has a validated snapshot; a technical failure has an error code, not a synthetic score. Re-extraction creates another snapshot, never changes an old one.
-- **Run creation:** lock the position, validate an approved revision, CV membership and the active-run constraint. Bind the idempotency key to position and normalized payload hash. Same key/payload returns the same logical run; a changed payload conflicts. Insert all selected items before committing. Initial runs reuse a valid selected snapshot or assign one after extraction; snapshot_id becomes immutable once assigned. Rescore uses precisely the successful base-run (resume_id, snapshot_id) pairs and the same policy snapshot; validate the published source and newly approved revision. Freeze run inputs and item membership.
+- **Extraction:** upload/reprocess commits `resume_extraction_jobs` with the accepted resume/membership mutation. Reuse a valid snapshot or join one active job per resume globally; do not auto-retry a terminal failure on duplicate upload. Claim, bounded retry, reclaim and atomic snapshot/skills/job/resume completion follow [the accepted extraction-job decision](architecture/extraction-jobs.md). Every write checks owner/token/expiry; terminal rows and frozen extraction config are immutable. Explicit reprocess creates a new job only for an eligible parse-failed CV without a snapshot, after command replay checks.
+- **Run creation:** lock the position, validate an approved revision, CV membership and the active-run constraint. Bind the idempotency key to position and normalized payload hash. Same key/payload returns the same logical run; a changed payload conflicts. Insert all selected items before committing. The public v1 contract selects parsed CVs and freezes validated snapshot IDs at acceptance. An internal recovery path for an unassigned initial item may bind `extraction_job_id` once to the shared queue, then assign its successful snapshot once under the run lease; it never calls AI directly. A failed bound job fails the item; waiting remains pending without consuming scoring attempts. Rescore uses precisely the successful base-run pairs and policy, with no extraction job. Freeze run inputs and item membership.
 - **Processing:** lease acquisition/reclaim increments lease_token. Every item/result write checks owner/token/expiry in a transaction. Counts derive from item states, avoiding independently mutable totals. Store a staged result and mark its item succeeded atomically; failed items have no result. Persist reason codes, not raw CV/contact data in errors.
 - **Publication:** lock the position and validate the lease, terminal items and expected base pointer. Initial screening may publish successful items if at least one succeeds; rescore must succeed for every required source item. Finalize rank, run status and published_at, clear prior latest flags, set new latest flags, and update jobs.published_run_id in one transaction. Failure rolls back the switch and preserves the previous ranking. Completion with errors is permitted only for initial screening. A published run and its results remain immutable except for current-result human decisions.
 - **Ranking:** read via jobs.published_run_id, or an explicit historical published run. Sort passed_mandatory DESC, displayed_total DESC, resume_id ASC. rank_in_job is the resulting position within that run, and scored_round equals run.round. is_latest is a compatibility projection, not an independent source. Full-precision numeric calculations and displayed two-decimal values are distinct; allocate displayed contributions using BR-SCR-04.
 - **Decision:** verify job/run/result association, published pointer and expected result_version under the same position lock used for publication. Apply only the requested human decision, set decision_at and increment version. A stale request conflicts. New results start scored with no decision timestamp, including rescoring. Historical decisions remain attached to their original results.
 - **History/comparison:** read stored snapshots only. Compare published runs within the same position by CV/snapshot identity; absence is explicit, not a zero score. Do not join mutable candidate facts into historical scoring explanations.
+
+## Extraction queue and remaining implementation prerequisites
+
+The 14th table is `resume_extraction_jobs`; `screening_run_items.extraction_job_id` is an optional internal reference for initial-run recovery, not a public API field. Composite foreign keys enforce originating membership and same-resume snapshot/job identity. The partial active-job index above is required in the migration, not encoded as a portable DBML index. State transitions, config validation, fencing and cross-row atomicity require transaction code/triggers, not only row CHECKs.
+
+See [extraction-jobs.md](architecture/extraction-jobs.md) for lock ordering, three-attempt retry budget, lease TTL/renewal, shared-file deduplication, source privacy and acceptance scenarios. This resolves the extraction queue design gap; general mutation command/outcome replay, draft/job versions and decision pagination fields in [API section 8](api/README.md#8-persistence-mapping-and-implementation-prerequisites) still need schema/migration work. No applied migration or functioning worker is claimed.
 
 ## Snapshot and evidence contracts
 
@@ -59,6 +69,7 @@ JSON fields are typed application contracts, not arbitrary AI output. Validate b
 
 | Field | Required content |
 |---|---|
+| resume_extraction_jobs.extraction_config | Frozen parser/model/prompt/schema/dictionary/normalization versions and UTC as_of_date; all retries use the same config. |
 | resume_snapshots.extraction | Validated employment periods and non-overlapping months, education level or explicit missing evidence, extracted skill facts, and source mapping to the original file version. Contact redaction mapping must preserve valid source spans. |
 | resume_skills.evidence | Array of quotes, page/paragraph and start/end offsets into snapshot raw_text, with evidence-of-use classification. Empty array means no validated evidence. |
 | job_requirements.jd_evidence | For AI suggestions, quote and source offsets into the revision jd_snapshot; manual criteria may omit it. |
@@ -75,7 +86,7 @@ All historical foreign keys use RESTRICT rather than cascade-delete. Ordinary cr
 
 ## Rendering and validation
 
-Run `node docs/render-erd.cjs` to generate Mermaid ER source directly from the DBML table columns and foreign keys. The overview collapses parallel composite foreign keys between the same pair of tables; exact columns, checks, indexes and enum members remain in DBML.
+Run `node docs/render-erd.cjs` to generate Mermaid ER source directly from the DBML table columns and foreign keys. The generator accepts LF/CRLF and derives the table count from DBML; HTML labels are disabled for portable SVG/PNG export. The overview collapses parallel composite foreign keys between the same pair of tables; exact columns, checks, indexes and enum members remain in DBML.
 
 Render with Mermaid CLI:
 

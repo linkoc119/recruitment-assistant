@@ -123,7 +123,7 @@ The system is structured into 4 core functional pillars:
 
 ## 4. Database Schema (ERD)
 
-The proposed database now has **13 tables**, aligned with the current screening requirements. [DBML](sang-loc-xep-hang-v2.dbml) is the schema source; [database design](docs/database-design.md) documents transaction rules, partial indexes, snapshot contracts and Q11. No database or migration is deployed in the frontend prototype.
+The proposed database now has **14 tables**, aligned with the current screening requirements. [DBML](sang-loc-xep-hang-v2.dbml) is the schema source; [database design](docs/database-design.md) documents transaction rules, partial indexes, snapshot contracts and Q11. No database or migration is deployed in the frontend prototype.
 
 ![Database ERD](docs/database-design-erd.png)
 
@@ -132,9 +132,12 @@ The proposed database now has **13 tables**, aligned with the current screening 
 | `jobs`, `job_criteria_versions`, `job_requirements` | Position/JD, display-only lifecycle and immutable approved criteria |
 | `skills` | Canonical skills; aliases use versioned configuration |
 | `candidates`, `resumes`, `position_resumes` | Candidate identity, immutable CV files and position membership before screening |
+| `resume_extraction_jobs` | Shared durable CV extraction, bounded retries, fenced leases and snapshot completion |
 | `resume_snapshots`, `resume_skills` | Immutable validated facts, source text and evidence |
 | `screening_runs`, `screening_run_items` | Frozen inputs, progress/failures, idempotency, leases and rescore source |
 | `screenings`, `screening_details` | Successful scores, per-criterion explanations and versioned human decisions |
+
+The [accepted extraction-job design](docs/architecture/extraction-jobs.md) separates extraction from scoring; public screening still selects parsed CVs, and rescore reuses frozen snapshots.
 
 Ranking reads `jobs.published_run_id`. Publication switches this pointer and compatibility `is_latest` flags atomically; `scored_round` mirrors the run's round. A failed rescore preserves the previous ranking. Historical evidence uses immutable criteria and CV snapshots. Scoring policy v1 uses skill, experience and education; semantic_score remains NULL.
 
@@ -216,7 +219,7 @@ Open your browser and navigate to: **`http://localhost:8080`**
 recruitment-assistant/
 ├── index.html                   # Single-Page Application shell with hash router & modals
 ├── README.md                    # System documentation, mindmap & architectural specifications
-├── sang-loc-xep-hang-v2.dbml    # DBML source of the 13-table relational schema
+├── sang-loc-xep-hang-v2.dbml    # DBML source of the 14-table relational schema
 ├── css/
 │   ├── tokens.css               # Design system variables (colors, typography, spacing)
 │   └── app.css                  # Application layouts, responsive tables & animations
@@ -228,7 +231,7 @@ recruitment-assistant/
     ├── mindmap.png              # 7-branch recruitment system mindmap
     ├── use-case-diagram.svg     # UML use case diagram — screening & ranking (source)
     ├── use-case-diagram.png     # UML use case diagram — rendered
-    ├── database-design-erd.png  # 13-table relational database architecture diagram
+    ├── database-design-erd.png  # 14-table relational database architecture diagram
     └── screenshots/             # Captures of all 7 UI screens (embedded in §5)
         ├── 01-job-positions.png
         ├── 02-jd-criteria.png

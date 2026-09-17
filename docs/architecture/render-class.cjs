@@ -261,13 +261,13 @@ const LEGEND = [
 ];
 
 // ===========================================================================
-// CLS-01 - Domain model: the 13 persisted entities plus the validated JSON value objects.
+// CLS-01 - Domain model: the 14 persisted entities plus the validated JSON value objects.
 // Class members come from Markdown. These are selected internal types, not public response DTOs.
 // ===========================================================================
 {
-  const d = new ClassDiagram('class-domain', 2240, 1720,
+  const d = new ClassDiagram('class-domain', 2240, 2360,
     'CLS-01 — Domain Model: JD-based CV Screening and Ranking',
-    'Proposed TypeScript domain types under backend/src/domain, selected from the 13-table schema; public responses require DTO assembly.');
+    'Proposed TypeScript domain types under backend/src/domain, selected from the 14-table schema; public responses require DTO assembly.');
 
   const W = 430;
   const X = [40, 600, 1160, 1720];
@@ -354,6 +354,13 @@ const LEGEND = [
     }],
   ]);
 
+  d.box('ResumeExtractionJob', 600, 1480, 520, {
+    title: 'ResumeExtractionJob', stereotype: 'entity - durable extraction',
+  });
+  d.link('PositionResume', 'ResumeExtractionJob', 'association', { fromSide: 'l', toSide: 'l', via: [[555, 720], [555, 1700]], fromMult: '1', toMult: '0..*', label: 'originating membership', labelAt: 0.5, labelDy: 230 });
+  d.link('ResumeExtractionJob', 'ResumeSnapshot', 'association', { fromSide: 'r', toSide: 'r', via: [[1130, 1730], [1130, 950]], fromMult: '0..1', toMult: '0..1', label: 'committed output', labelAt: 0.5 });
+  d.link('ScreeningRunItem', 'ResumeExtractionJob', 'association', { fromSide: 'r', toSide: 'r', via: [[1640, 600], [1640, 1750]], fromMult: '0..*', toMult: '0..1', label: 'internal recovery only', labelAt: 0.5 });
+
   // Position and criteria.
   d.link('Job', 'CriteriaVersion', 'composition', { fromSide: 'b', toSide: 't', fromMult: '1', toMult: '0..*', label: 'revisions' });
   d.link('CriteriaVersion', 'JobRequirement', 'composition', { fromSide: 'b', toSide: 't', fromMult: '1', toMult: '0..*', label: 'criteria' });
@@ -384,18 +391,18 @@ const LEGEND = [
   d.link('ScreeningDetail', 'Evidence', 'composition', { fromSide: 'l', toSide: 'r', via: [[1655, 610], [1655, 1083]], fromMult: '1', toMult: '0..*' });
   d.link('ScreeningDetail', 'JobRequirement', 'association', { fromSide: 'r', toSide: 'l', fromOffset: 120, via: [[2190, 730], [2190, 1410], [20, 1410], [20, 878]], fromMult: '0..*', toMult: '1', label: 'explains', labelAt: 0.5 });
 
-  d.note(X[0], 1450, 990, [
+  d.note(X[0], 2100, 990, [
     'Immutability: CriteriaVersion and its JobRequirement rows freeze on approval; ResumeSnapshot,',
     'ResumeSkill and ScreeningDetail are never updated. Re-extraction always inserts a new snapshot,',
     'and a criteria-only rescore reuses the exact snapshot_id of each successful base-run item.',
   ]);
-  d.note(X[2], 1450, 990, [
+  d.note(X[2], 2100, 990, [
     'Decimal retains calculation precision; only DisplayedScore is rounded to two decimal places.',
     'DTO assembly adds derived fields and excludes internal data. Draft criteria may be empty.',
     'Q11: every read is scoped by job_id first — a valid id from another position resolves to a generic 404.',
   ], GRAY);
 
-  d.legend(1576, LEGEND);
+  d.legend(2226, LEGEND);
   d.write();
 }
 
@@ -551,7 +558,7 @@ const LEGEND = [
   d.link('ResumeService', 'AiExtractionService', 'dependency', { fromSide: 'b', toSide: 't', fromOffset: 40, toOffset: -120, via: [[955, 744], [175, 744]] });
   d.link('ResumeService', 'FileStore', 'dependency', { fromSide: 'b', toSide: 't', fromOffset: 80, via: [[995, 732], [1375, 732]] });
   d.link('RunService', 'IdempotencyStore', 'dependency', { fromSide: 'b', toSide: 't', fromOffset: 80, via: [[1345, 740], [1895, 740]], label: 'one active run' });
-  d.link('RunService', 'AiExtractionService', 'dependency', { fromSide: 'b', toSide: 't', fromOffset: -80, toOffset: -60, via: [[1185, 690], [235, 690]], label: 'initial extraction only' });
+  d.link('RunService', 'ResumeService', 'dependency', { fromSide: 'l', toSide: 'r', label: 'resolve shared extraction', labelDy: -110 });
   d.link('RunService', 'ScoringEngine', 'dependency', { fromSide: 't', toSide: 't', fromOffset: 100, via: [[1365, 414], [1965, 414]], label: 'snapshot in, score out' });
 
   // Adapters realize the ports.
