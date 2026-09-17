@@ -94,3 +94,7 @@ WEB excludes raw CV content and contact details from URLs, analytics labels, not
 Verification uses marked synthetic CV/contact data to inspect URLs, browser storage, telemetry, notifications, and client errors after upload, ranking, and evidence viewing. Cross-position requests for runs, results, and CV content must return no data from the other position. Valid historical requests within the correct position must remain readable.
 
 See [the three runtime flows](arc42.md#6-runtime-view) and [the scoring rules](arc42.md#8-cross-cutting-concepts).
+
+## One level below: the class views
+
+[CLS-02 — services and ports](class-services.md) opens these components into the classes that implement them: each service stereotype there carries the component ID used above (`CRIT`, `CV`, `RUN`, `SCORE`, `REVIEW`, `EXTRACT`, `DATA`), so a component on this page maps to a named module under `backend/src`. The rule that no service calls the database directly appears there as the `Repository<T>` port that every service depends on, and the separation of `EXTRACT` from `SCORE` appears as `AiExtractionService` and `ScoringEngine` having no relationship to each other. [CLS-01 — domain model](class-domain.md) gives the data those classes operate on.

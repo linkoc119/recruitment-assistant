@@ -30,6 +30,8 @@ It is not a design for the whole recruitment system. Interviews, offers, executi
 | [SEQ-01 — First screening run](sequence-01-screening.md) | From JD, criteria confirmation, and CV upload through to publishing results |
 | [SEQ-02 — Verification and decision](sequence-02-review.md) | Reviewing evidence, shortlisting or rejecting, handling stale results |
 | [SEQ-03 — Re-scoring](sequence-03-rescore.md) | Creating a new run, preserving history, atomic publication, and comparison |
+| [CLS-01 — Class: domain model](class-domain.md) | The proposed domain types behind the 13 tables, their relationships, and the invariants they encode |
+| [CLS-02 — Class: services and ports](class-services.md) | Handlers, domain services, ports and adapters, arranged by the backend folder tiers |
 
 Every diagram has an **SVG version in the `diagrams/` directory** that can be opened directly or embedded in a report. C1–C3 and the deployment diagram follow one shared C4 style: white background, green person figures, blue outlines for applications/components/data stores, red outlines for external systems, and labelled dashed arrows. Operational infrastructure uses an amber outline. The SVG appears at the top of each file. In C1–C3 the equivalent Mermaid source sits in a collapsed section below it; in the deployment and sequence files the Mermaid block is shown open.
 
@@ -41,6 +43,12 @@ node docs/architecture/render-c4.cjs
 
 When the architecture changes, update the Mermaid source in the Markdown file and the corresponding layout/label section of the script, then re-run the command above. The script verifies that the relationships in the SVG match the Mermaid source before writing output. The SVG uses custom icons; Mermaid uses a flowchart layout, so it cannot reproduce the presentation layout and icons exactly.
 
+The two class diagrams are generated the same way, by [render-class.cjs](render-class.cjs), and use UML notation rather than the C4 style: a filled diamond for composition, an open arrowhead for association, a dashed line with a hollow triangle for realization, and a dashed open arrow for dependency. Each SVG is checked against the Mermaid source in its document and refuses to write if two class boxes overlap.
+
+```bash
+node docs/architecture/render-class.cjs
+```
+
 The three sequence diagrams are exported with the Mermaid CLI, with their source in the accompanying Markdown. Names, types, responsibilities, technologies, and relationships are labelled; the legends and the exception rules stated in the prose are part of the design. Reading this document set does not require running the application.
 
 ## How the views relate
@@ -50,6 +58,7 @@ The three sequence diagrams are exported with the Mermaid CLI, with their source
 - C3 opens only `API` into its internal modules. `WEB`, `DB`, `FILES`, and `AI` remain external to that container.
 - Deployment places instances of exactly those containers onto devices and servers.
 - The three sequence diagrams use the C2/C3 names; the backend is collapsed where module-level call detail is not needed.
+- The two class diagrams open one more level below C3: CLS-02 gives the classes inside the C3 components — each service stereotype names its C3 component ID — and CLS-01 gives the data those classes operate on. They are the design-level bridge between C3 and the [13-table schema](../database-design.md).
 
 ## Sources and order of precedence
 
