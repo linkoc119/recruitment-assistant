@@ -29,7 +29,10 @@ const routes: RouteDefinition[] = [
   route("/positions/{position}/ranking", () => import("../screens/scr-06-published-ranking/index.js")),
   route("/positions/{position}/candidates/{result}", () => import("../screens/scr-07-candidate-result/index.js")),
   route("/positions/{position}/runs", () => import("../screens/scr-08-run-history/index.js")),
-  route("/positions/{position}/criteria/new-revision", () => import("../screens/scr-03-criteria-review/index.js")),
+  // A dedicated literal route for "new-revision" doesn't capture a
+  // `revision` param, so the screen can't tell it apart from a draft — the
+  // generic {revision} route below already covers it, since scr-03's
+  // resolveMode() checks for the literal string "new-revision".
   route("/positions/{position}/criteria/{revision}", () => import("../screens/scr-03-criteria-review/index.js")),
   route("/positions/{position}/comparison", () => import("../screens/scr-10-run-comparison/index.js")),
 ];

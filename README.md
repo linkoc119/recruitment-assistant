@@ -4,7 +4,7 @@ API contract: [OpenAPI 3.0.3](docs/api/openapi.yaml) · [API guide and requireme
 
 An explainable recruitment assistant concept for resume screening and candidate ranking based on Job Descriptions (JD). It aims to reduce manual screening effort and make results inspectable through evidence; the prototype does not establish real-world AI accuracy or bias reduction.
 
-The repository contains a **TypeScript API implementation with in-memory repositories and mock AI**, a new frontend scaffold, and the original standalone HTML/CSS/JavaScript prototype. Scoring is deterministic backend code; AI is used only as an extraction interface. Real PDF/DOCX parsing, AI-provider calls, database persistence and a connected UI remain unfinished.
+The repository contains a **TypeScript API implementation with in-memory repositories and mock AI**, a new fixture-driven frontend covering all ten target screens, and the original standalone HTML/CSS/JavaScript prototype. Scoring is deterministic backend code; AI is used only as an extraction interface. Real PDF/DOCX parsing, AI-provider calls, database persistence and a frontend connected to the live API remain unfinished.
 
 > **Design documentation:** [Architecture](docs/architecture/README.md) covers C1–C3, arc42, deployment, and sequence diagrams. [UI/UX design](docs/ui-ux/README.md) covers the target information architecture, screen hierarchy, flows, and screen specifications. Both describe the selected JD-based CV screening and ranking workflow; the current prototype does not yet implement all specified behavior.
 
@@ -148,44 +148,59 @@ Ranking reads `jobs.published_run_id`. Publication switches this pointer and com
 
 ---
 
-## 5. Original Prototype — Screen-by-Screen
+## 5. Frontend — Screen-by-Screen
 
-The screenshots below show the **seven-screen legacy prototype**, with simulated data and scoring. They are not the new frontend. The target UI has ten screens (SCR-01–SCR-10), documented in [UI/UX specifications](docs/ui-ux/screen-specifications.md); `frontend/` currently contains their route/heading placeholders and typed fixtures.
+The screenshots below are the current `frontend/` SPA (vanilla TypeScript, hash router, typed fixtures) — ten screens (SCR-01–SCR-10), documented in [UI/UX specifications](docs/ui-ux/screen-specifications.md). It is fixture-driven, not yet wired to the real API.
 
-### 5.1 Vị trí tuyển dụng — Job Positions (`#vi-tri`)
-Entry point. Lists open positions with their CV counts and screening status, so the recruiter picks a job before anything else happens.
+### 5.1 SCR-01 — Job Positions (`#/positions`)
+Entry point. Lists open positions with their CV counts, shortlist counts and screening status, so the recruiter picks a job before anything else happens.
 
-![Screen 1 — Job positions](docs/screenshots/01-job-positions.png)
+![SCR-01 — Job Positions](docs/screenshots/01-job-positions.png)
 
-### 5.2 JD & Tiêu chí — JD & Criteria (`#tieu-chi`)
-The JD on the left, the extracted criteria on the right. Each criterion carries a **weight** and a **Bắt buộc / Ưu tiên** (mandatory / preferred) flag — these two fields alone determine both the score and who falls below the divider.
+### 5.2 SCR-02 — Create Position & JD (`#/positions/new`)
+Position metadata plus the original JD text, which is preserved as immutable source evidence — later edits create a new draft rather than altering it retroactively.
 
-![Screen 2 — JD and criteria](docs/screenshots/02-jd-criteria.png)
+![SCR-02 — Create Position & JD](docs/screenshots/02-position-jd-form.png)
 
-### 5.3 Chọn & Tải CV — Upload CVs (`#tai-cv`)
-Batch selection of the CVs to screen (42 in the sample dataset), with per-file parse status before the scoring run is launched.
+### 5.3 SCR-03 — JD & Screening Criteria (`#/positions/{id}/criteria`)
+The JD on the left, the AI-extracted criteria on the right. Each criterion carries a **weight** and a **Mandatory / Preferred** flag — these two fields alone determine both the score and who falls below the knockout divider.
 
-![Screen 3 — Upload CVs](docs/screenshots/03-upload-cv.png)
+![SCR-03 — JD & Screening Criteria](docs/screenshots/03-jd-criteria.png)
 
-### 5.4 Tiến trình AI — AI Progress (`#tien-trinh`)
-The scoring run made visible: per-stage progress (parsing → extraction → matching → scoring) instead of an opaque spinner, so a long batch stays legible.
+### 5.4 SCR-04 — Candidate CV Workspace (`#/positions/{id}/cv-workspace`)
+The uploaded CVs for the position, with per-file parse status (parsed / parsing / duplicate / failed) before a screening run is launched.
 
-![Screen 4 — AI progress](docs/screenshots/04-ai-progress.png)
+![SCR-04 — Candidate CV Workspace](docs/screenshots/04-cv-workspace.png)
 
-### 5.5 Kết quả & Xếp hạng — Ranking (`#ket-qua`)
-The core deliverable. Exactly six columns; sub-scores live in the expandable row, never in the header table. Candidates who fail a mandatory criterion are **not dropped** — they stay ranked below a divider, still fully actionable, because "failed" is a recruiter's judgement call, not the system's.
+### 5.5 SCR-05 — AI Screening Run (`#/positions/{id}/screening-runs/{run}`)
+The scoring run made visible as a single completion state instead of an opaque spinner, redirecting into the ranking once every resume has been scored.
 
-![Screen 5 — Ranking](docs/screenshots/05-ranking.png)
+![SCR-05 — AI Screening Run](docs/screenshots/05-screening-run.png)
 
-### 5.6 Chi tiết ứng viên — Candidate Detail (`#chi-tiet/:id`)
-Per-criterion accountability: status, weight, contribution to the total, and the quoted evidence from the CV — with the original CV rendered alongside for verification.
+### 5.6 SCR-06 — Screening Results & Published Ranking (`#/positions/{id}/ranking`)
+The core deliverable. Candidates who fail a mandatory criterion are **not dropped** — they stay ranked below a divider, still fully actionable, because "failed" is a recruiter's judgement call, not the system's.
 
-![Screen 6 — Candidate detail](docs/screenshots/06-candidate-detail.png)
+![SCR-06 — Published Ranking](docs/screenshots/06-ranking.png)
 
-### 5.7 Sửa tiêu chí & Chấm lại — Rescore (`#chinh-tieu-chi`)
-What-if recalibration: change weights or promote a criterion to mandatory, rescore, and compare the new round against the previous one to see exactly which rankings moved and why.
+### 5.7 SCR-07 — Candidate Result & Evidence (`#/positions/{id}/candidates/{result}`)
+Per-criterion accountability: status, weight, contribution to the total, and the quoted evidence from the CV — with the original resume rendered alongside for verification.
 
-![Screen 7 — Rescore and compare](docs/screenshots/07-rescore.png)
+![SCR-07 — Candidate Result & Evidence](docs/screenshots/07-candidate-result.png)
+
+### 5.8 SCR-08 — Screening Run History (`#/positions/{id}/runs`)
+Audit trail across criteria revisions and screening rounds; selecting exactly two runs enables comparing their candidate ranking volatility.
+
+![SCR-08 — Screening Run History](docs/screenshots/08-run-history.png)
+
+### 5.9 SCR-09 — New Criteria Revision (`#/positions/{id}/criteria/new-revision`)
+What-if recalibration: adjust weights or promote a criterion to mandatory, starting from the last approved revision, then rescore to create a new run.
+
+![SCR-09 — New Criteria Revision](docs/screenshots/09-criteria-revision.png)
+
+### 5.10 SCR-10 — Run Comparison (`#/positions/{id}/comparison`)
+Side-by-side impact analysis between two runs: which candidates moved to failed or passed, and why, tied back to exactly which criterion changed weight or requirement type.
+
+![SCR-10 — Run Comparison](docs/screenshots/10-run-comparison.png)
 
 > **Colour is never the only signal.** Every state in these screens is carried by colour *and* an icon *and* a text label (and, for scores, bar length), so the interface stays readable for colour-blind users and in greyscale print.
 
@@ -226,14 +241,14 @@ The script defaults to `http://127.0.0.1:3100`; set `API_BASE_URL` to use anothe
 
 Files, jobs, decisions and idempotency records disappear when their process/store is reset. The mock extractor decodes uploaded bytes as UTF-8 and applies keyword/regex rules; test fixtures contain text labeled as PDF. Accepting a PDF/DOCX MIME type does not establish real document parsing or OCR support.
 
-### 6.2 New frontend scaffold
+### 6.2 New frontend
 
 ```bash
 npm run build -w @app/frontend
 python -m http.server 8080 --directory frontend
 ```
 
-Open `http://localhost:8080`. This serves the ten-screen scaffold, not a complete recruitment UI. Python is only needed for this example static server; another static HTTP server can be used.
+Open `http://localhost:8080`. This serves the ten-screen UI described in [§5](#5-frontend--screen-by-screen), built against typed fixtures — it is not yet wired to the backend API. Python is only needed for this example static server; another static HTTP server can be used.
 
 ### 6.3 Original standalone prototype
 
@@ -263,7 +278,7 @@ recruitment-assistant/
 │   ├── tests/                  # Unit, worker and direct-handler integration tests
 │   ├── scripts/verify-http.mjs # Main workflow against a running Next server
 │   └── worker/                 # Extraction/screening/rescore tasks and polling code
-├── frontend/                   # New vanilla TypeScript scaffold: ten target screens
+├── frontend/                   # New vanilla TypeScript SPA: ten fixture-driven screens
 ├── index.html                   # Single-Page Application shell with hash router & modals
 ├── README.md                    # System documentation, mindmap & architectural specifications
 ├── sang-loc-xep-hang-v2.dbml    # DBML source of the 14-table relational schema
@@ -282,14 +297,17 @@ recruitment-assistant/
     ├── use-case-diagram.svg     # UML use case diagram — screening & ranking (source)
     ├── use-case-diagram.png     # UML use case diagram — rendered
     ├── database-design-erd.png  # 14-table relational database architecture diagram
-    └── screenshots/             # Captures of all 7 UI screens (embedded in §5)
+    └── screenshots/             # Captures of all 10 UI screens (embedded in §5)
         ├── 01-job-positions.png
-        ├── 02-jd-criteria.png
-        ├── 03-upload-cv.png
-        ├── 04-ai-progress.png
-        ├── 05-ranking.png
-        ├── 06-candidate-detail.png
-        └── 07-rescore.png
+        ├── 02-position-jd-form.png
+        ├── 03-jd-criteria.png
+        ├── 04-cv-workspace.png
+        ├── 05-screening-run.png
+        ├── 06-ranking.png
+        ├── 07-candidate-result.png
+        ├── 08-run-history.png
+        ├── 09-criteria-revision.png
+        └── 10-run-comparison.png
 ```
 
 ---
