@@ -100,7 +100,7 @@ function findEvidence(segments: SourceSegment[], sourceId: string, source: "jd" 
     const match = matcher.exec(segment.text);
     if (match) {
       const quote = match[0];
-      const start = segment.text.indexOf(quote);
+      const start = Array.from(segment.text.slice(0, segment.text.indexOf(quote))).length;
       return {
         source,
         source_id: sourceId,
@@ -109,7 +109,7 @@ function findEvidence(segments: SourceSegment[], sourceId: string, source: "jd" 
         page: segment.page,
         paragraph: segment.paragraph,
         start_offset: segment.start_offset + start,
-        end_offset: segment.start_offset + start + quote.length,
+        end_offset: segment.start_offset + start + Array.from(quote).length,
       };
     }
   }
@@ -195,7 +195,7 @@ export class MockAiExtractionService implements AiExtractionService {
       const match = DATE_RANGE.exec(segment.text);
       if (!match) continue;
       const quote = match[0];
-      const start = segment.text.indexOf(quote);
+      const start = Array.from(segment.text.slice(0, segment.text.indexOf(quote))).length;
       const evidence: Evidence = {
         source: "cv",
         source_id: input.resumeId,
@@ -204,7 +204,7 @@ export class MockAiExtractionService implements AiExtractionService {
         page: segment.page,
         paragraph: segment.paragraph,
         start_offset: segment.start_offset + start,
-        end_offset: segment.start_offset + start + quote.length,
+        end_offset: segment.start_offset + start + Array.from(quote).length,
       };
       const ongoing = /present|hiện tại|now/i.test(match[2]);
       employment.push({

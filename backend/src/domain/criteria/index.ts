@@ -374,6 +374,13 @@ function validateApprovalReadiness(requirements: JobRequirement[]): string | nul
   return null;
 }
 
+export async function getRevision(deps: CriteriaDeps, jobId: string, revision: number): Promise<CriteriaRevisionDto> {
+  await requireJob(deps, jobId);
+  const approved = await deps.criteriaRepo.getApproved(jobId, revision);
+  if (!approved) throw notFound("Criteria revision");
+  return assembleRevision(deps, approved);
+}
+
 function slugify(value: string): string {
   const slug = value
     .toLowerCase()

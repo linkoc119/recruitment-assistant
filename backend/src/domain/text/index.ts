@@ -22,15 +22,15 @@ export function segmentText(text: string): SourceSegment[] {
         segment_id: `p${paragraph}`,
         page: null,
         paragraph,
-        start_offset: startOffset,
-        end_offset: startOffset + rawPara.length,
+        start_offset: Array.from(text.slice(0, startOffset)).length,
+        end_offset: Array.from(text.slice(0, startOffset + rawPara.length)).length,
         text: rawPara,
       });
     }
     cursor = startOffset + rawPara.length;
   }
   if (segments.length === 0 && text.length > 0) {
-    segments.push({ segment_id: "p1", page: null, paragraph: 1, start_offset: 0, end_offset: text.length, text });
+    segments.push({ segment_id: "p1", page: null, paragraph: 1, start_offset: 0, end_offset: Array.from(text).length, text });
   }
   return segments;
 }

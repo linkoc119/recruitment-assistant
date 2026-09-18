@@ -1,4 +1,5 @@
-import { startRun, type RunDeps } from "../../../../../domain/runs/index.ts";
+import { runsQuerySchema } from "../../../../../lib/http/schemas/history.schema.ts";
+import { listRuns, startRun, type RunDeps } from "../../../../../domain/runs/index.ts";
 import {
   positionRepository,
   criteriaRepository,
@@ -8,8 +9,8 @@ import {
   skillRepository,
 } from "../../../../../infrastructure/db/repositories/index.ts";
 import { idempotencyStore } from "../../../../../infrastructure/idempotency/index.ts";
-import { mapDomainError, notImplemented, okJson } from "../../../../../lib/http/errors.ts";
-import { parseJsonBody, parsePathId, requireIdempotencyKey } from "../../../../../lib/http/validate.ts";
+import { mapDomainError, okJson } from "../../../../../lib/http/errors.ts";
+import { parseJsonBody, parseQuery, parsePathId, requireIdempotencyKey } from "../../../../../lib/http/validate.ts";
 import { runInputSchema } from "../../../../../lib/http/schemas/index.ts";
 
 const deps: RunDeps = {
@@ -22,8 +23,14 @@ const deps: RunDeps = {
   idempotencyStore,
 };
 
-export async function GET() {
-  return notImplemented("listRuns");
+export async function GET(req: Request, ctx: { params: Promise<{ job_id: string }> }) {
+  const jobId = parsePathId((await ctx.params).job_id, "job_id");
+  if ("error" in jobId) return jobId.error;
+  const query = parseQuery(new URL(req.url), runsQuerySchema);
+  if ("error" in query) return query.error;
+  try {
+    return okJson(200, await listRuns(deps, jobId.data, query.data));
+  } catch (error) { return mapDomainError(error); }
 }
 
 export async function POST(req: Request, ctx: { params: Promise<{ job_id: string }> }) {

@@ -283,6 +283,8 @@ Both runs must be distinct and belong to this position; may be any published his
 
 Only parse_failed resumes without a validated snapshot can be queued again. Corrupt/textless input requires a corrected upload. Lock the resume and persist one `resume_extraction_jobs` row before 202, atomically with the resume state change and durable command outcome. Parsed/active resumes conflict. Never mutate a snapshot used by a run. Same idempotency key replays the outcome.
 
+The in-memory adapter returns `409 request_in_progress` when the resume is active, already parsed or has a validated snapshot, and `422 extraction_refused` for a recorded corrupt/textless-file failure. An accepted retry creates a new extraction-job row and retains terminal history. Its command response replays even after extraction succeeds. This mock implementation does not provide durable replay across process restarts or real PDF/DOCX validation.
+
 
 ## 10. Cross-field schema rules
 

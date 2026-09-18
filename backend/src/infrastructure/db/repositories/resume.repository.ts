@@ -137,6 +137,11 @@ export class ResumeRepository implements Repository<Resume> {
     return [...tables.resume_skills.values()].filter((s) => s.snapshot_id === snapshotId);
   }
 
+  async getSnapshot(resumeId: string, snapshotId: string): Promise<ResumeSnapshot | null> {
+    const snapshot = tables.resume_snapshots.get(snapshotId);
+    return snapshot?.resume_id === resumeId ? snapshot : null;
+  }
+
   /**
    * Locks the resume for a multi-table write (extraction completion). Keyed by
    * resume id, independent of the job-scoped lock, since a resume can be
@@ -153,16 +158,22 @@ export class ResumeRepository implements Repository<Resume> {
     skills: Omit<ResumeSkill, "id" | "snapshot_id">[];
   }): Promise<ResumeSnapshot> {
     const snapshotId = nextId("resume_snapshots");
+    const evidenceForSnapshot = (evidence: import("../../../domain/types/index.ts").Evidence[]) =>
+      evidence.map(e => ({ ...e, source_id: snapshotId }));
     const snapshot: ResumeSnapshot = {
       id: snapshotId,
       resume_id: input.resumeId,
       created_at: nowIso(),
       ...input.snapshot,
+      extraction: { ...input.snapshot.extraction,
+        employment: input.snapshot.extraction.employment.map(e => ({ ...e, evidence: evidenceForSnapshot(e.evidence) })),
+        education: input.snapshot.extraction.education.map(e => ({ ...e, evidence: evidenceForSnapshot(e.evidence) })),
+      },
     };
     tables.resume_snapshots.set(snapshotId, snapshot);
     for (const skill of input.skills) {
       const id = nextId("resume_skills");
-      tables.resume_skills.set(id, { ...skill, id, snapshot_id: snapshotId });
+      tables.resume_skills.set(id, { ...skill, id, snapshot_id: snapshotId, evidence: evidenceForSnapshot(skill.evidence) });
     }
     await this.setStatus(input.resumeId, "parsed", null);
     return snapshot;

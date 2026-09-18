@@ -461,6 +461,12 @@ export async function listRunItems(
   return { items: dtoItems, page: { offset: query.offset, limit: query.limit, total } };
 }
 
+export async function listRuns(deps: RunDeps, jobId: string, query: { offset: number; limit: number; published_only: boolean }) {
+  if (!await deps.positionRepo.get(jobId)) throw notFound("Job");
+  const { items, total } = await deps.runRepo.listForJob(jobId, { ...query, publishedOnly: query.published_only });
+  return { items: await Promise.all(items.map(run => assembleRun(deps.runRepo, run))), page: { offset: query.offset, limit: query.limit, total } };
+}
+
 export async function getRun(deps: RunDeps, jobId: string, runId: string): Promise<RunDto> {
   const job = await deps.positionRepo.get(jobId);
   if (!job) throw notFound("Job");

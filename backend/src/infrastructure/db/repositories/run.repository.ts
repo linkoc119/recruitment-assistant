@@ -65,8 +65,7 @@ export class RunRepository implements Repository<ScreeningRun> {
   async listForJob(jobId: string, query: ListRunsQuery): Promise<{ items: ScreeningRun[]; total: number }> {
     let all = [...tables.screening_runs.values()].filter((r) => r.job_id === jobId);
     if (query.publishedOnly) {
-      const job = tables.jobs.get(jobId);
-      all = all.filter((r) => r.id === job?.published_run_id);
+      all = all.filter((r) => r.published_at !== null);
     }
     all = all.sort((a, b) => b.round - a.round);
     const total = all.length;

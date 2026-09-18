@@ -278,7 +278,7 @@ export async function getResult(
   if (!resume) throw notFound("Resume");
   const candidate = await deps.resumeRepo.getCandidate(resume.candidate_id);
   if (!candidate) throw notFound("Candidate");
-  const snapshot = await deps.resumeRepo.getLatestSnapshot(screening.resume_id);
+  const snapshot = await deps.resumeRepo.getSnapshot(screening.resume_id, screening.snapshot_id);
   const details = await deps.screeningRepo.listDetails(screening.id);
   const requirements = await deps.criteriaRepo.listRequirements(screening.criteria_version_id);
   const criteriaVersion = await deps.criteriaRepo.findScoped(ctx.jobId, screening.criteria_version_id);

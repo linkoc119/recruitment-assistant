@@ -7,7 +7,7 @@
  * - `new_version` requires `candidate_id` + `identity_confirmed: true`.
  * - Never auto-merge by name/email (BR-CV-03).
  */
-import { notFound } from "../errors.ts";
+import { DomainError, notFound } from "../errors.ts";
 import { segmentText } from "../text/index.ts";
 import { computeSupportedMonths } from "../scoring/index.ts";
 import type { ExtractionRepository } from "../../infrastructure/db/repositories/extraction.repository.ts";
@@ -384,6 +384,41 @@ function shiftMonthForward(yyyyMm: string): string {
     year += 1;
   }
   return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+export async function listPositionCandidates(deps: CandidateDeps, jobId: string, query: { offset: number; limit: number }) {
+  if (!await deps.positionRepo.get(jobId)) throw notFound("Job");
+  const resumes = await deps.resumeRepo.list(jobId);
+  const ids = [...new Set(resumes.map(r => r.candidate_id))].sort((a, b) => BigInt(a) < BigInt(b) ? -1 : 1);
+  const items: CandidateDto[] = [];
+  for (const id of ids.slice(query.offset, query.offset + query.limit)) {
+    const candidate = await deps.resumeRepo.getCandidate(id);
+    if (!candidate) throw notFound("Candidate");
+    // Never disclose a newer CV which is only attached to another position.
+    const latest = resumes.filter(r => r.candidate_id === id).reduce((a, b) => a.version > b.version ? a : b);
+    items.push({ id, full_name: candidate.full_name, email: candidate.email, phone: candidate.phone,
+      latest_resume_id: latest.id, latest_version: latest.version });
+  }
+  return { items, page: { ...query, total: ids.length } };
+}
+
+export async function reprocessResume(deps: CandidateDeps, jobId: string, resumeId: string): Promise<ResumeDto> {
+  if (!await deps.positionRepo.get(jobId)) throw notFound("Job");
+  return deps.resumeRepo.withResumeLock(resumeId, async () => {
+    const resume = await deps.resumeRepo.findScoped(jobId, resumeId);
+    if (!resume) throw notFound("Resume");
+    if (resume.status !== "parse_failed" || await deps.resumeRepo.getLatestSnapshot(resumeId) || await deps.extractionRepo.findActiveForResume(resumeId)) {
+      throw new DomainError("request_in_progress", "Only a failed resume without a snapshot or active extraction can be reprocessed.");
+    }
+    if (["corrupt_file", "textless_file", "invalid_file", "empty_text"].includes(resume.error_code ?? "")) {
+      throw new DomainError("extraction_refused", "Upload a corrected file instead of retrying this document.");
+    }
+    await deps.extractionRepo.enqueue({ jobId, resumeId, triggerSource: "reprocess", config: {
+      ...DEFAULT_CONFIG, as_of_date: new Date().toISOString().slice(0, 10),
+    } });
+    await deps.resumeRepo.setStatus(resumeId, "uploaded", null);
+    return assembleResume(deps.resumeRepo, jobId, { ...resume, status: "uploaded", error_code: null });
+  });
 }
 
 export { assembleCandidate };

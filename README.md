@@ -121,7 +121,7 @@ The target system has four core functional pillars.
 - **Multi-Round Versioning**:
   - Creates a new run using the source run's successful CV snapshots and newly approved criteria; the current ranking remains readable.
   - Only after every required CV succeeds, atomically switches `published_run_id` and the compatibility `is_latest` flags. A failed rescore preserves the previous ranking; `scored_round` follows the run's round number.
-- **Comparative Diff Analysis (planned)**: A side-by-side comparison of ranking shifts between runs. The `compareRuns` API is deferred; the original prototype only simulates this view.
+- **Comparative Diff Analysis**: Compares two published runs by exact CV/snapshot identity, with score, rank and eligibility changes and explicit missing sides. Decisions are shown for context and are never transferred between runs.
 
 ---
 

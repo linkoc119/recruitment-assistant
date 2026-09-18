@@ -30,6 +30,16 @@ export function okJson(status: number, body: unknown): Response {
   return Response.json(body, { status, headers: STANDARD_HEADERS(requestId) });
 }
 
+export function okFile(file: { content: Uint8Array; mediaType: string; fileName: string }): Response {
+  const disposition = file.mediaType === "application/pdf" ? "inline" : "attachment";
+  const name = Buffer.from(file.fileName.replace(/[\r\n\x00-\x1f\x7f/\\]/g, "_")).toString("utf8");
+  const encoded = encodeURIComponent(name).replace(/['()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+  return new Response(new Uint8Array(file.content), { status: 200, headers: {
+    ...STANDARD_HEADERS(crypto.randomUUID()), "Content-Type": file.mediaType,
+    "X-Content-Type-Options": "nosniff", "Content-Disposition": `${disposition}; filename*=UTF-8''${encoded}`,
+  } });
+}
+
 export function apiError(
   status: number,
   code: string,
