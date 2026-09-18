@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { processSingleton } from "../runtime/index.ts";
 
 export interface IdempotencyRecord {
   key: string;
@@ -136,4 +137,4 @@ export class InMemoryIdempotencyStore implements IdempotencyStore {
   }
 }
 
-export const idempotencyStore = new InMemoryIdempotencyStore();
+export const idempotencyStore = processSingleton("idempotency", () => new InMemoryIdempotencyStore());

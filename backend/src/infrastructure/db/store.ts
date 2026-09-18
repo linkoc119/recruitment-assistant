@@ -3,6 +3,7 @@
  * place raw `Map`s live; every repository in `./repositories/*` reads/writes
  * through here. There is no real Postgres in this round (accepted scope).
  */
+import { processSingleton } from "../runtime/index.ts";
 import type {
   Candidate,
   CriteriaVersion,
@@ -57,7 +58,7 @@ export function createTables(): Tables {
 }
 
 /** Process-wide store singleton — the in-memory stand-in for a database. */
-export const tables: Tables = createTables();
+export const tables: Tables = processSingleton("tables", createTables);
 
 /** Resets every table. Test-only; never called from application code. */
 export function resetTables(): void {
@@ -67,7 +68,7 @@ export function resetTables(): void {
   idCounters.clear();
 }
 
-const idCounters = new Map<keyof Tables, number>();
+const idCounters = processSingleton("idCounters", () => new Map<keyof Tables, number>());
 
 /** Monotonic positive-integer ids as strings, matching the `Id` schema `^[1-9][0-9]*$`. */
 export function nextId(table: keyof Tables): string {
@@ -88,7 +89,7 @@ export function nowIso(): string {
  * the in-memory analogue of a row lock. Real cross-process locking is out of
  * scope (accepted: in-memory repositories, single process).
  */
-const chains = new Map<string, Promise<void>>();
+const chains = processSingleton("locks", () => new Map<string, Promise<void>>());
 
 export function withLock<R>(key: string, work: () => Promise<R>): Promise<R> {
   const prior = chains.get(key) ?? Promise.resolve();

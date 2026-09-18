@@ -1,4 +1,4 @@
-import { runScreeningTask } from "../run-screening/index.js";
+import { runScreeningTask } from "../run-screening/index.ts";
 
 /**
  * Rescore runs are driven by the exact same claim → executeRun → publishRun

@@ -1,4 +1,5 @@
 import type { DegreeLevel, Evidence, RequirementType, SourceSegment } from "../../domain/types/index.ts";
+import { processSingleton } from "../runtime/index.ts";
 
 export interface JdCriterionFact {
   kind: "skill" | "experience" | "education";
@@ -238,4 +239,4 @@ function containsNear(text: string, skill: string, marker: string): boolean {
   return Math.abs(skillIndex - markerIndex) < 80;
 }
 
-export const aiExtractionService = new MockAiExtractionService();
+export const aiExtractionService = processSingleton("ai", () => new MockAiExtractionService());

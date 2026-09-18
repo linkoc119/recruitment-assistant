@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { processSingleton } from "../runtime/index.ts";
 
 export interface StoredFile {
   object_key: string;
@@ -33,4 +34,4 @@ export class InMemoryFileStore implements FileStore {
   }
 }
 
-export const fileStore = new InMemoryFileStore();
+export const fileStore = processSingleton("files", () => new InMemoryFileStore());
