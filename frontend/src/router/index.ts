@@ -1,5 +1,6 @@
 import type { RouteDefinition, RouteParams, ScreenModule } from "./types.js";
 import { resolveDefaultLanding } from "./default-landing.js";
+import { updateShell } from "../shell/index.js";
 
 function pathToRegex(path: string): { pattern: RegExp; paramNames: string[] } {
   const paramNames: string[] = [];
@@ -28,7 +29,8 @@ const routes: RouteDefinition[] = [
   route("/positions/{position}/ranking", () => import("../screens/scr-06-published-ranking/index.js")),
   route("/positions/{position}/candidates/{result}", () => import("../screens/scr-07-candidate-result/index.js")),
   route("/positions/{position}/runs", () => import("../screens/scr-08-run-history/index.js")),
-  route("/positions/{position}/criteria/{revision}", () => import("../screens/scr-09-criteria-revision/index.js")),
+  route("/positions/{position}/criteria/new-revision", () => import("../screens/scr-03-criteria-review/index.js")),
+  route("/positions/{position}/criteria/{revision}", () => import("../screens/scr-03-criteria-review/index.js")),
   route("/positions/{position}/comparison", () => import("../screens/scr-10-run-comparison/index.js")),
 ];
 
@@ -52,8 +54,12 @@ async function render(hashPath: string): Promise<void> {
   const container = document.getElementById("app");
   if (!container) return;
 
-  const matched = matchRoute(hashPath) ?? matchRoute(await resolveDefaultLanding());
+  const defaultLanding = await resolveDefaultLanding();
+  const targetPath = hashPath === "/" ? defaultLanding : hashPath;
+  const matched = matchRoute(targetPath) ?? matchRoute(defaultLanding);
   if (!matched) return;
+
+  updateShell(targetPath);
 
   if (current) {
     current.unmount();

@@ -1,15 +1,24 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Recruitment Assistant</title>
+  <title>AI Recruitment Assistant — CV Screening & Ranking</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="src/styles/tokens.css" />
   <link rel="stylesheet" href="src/styles/app.css" />
 </head>
 <body>
-  <div id="shell"></div>
-  <main id="app"></main>
+  <a href="#" id="skip-link" class="skip-link">Skip to main content</a>
+  <div id="app-layout">
+    <aside id="sidebar"></aside>
+    <div id="main-area">
+      <header id="topbar"></header>
+      <main id="app" tabindex="-1"></main>
+    </div>
+  </div>
   <script type="module" src="dist/app.js"></script>
 </body>
 </html>
