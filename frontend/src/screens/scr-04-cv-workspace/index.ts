@@ -23,7 +23,7 @@ const view = screen(async v => {
   function readiness() {
     v.el.querySelector("#readiness")!.textContent = `${selected.size} selected / ${resumes.filter(r=>r.can_screen).length} ready. ${job.readiness.blocking_codes.join(" · ")}`;
     const start=v.el.querySelector<HTMLButtonElement>("#start")!;
-    start.disabled=!job.readiness.can_start || !selected.size || selected.size>200;
+    start.disabled=start.getAttribute("aria-busy")==="true" || !job.readiness.can_start || !selected.size || selected.size>200;
     v.el.querySelector("#active-run")!.innerHTML=job.readiness.active_run_id?link(`/positions/${job.id}/screening-runs/${job.readiness.active_run_id}`,"Open active run"):"";
   }
   async function refresh() {
@@ -64,9 +64,11 @@ const view = screen(async v => {
   v.el.querySelector("#select-all")!.addEventListener("change",e=>{touched=true;selected=(e.target as HTMLInputElement).checked?new Set(resumes.filter(r=>r.can_screen).map(r=>r.id)):new Set();renderRows();},{signal:v.signal});
   v.action("#refresh",refresh);
   v.action("#start",async()=>{
-    const confirmed=await confirmRunStart(v,{position:job.title,mode:"initial",criteriaRevision:job.criteria_revision!,policyVersion:"policy-v1",cvCount:selected.size,failedExcluded:resumes.filter(r=>r.status==="parse_failed").length,duplicateExcluded:latestDuplicateCount});
+    if(!job.readiness.can_start || !selected.size || selected.size>200)return;
+    const selection={mode:"initial" as const,criteria_revision:job.criteria_revision!,resume_ids:[...selected]};
+    const confirmed=await confirmRunStart(v,{positionId:job.id,position:job.title,mode:"initial",criteriaRevision:selection.criteria_revision,policyVersion:"policy-v1",cvCount:selection.resume_ids.length,failedExcluded:resumes.filter(r=>r.status==="parse_failed").length,duplicateExcluded:latestDuplicateCount});
     if(!confirmed)return;
-    const run=await startCommand<Model<"Run">>(`${base}/screening-runs`,{mode:"initial",criteria_revision:job.criteria_revision,resume_ids:[...selected]},v.signal);
+    const run=await startCommand<Model<"Run">>(`${base}/screening-runs`,selection,v.signal);
     v.dirty(false);goto(`/positions/${job.id}/screening-runs/${run.id}`);
   });
   v.poll(async()=>{if(!uploading)await refresh();return true;});

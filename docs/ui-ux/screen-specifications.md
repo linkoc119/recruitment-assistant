@@ -188,7 +188,7 @@ SCR-05 has no pre-start state: it is reached with a run that already exists. The
 
 The delivered screens show this review in a modal before sending the command. “Go back” closes it without creating a run; “Confirm and start” is the only action that sends the idempotent command. While that command is pending, the initiating button remains disabled. A server-side stale revision or source-run response keeps the recruiter on the starting screen so the current state can be reloaded and reviewed again.
 
-Show a review card with position, run type (initial/rescore), approved criteria revision, scoring policy, CV count, excluded failures/duplicates, and source run for rescoring. The accepted Phase 3 navigation uses “Go back” to close the review and return to its starting workspace.
+Show a review card with position, run type (initial/rescore), approved criteria revision, scoring policy, CV count, excluded failures/duplicates, and source run for rescoring. Each fact links to its relevant workspace or frozen revision/source run. A review link or “Go back” closes the modal without creating a run. Confirmation sends the revision and CV selection shown when the review opened, even if background polling discovers additional CVs. Tab and Shift+Tab remain inside the dialog; Escape cancels and returns focus to the initiating control.
 
 Acceptance decision, 2026-09-21: the delivered review is accepted for the in-memory/mock milestone. Links on each summary item are not a remaining Phase 3 requirement.
 

@@ -66,5 +66,6 @@ export function errorText(error: unknown): string {
     request_in_progress: "This request or extraction cannot be started in its current state. Refresh its status.",
     extraction_refused: "This document cannot be reprocessed. Upload a corrected file.",
   };
-  return (messages[error.code] ?? `Request failed (${error.code}). Check your input or retry.`) + (error.requestId ? ` Request ID: ${error.requestId}` : "");
+  const requestId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(error.requestId) ? error.requestId : "";
+  return (messages[error.code] ?? "Request failed. Check your input or retry.") + (requestId ? ` Request ID: ${requestId}` : "");
 }

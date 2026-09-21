@@ -132,14 +132,15 @@ export function notImplemented(operationId: string): Response {
 /**
  * Route-handler catch-block helper: maps anything with a string `.code`
  * (a `DomainError`, or a repository's own small error class with the same
- * shape) to its HTTP response. Anything else is rethrown for Next.js to
- * surface as a 500 — a bug, not a domain error, so it should not be
- * silently downgraded.
+ * shape) to its HTTP response. Unexpected failures stay 500, with a safe
+ * correlation event instead of letting Next serialize arbitrary error data.
  */
 export function mapDomainError(err: unknown): Response {
-  if (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string") {
+  if (err && typeof err === "object" && "code" in err && typeof (err as { code: unknown }).code === "string" && Object.hasOwn(ERROR_STATUS, (err as { code: string }).code)) {
     const message = "message" in err && typeof (err as { message: unknown }).message === "string" ? (err as { message: string }).message : "";
     return domainError((err as { code: string }).code, message);
   }
-  throw err;
+  const response = domainError("internal_error", "Unable to complete this request.");
+  console.error({ event: "http_request_failed", code: "internal_error", request_id: response.headers.get("X-Request-Id") });
+  return response;
 }

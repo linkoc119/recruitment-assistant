@@ -1,6 +1,6 @@
 # Non-functional requirements
 
-Version 1.0 · 2026-09-15 · Proposed acceptance targets. Only Q07 has been measured so far, and only against the in-memory store — see the [Phase 3 verification](../ui-ux/phase-3-verification.md) for what each target does and does not yet cover.
+Version 1.0 · 2026-09-15 · Acceptance targets. Scoped automated and manual checks now cover the in-memory/mock milestone; Q07 measurements remain local to that store and hardware. See the [Phase 3 verification](../ui-ux/phase-3-verification.md) for evidence and the production-dependent parts of each target that remain outside this milestone.
 
 The stable identifiers remain Q01–Q11 from [arc42 §10](../architecture/arc42.md#10-quality-requirements). `NFR-*` labels group them by quality attribute and do not replace their IDs.
 

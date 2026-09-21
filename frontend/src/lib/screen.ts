@@ -6,7 +6,7 @@ export { esc } from "./html.js";
 export const link = (href: string, text: string, primary = false) => `<a class="btn btn-${primary ? "primary" : "secondary"}" href="#${esc(href)}">${esc(text)}</a>`;
 export const button = (id: string, text: string, primary = false, disabled = false) => `<button id="${id}" class="btn btn-${primary ? "primary" : "secondary"}" ${disabled ? "disabled" : ""}>${esc(text)}</button>`;
 export const header = (title: string, description = "", actions = "") => `<div class="page-header"><div><h1 class="page-title">${esc(title)}</h1><p class="page-desc">${esc(description)}</p></div><div class="page-actions">${actions}</div></div><div id="screen-message" aria-live="polite"></div>`;
-export const table = (headings: string[], rows: string) => `<div class="table-container"><table class="data-table"><thead><tr>${headings.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows || `<tr><td colspan="${headings.length}">No records to display.</td></tr>`}</tbody></table></div>`;
+export const table = (headings: string[], rows: string) => `<div class="table-container" role="region" aria-label="Scrollable data table" tabindex="0"><table class="data-table"><thead><tr>${headings.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows || `<tr><td colspan="${headings.length}">No records to display.</td></tr>`}</tbody></table></div>`;
 export const badge = (value: string, danger = false) => `<span class="badge badge-${danger ? "danger" : "muted"}">${esc(value)}</span>`;
 export const goto = (path: string) => { window.location.hash = `#${path}`; };
 export interface View {
@@ -44,7 +44,11 @@ export function screen(load: (view: View) => Promise<void>): ScreenModule {
           target.setAttribute("aria-busy", "true");
           if (target instanceof HTMLButtonElement) target.disabled = true;
           try { await work(target); } catch (error) { view.message(errorText(error), true); }
-          finally { target.removeAttribute("aria-busy"); if (target instanceof HTMLButtonElement) target.disabled = false; }
+          finally {
+            target.removeAttribute("aria-busy");
+            if (target instanceof HTMLButtonElement) target.disabled = false;
+            if (!signal.aborted && target.isConnected && document.activeElement === document.body) target.focus();
+          }
         }, { signal }));
       },
       poll(work, interval = 2000) {
@@ -77,6 +81,16 @@ export function screen(load: (view: View) => Promise<void>): ScreenModule {
   return { mount, unmount };
 }
 
+function containDialogFocus(dialog: HTMLDialogElement) {
+  dialog.addEventListener("keydown", event => {
+    if (event.key !== "Tab") return;
+    const controls = Array.from(dialog.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]'));
+    const first = controls[0], last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  });
+}
+
 export function confirmAction(view: View, message: string, title = "Confirm decision"): Promise<boolean> {
   return new Promise(resolve => {
     if (view.signal.aborted) { resolve(false); return; }
@@ -91,6 +105,7 @@ export function confirmAction(view: View, message: string, title = "Confirm deci
     dialog.querySelector('[data-answer="cancel"]')!.addEventListener("click", () => finish(false), { once: true });
     dialog.querySelector('[data-answer="confirm"]')!.addEventListener("click", () => finish(true), { once: true });
     view.signal.addEventListener("abort", abort, { once: true });
+    containDialogFocus(dialog);
     dialog.showModal();
     (dialog.querySelector('[data-answer="cancel"]') as HTMLButtonElement).focus();
   });
@@ -106,10 +121,12 @@ export function confirmRunStart(view: View, review: RunReview): Promise<boolean>
     view.el.append(dialog);
     const finish = (answer: boolean) => { dialog.close(); dialog.remove(); view.signal.removeEventListener("abort", abort); resolve(answer); };
     const abort = () => finish(false);
+    dialog.querySelectorAll("a").forEach(anchor => anchor.addEventListener("click", () => finish(false), { once: true }));
     dialog.addEventListener("cancel", event => { event.preventDefault(); finish(false); }, { once: true });
     dialog.querySelector('[data-answer="cancel"]')!.addEventListener("click", () => finish(false), { once: true });
     dialog.querySelector('[data-answer="confirm"]')!.addEventListener("click", () => finish(true), { once: true });
     view.signal.addEventListener("abort", abort, { once: true });
+    containDialogFocus(dialog);
     dialog.showModal();
     (dialog.querySelector('[data-answer="cancel"]') as HTMLButtonElement).focus();
   });

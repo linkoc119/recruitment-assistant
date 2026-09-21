@@ -19,8 +19,13 @@ test('multipart upload keeps browser boundary and stable retry identity', async 
  assert.equal(calls[0].headers['Content-Type'],undefined);assert.equal(calls[0].body,form);assert.equal(calls[0].headers['Idempotency-Key'],calls[1].headers['Idempotency-Key']);
 });
 test('stale responses expose safe code/request ID, not server data', async t=>{
- t.mock.method(globalThis,'fetch',async()=>Response.json({code:'stale_result',message:'PRIVATE CV TEXT'},{status:409,headers:{'X-Request-Id':'req-test'}}));
- await assert.rejects(request('/result'),e=>{assert.ok(e instanceof ApiError);assert.match(errorText(e),/req-test/);assert.doesNotMatch(errorText(e),/PRIVATE/);return true;});
+ const requestId='12345678-1234-1234-1234-123456789012';
+ t.mock.method(globalThis,'fetch',async()=>Response.json({code:'stale_result',message:'PRIVATE CV TEXT'},{status:409,headers:{'X-Request-Id':requestId}}));
+ await assert.rejects(request('/result'),e=>{assert.ok(e instanceof ApiError);assert.ok(errorText(e).includes(requestId));assert.doesNotMatch(errorText(e),/PRIVATE/);return true;});
+});
+
+test('untrusted error codes and malformed request IDs are not rendered', () => {
+ assert.equal(errorText(new ApiError('PRIVATE_CV', 500, 'private@example.invalid')), 'Request failed. Check your input or retry.');
 });
 test('collection pagination collects every page and preserves existing filters',async t=>{
  const urls=[];t.mock.method(globalThis,'fetch',async url=>{urls.push(url);return Response.json({items:urls.length===1?Array.from({length:100},(_,i)=>i):[100],page:{offset:urls.length===1?0:100,limit:100,total:101}});});

@@ -17,9 +17,9 @@ const view = screen(async v => {
   let criteria: Criterion[] = (draft?.criteria ?? revision?.criteria ?? []).map(input);
   let publishedRun: Model<"Run"> | null = null;
   let approved: Model<"CriteriaRevision"> | null = null;
-  if (rescore && revision && job.published_run_id) {
+  if (rescore && job.published_run_id) {
     publishedRun = await request<Model<"Run">>(`${base}/screening-runs/${job.published_run_id}`, { signal: v.signal });
-    if (revision.revision > publishedRun.criteria_revision) approved = revision;
+    if (revision && revision.revision > publishedRun.criteria_revision) approved = revision;
   }
   let savedCriteria = draft?.job_version === job.version ? JSON.stringify(criteria) : "";
   const saveCommand = command(), suggestCommand = command(), approvalCommand = command(), runCommand = command();
@@ -89,7 +89,7 @@ const view = screen(async v => {
     });
     v.action("#rescore", async () => {
       if (!approved || !job.published_run_id || !publishedRun) { v.message("A published base run is required.", true); return; }
-      const confirmed = await confirmRunStart(v, { position: job.title, mode: "rescore", criteriaRevision: approved.revision, policyVersion: publishedRun.policy_version, cvCount: publishedRun.counts.succeeded, sourceRun: `Run ${publishedRun.id} · round ${publishedRun.round}` });
+      const confirmed = await confirmRunStart(v, { positionId: job.id, position: job.title, mode: "rescore", criteriaRevision: approved.revision, policyVersion: publishedRun.policy_version, cvCount: publishedRun.counts.succeeded, sourceRunId: publishedRun.id, sourceRun: `Run ${publishedRun.id} · round ${publishedRun.round}` });
       if (!confirmed) return;
       const run = await runCommand<Model<"Run">>(`${base}/screening-runs`, { mode: "rescore", criteria_revision: approved.revision, base_run_id: job.published_run_id }, v.signal);
       goto(`/positions/${job.id}/screening-runs/${run.id}`);

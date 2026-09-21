@@ -6,8 +6,23 @@ import {
   domainErrorStatus,
   notImplemented,
   okJson,
+  mapDomainError,
   type ApiErrorBody,
 } from "../../src/lib/http/errors.ts";
+
+test("unexpected HTTP failures return a safe envelope and correlated log without source data", async t => {
+  const logs: unknown[][] = [];
+  t.mock.method(console, "error", (...args: unknown[]) => { logs.push(args); });
+  for (const error of [new Error("PRIVATE_CV private@example.invalid"), { code: "PRIVATE_TOKEN", message: "PRIVATE_CV" }]) {
+    const response = mapDomainError(error);
+    const body = await response.json();
+    assert.equal(response.status, 500);
+    assert.equal(body.code, "internal_error");
+    assert.equal(body.retryable, true);
+    assert.deepEqual(logs.at(-1), [{ event: "http_request_failed", code: "internal_error", request_id: body.request_id }]);
+    assert.doesNotMatch(JSON.stringify([logs, body]), /PRIVATE|private@|stack/);
+  }
+});
 
 test("apiError builds a JSON response with the given status", () => {
   const res = apiError(404, "resource_not_found", "Resource not found");

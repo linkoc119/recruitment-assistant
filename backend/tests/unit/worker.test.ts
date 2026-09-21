@@ -23,6 +23,29 @@ const deps = {
   skillRepo: skillRepository, ai: aiExtractionService, fileStore, idempotencyStore,
 };
 beforeEach(() => resetTables());
+
+test("worker logs correlation fields without serializing sensitive task errors", async (t) => {
+  const { extraction } = await fixture();
+  const error = Object.assign(new Error("SENSITIVE_CV contact=private@example.invalid"), { code: "SECRET_TOKEN", source: "PRIVATE_DOCUMENT" });
+  t.mock.method(extractionRepository, "claim", async () => { throw error; });
+  const logs: unknown[][] = [];
+  t.mock.method(console, "error", (...args: unknown[]) => { logs.push(args); });
+  await pollOnce();
+  assert.deepEqual(logs, [[{ event: "worker_task_failed", code: "unexpected_worker_error", task: "extract_resume", job_id: extraction.job_id, resume_id: extraction.resume_id, extraction_job_id: extraction.id }]]);
+  assert.doesNotMatch(JSON.stringify(logs), /SENSITIVE_CV|private@|SECRET_TOKEN|PRIVATE_DOCUMENT|stack/);
+});
+
+test("runner sanitizes poll-level errors too", async (t) => {
+  let logged!: () => void;
+  const received = new Promise<void>(resolve => { logged = resolve; });
+  const logs: unknown[][] = [];
+  t.mock.method(console, "error", (...args: unknown[]) => { logs.push(args); logged(); });
+  const stop = startInProcessWorker({ intervalMs: 1, keepAlive: true, poll: async () => { throw new Error("PRIVATE_CV"); } });
+  try {
+    await received;
+    assert.deepEqual(logs[0], [{ event: "worker_task_failed", code: "unexpected_worker_error", task: "poll" }]);
+  } finally { await stop(); }
+});
 async function fixture() {
   const job = await createJob(deps, { title: "Worker", level: null, jd_raw_text: "TypeScript required" });
   const uploaded = await uploadBatch(deps, job.id, {
