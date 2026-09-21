@@ -70,6 +70,46 @@ export function runStatusLabel(status: string): string {
   return RUN_STATUS_LABELS[status] ?? status;
 }
 
+/**
+ * Resume (CV) processing status labels, per
+ * docs/ui-ux/information-architecture.md §5 "CV processing" — internal
+ * state strings (`uploaded`, `parsing`, ...) are stored/API values, not UI
+ * copy. Distinct from RUN_ITEM_STATUS_LABELS: a Resume's status tracks
+ * upload/parsing, not its outcome within a specific screening run.
+ */
+const RESUME_STATUS_LABELS: Record<string, string> = {
+  uploaded: "Uploaded",
+  parsing: "Parsing",
+  parsed: "Ready",
+  parse_failed: "Parse failed",
+};
+export function resumeStatusLabel(status: string): string {
+  return RESUME_STATUS_LABELS[status] ?? status;
+}
+
+/**
+ * Recruiter-readable text for Resume.error_code (parse failures), per
+ * interaction-rules.md §4.3 — state what failed and what to do, never the
+ * raw code. `invalid_evidence` and `extraction_failed` are the codes the
+ * extraction pipeline actually sets (backend/src/domain/candidates/index.ts,
+ * extractResume's catch block); the corrupt/textless/invalid/empty_text
+ * codes are only referenced in reprocessResume's guard against a future
+ * real parser and are not produced today, but are mapped here too since
+ * that guard already anticipates them.
+ */
+const RESUME_ERROR_MESSAGES: Record<string, string> = {
+  invalid_evidence: "This CV's extracted content could not be verified against the file text. Try uploading it again.",
+  extraction_failed: "This file could not be processed after several attempts. Try uploading it again.",
+  corrupt_file: "This file could not be read — it may be corrupted. Try re-exporting and uploading it again.",
+  textless_file: "No extractable text was found in this file (it may be a scanned image). Upload a text-based PDF or DOCX.",
+  invalid_file: "This is not a valid PDF or DOCX file. Upload a supported file type.",
+  empty_text: "No text could be extracted from this file. Upload a text-based PDF or DOCX.",
+};
+export function resumeErrorText(code: string | null): string {
+  if (!code) return "";
+  return RESUME_ERROR_MESSAGES[code] ?? "This file could not be processed. Try uploading it again.";
+}
+
 const RUN_ITEM_STATUS_LABELS: Record<string, string> = {
   pending: "Pending",
   processing: "Processing",
