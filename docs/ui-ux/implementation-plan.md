@@ -12,9 +12,9 @@ The phases therefore separate three different kinds of work rather than three gr
 
 | Phase | Deliverable | Completion signal | Status |
 |---|---|---|---|
-| 1 — Frontend presentation | Routes, layout, components, responsive behavior, and every specified state rendered from fixtures | The full state matrix renders, not only the success path | — |
+| 1 — Frontend presentation | Routes, layout, components, responsive behavior, and every specified state rendered from fixtures | The full state matrix renders, not only the success path | **Done** 2026-09-18 — see [ui-improvement-plan.md](ui-improvement-plan.md) |
 | 2 — API contracts | Request/response shapes and concurrency semantics for position, criteria, CV, run, ranking, evidence, and decision | Every field the UI must display or send has a defined source | **Done** — see [docs/api/](../api/README.md) and [openapi.yaml](../api/openapi.yaml) |
-| 3 — Functional integration | Fixtures replaced by backend state; acceptance criteria verified | Story acceptance criteria and Q01–Q11 pass against real state | Not started |
+| 3 — Functional integration | Fixtures replaced by backend state; acceptance completed for the agreed scope | Confirmed acceptance of the in-memory/mock milestone; production gates tracked separately | **Done and accepted** 2026-09-21 — see [verification](phase-3-verification.md) |
 
 ## 2. Phase 1 — Frontend presentation
 
@@ -33,7 +33,7 @@ The phases therefore separate three different kinds of work rather than three gr
 
 ### Definition of done
 
-Phase 1 is complete for a screen when every state in [Interaction Rules §11](interaction-rules.md#11-empty-loading-error-and-stale-states) that applies to it renders: empty, loading, error, partial, stale, and unavailable. This is where most of the specification's content lives and where the current prototype is thinnest, so a happy-path-only screen is not done.
+Phase 1 is complete for a screen when every state in [Interaction Rules §11](interaction-rules.md#11-empty-loading-error-and-stale-states) that applies to it renders: empty, loading, error, partial, stale, and unavailable. This is where most of the specification's content lives and where the original prototype was thinnest, so a happy-path-only screen is not done.
 
 Keyboard operability, focus management, and the non-color status distinctions required by Q08 are phase 1 work, not integration work. They are cheaper to build in than to retrofit.
 
@@ -59,7 +59,9 @@ One contract per resource: position, criteria revision, CV record and version, s
 
 ## 4. Phase 3 — Functional integration
 
-Replace fixtures with backend state one resource at a time. Backend/API-level acceptance ("API acceptance must include: source-quote validation (Q01), deterministic snapshot replay (Q02), ... Q10/Q11") is defined once, in [api/README.md §6](../api/README.md#6-security-operations-and-quality-acceptance) — this plan does not restate it, to avoid two diverging test plans. Phase 3 is done when that backend acceptance passes **and** the following UI-observable behaviors, which only end-to-end integration can demonstrate, hold for the screens in §5 below:
+**Accepted scope update, 2026-09-21:** Phase 3 is complete for the in-memory/mock system. Review-card navigation, native file upload, reload during an active run, accessibility and Q10/Q11 review are closed by the confirmed acceptance decision. The broader backend quality requirements below remain applicable to subsequent production scope, including real parsing/AI, durable storage and deployment-target validation.
+
+Replace fixtures with backend state one resource at a time. Backend/API-level acceptance ("API acceptance must include: source-quote validation (Q01), deterministic snapshot replay (Q02), ... Q10/Q11") is defined once, in [api/README.md §6](../api/README.md#6-security-operations-and-quality-acceptance). The original full-system gate combined that backend acceptance with the following UI-observable behaviors. For the accepted Phase 3 milestone, apply the scope update above; production-dependent gates are tracked separately:
 
 | Verification (UI-observable, not covered by API README §6) | Story/rule reference |
 |---|---|
@@ -79,13 +81,13 @@ Every row requires backend capability. The last column states only what can be d
 |---|---|---|
 | SCR-01 | Position storage and listing | Layout, list/empty/loading/error states, readiness-driven row action |
 | SCR-02 | Position and JD persistence | Form, validation, unsaved-change dialog |
-| SCR-03 | Criteria suggestion and revision approval | Criterion editor, weight-total validation, draft and failure states |
-| SCR-04 | Upload, format validation, duplicate detection, parsing | Upload area, file table, per-file status and filters |
-| SCR-05 | Run lifecycle, snapshots, idempotency | Readiness card, progress layout, terminal-state presentation |
+| SCR-03 | Criteria suggestion and revision approval | Criterion editor, weight-total validation, draft and failure states; shared rescore review with SCR-09 |
+| SCR-04 | Upload, format validation, duplicate detection, parsing | Upload area, file table, per-file status and filters, initial-run readiness and review card |
+| SCR-05 | Run lifecycle, snapshots, idempotency | Progress layout and terminal-state presentation for an existing run |
 | SCR-06 | Published ranking from one consistent run | Ranking table, eligibility grouping, filters, states |
 | SCR-07 | Evidence retrieval, decision write, concurrency | Two-pane layout, criterion rows, confirmation dialogs |
 | SCR-08 | Immutable run history | Run table, status distinctions, comparison selection |
-| SCR-09 | Revision creation from a base revision | Change summary and before/after presentation |
+| SCR-09 | Revision creation from a base revision | Change summary, before/after presentation and pre-start rescore review |
 | SCR-10 | Two comparable published runs | Comparison header, change summary, aligned table |
 
 Back to the [UI/UX index](README.md).

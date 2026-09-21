@@ -92,7 +92,13 @@ test("worker initial and rescore tasks publish frozen snapshots without re-extra
   assert.equal((await screeningRepository.listForRun(initial.id))[0].displayed_total, "100.00");
   const baseItems = await runRepository.listItems(initial.id);
   const calls = aiExtractionService.callCounts.extractCv;
-  const rescore = await startRun(deps, job.id, { mode: "rescore", criteria_revision: 1, base_run_id: initial.id }, randomUUID());
+  // A rescore needs a revision approved after the published run (API README section 4.5).
+  const nextDraft = await saveDraft(deps, job.id, {
+    expected_draft_version: 0, expected_revision: 1, expected_job_version: 1,
+    criteria: [{ criterion_key: "ts", kind: "skill", label: "TypeScript", req_type: "mandatory", weight: "100", source: "manual", skill_id: skill.id, min_years: null, min_degree: null, jd_evidence: [] }],
+  });
+  const next = await approve(deps, job.id, { expected_draft_version: nextDraft.version, expected_revision: 1, expected_job_version: 1 });
+  const rescore = await startRun(deps, job.id, { mode: "rescore", criteria_revision: next.revision, base_run_id: initial.id }, randomUUID());
   assert.equal(await rescoreTask(rescore), true);
   assert.equal(tables.jobs.get(job.id)!.published_run_id, rescore.id);
   assert.deepEqual((await runRepository.listItems(rescore.id)).map(i => i.snapshot_id), baseItems.map(i => i.snapshot_id));

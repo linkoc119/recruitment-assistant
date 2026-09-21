@@ -1,7 +1,7 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { resetTables } from "../../src/infrastructure/db/store.ts";
+import { resetTables, tables } from "../../src/infrastructure/db/store.ts";
 import { positionRepository } from "../../src/infrastructure/db/repositories/position.repository.ts";
 import { criteriaRepository } from "../../src/infrastructure/db/repositories/criteria.repository.ts";
 import { resumeRepository } from "../../src/infrastructure/db/repositories/resume.repository.ts";
@@ -112,7 +112,9 @@ async function createParsedResume(jobId: string, usage: "evidenced_use" | "liste
 
 /** startRun + claim + executeRun + publishRun; returns the run id. */
 async function runAndPublish(deps: RunDeps, jobId: string, revision: number, key: string): Promise<string> {
-  const run = await startRun(deps, jobId, { mode: "initial", criteria_revision: revision }, key);
+  // API README section 4.3: an initial run names its CVs. These fixtures screen every parsed CV.
+  const resumeIds = (await resumeRepository.list(jobId, (r) => r.status === "parsed")).map((r) => r.id);
+  const run = await startRun(deps, jobId, { mode: "initial", criteria_revision: revision, resume_ids: resumeIds }, key);
   const claimed = await runRepository.claim(run.id, "worker-1");
   assert.ok(claimed);
   await executeRun(deps, { jobId, runId: run.id }, { owner: "worker-1", leaseToken: claimed!.lease_token });
@@ -186,7 +188,13 @@ test("getResult returns the full detail DTO including per-criterion matches", as
   const ranking = await queryRanking(deps, job.id, { offset: 0, limit: 10 });
   const resultId = ranking.items[0].result_id;
 
+  const resume = await resumeRepository.getResume(resumeId);
+  const candidate = tables.candidates.get(resume!.candidate_id)!;
+  tables.candidates.set(candidate.id, { ...candidate, full_name: "Later live name", email: "later@example.test" });
   const detail = await getResult(deps, { jobId: job.id, runId, resultId });
+  assert.equal(detail.candidate.full_name, null, "detail uses frozen extraction facts");
+  assert.equal(detail.candidate.email, null);
+  assert.equal((await queryRanking(deps, job.id, { offset: 0, limit: 10 })).items[0].candidate_name, null);
   assert.equal(detail.resume_id, resumeId);
   assert.equal(detail.passed_mandatory, true);
   assert.equal(detail.can_decide, true);
@@ -330,7 +338,8 @@ test("recordDecision refuses to act on a run that is not the currently published
   const skill2 = await skillRepository.upsertByName("Go");
   const revision2 = await approveSkillCriteria(secondResumeJob.id, skill2.id);
   await createParsedResume(secondResumeJob.id, "evidenced_use");
-  const run2 = await startRun(runDeps, secondResumeJob.id, { mode: "initial", criteria_revision: revision2 }, "idem-2");
+  const secondResumeIds = (await resumeRepository.list(secondResumeJob.id, (r) => r.status === "parsed")).map((r) => r.id);
+  const run2 = await startRun(runDeps, secondResumeJob.id, { mode: "initial", criteria_revision: revision2, resume_ids: secondResumeIds }, "idem-2");
   const claimed2 = await runRepository.claim(run2.id, "worker-2");
   await executeRun(runDeps, { jobId: secondResumeJob.id, runId: run2.id }, { owner: "worker-2", leaseToken: claimed2!.lease_token });
   // Intentionally not published.
@@ -345,4 +354,38 @@ test("recordDecision refuses to act on a run that is not the currently published
     (err: unknown) => err instanceof DomainError && err.code === "run_not_current",
   );
   void resumeId;
+});
+
+test("ranking filters before pagination and retains original ranks", async () => {
+  const job = await createJob(makePositionDeps(), { title: "A", level: null, jd_raw_text: "jd" });
+  const skill = await skillRepository.upsertByName("TypeScript");
+  const revision = await approveSkillCriteria(job.id, skill.id);
+  await createParsedResume(job.id, "evidenced_use");
+  const failed = await createParsedResume(job.id, "none");
+  await runAndPublish(makeRunDeps(), job.id, revision, "filters");
+  const deps = makeDecisionDeps();
+  const filtered = await queryRanking(deps, job.id, { offset: 0, limit: 1, passed_mandatory: false, search: "CV.PDF", decision: "scored" });
+  assert.equal(filtered.page.total, 1);
+  assert.equal(filtered.items[0].resume_id, failed);
+  assert.equal(filtered.items[0].rank, 2);
+  assert.equal((await queryRanking(deps, job.id, { offset: 0, limit: 1, search: "absent" })).page.total, 0);
+  assert.equal((await queryRanking(deps, job.id, { offset: 0, limit: 1, decision: "shortlisted" })).page.total, 0);
+});
+
+test("concurrent conflicting decisions produce one write and one epoch increment", async () => {
+  const job = await createJob(makePositionDeps(), { title: "Concurrent", level: null, jd_raw_text: "jd" });
+  const skill = await skillRepository.upsertByName("TypeScript");
+  const revision = await approveSkillCriteria(job.id, skill.id);
+  await createParsedResume(job.id, "evidenced_use");
+  const runId = await runAndPublish(makeRunDeps(), job.id, revision, "concurrent");
+  const deps = makeDecisionDeps();
+  const ranking = await queryRanking(deps, job.id, { offset: 0, limit: 10 });
+  const ctx = { jobId: job.id, runId, resultId: ranking.items[0].result_id };
+  const outcomes = await Promise.allSettled([
+    recordDecision(deps, ctx, { decision: "shortlisted", expected_result_version: 1, confirm_failed_mandatory: false }),
+    recordDecision(deps, ctx, { decision: "rejected", expected_result_version: 1, confirm_failed_mandatory: false }),
+  ]);
+  assert.equal(outcomes.filter(o => o.status === "fulfilled").length, 1);
+  assert.equal((await queryRanking(deps, job.id, { offset: 0, limit: 10 })).decision_epoch, 1);
+  assert.equal((await getResult(deps, ctx)).result_version, 2);
 });

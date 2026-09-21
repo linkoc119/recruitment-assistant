@@ -158,13 +158,15 @@ export class RunRepository implements Repository<ScreeningRun> {
   }
 
   async publish(jobId: string, runId: string): Promise<void> {
-    const job = tables.jobs.get(jobId);
-    if (!job) return;
-    tables.jobs.set(jobId, { ...job, published_run_id: runId, updated_at: nowIso() });
-    const run = tables.screening_runs.get(runId);
-    if (run) {
-      tables.screening_runs.set(runId, { ...run, published_at: nowIso() });
-    }
+    await runInTransaction(jobId, async () => {
+      const job = tables.jobs.get(jobId);
+      if (!job) return;
+      tables.jobs.set(jobId, { ...job, published_run_id: runId, updated_at: nowIso() });
+      const run = tables.screening_runs.get(runId);
+      if (run) {
+        tables.screening_runs.set(runId, { ...run, published_at: nowIso() });
+      }
+    });
   }
 
   // ---- screening_run_items ----

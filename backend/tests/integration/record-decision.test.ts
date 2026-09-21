@@ -111,7 +111,9 @@ async function createParsedResume(jobId: string, usage: "evidenced_use" | "liste
 
 /** startRun + claim + executeRun + publishRun; returns the run id. */
 async function runAndPublish(deps: RunDeps, jobId: string, revision: number, key: string): Promise<string> {
-  const run = await startRun(deps, jobId, { mode: "initial", criteria_revision: revision }, key);
+  // API README section 4.3: an initial run names its CVs. This fixture screens every parsed CV.
+  const resumeIds = (await resumeRepository.list(jobId, (r) => r.status === "parsed")).map((r) => r.id);
+  const run = await startRun(deps, jobId, { mode: "initial", criteria_revision: revision, resume_ids: resumeIds }, key);
   const claimed = await runRepository.claim(run.id, "worker-1");
   assert.ok(claimed);
   await executeRun(deps, { jobId, runId: run.id }, { owner: "worker-1", leaseToken: claimed!.lease_token });

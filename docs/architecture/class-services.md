@@ -1,6 +1,6 @@
 # CLS-02 — Class: services and ports
 
-**Status:** proposed; these classes do not exist in the current code. The route files exist but every handler still returns `501 not_implemented`.
+**Status:** proposed. Every route handler is now implemented — none returns `501 not_implemented` — and the behaviour is covered by the backend test suite. The class names here remain design labels rather than modules in the code.
 
 **Scope:** the TypeScript modules under `backend/src` and `backend/worker/src`, arranged by folder tier so the diagram and the directory tree read the same way. The data these services operate on is [CLS-01](class-domain.md).
 
@@ -243,7 +243,7 @@ The API and worker are **separate OS processes**, coordinated through durable Po
 
 A `Lease` includes owner, monotonically increasing token and expiry. Long-running work renews it; acquisition/reclaim increments the token. Every item/result write and publication validates owner/token/expiry transactionally. An expired worker may still be executing, but its stale token cannot commit writes; acquiring a lease alone does not guarantee that old computation has stopped. Release is conditional on the current owner/token.
 
-`taskCtx` discriminates run versus extraction work, so lease methods access `screening_runs` or `resume_extraction_jobs` without confusing their IDs. `WorkerLoop` schedules both queues fairly. `ExtractResumeTask` calls `ResumeService.extractResume`; run tasks call `RunService.executeRun` with frozen inputs. `RescoreTask` reuses source snapshots and never extracts again. These are proposed contracts: the present worker tasks and lease functions remain placeholders, and no implemented behavior or passing unit tests are claimed here.
+`taskCtx` discriminates run versus extraction work, so lease methods access `screening_runs` or `resume_extraction_jobs` without confusing their IDs. `WorkerLoop` schedules both queues fairly. `ExtractResumeTask` calls `ResumeService.extractResume`; run tasks call `RunService.executeRun` with frozen inputs. `RescoreTask` reuses source snapshots and never extracts again. These are proposed contracts. The worker tasks and lease functions are implemented and covered by unit tests, but they run inside the API process against process-local storage, so the durability these contracts assume is not yet demonstrated.
 
 ## Rendering
 

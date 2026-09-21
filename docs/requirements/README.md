@@ -1,8 +1,8 @@
 # Part 1 — Requirements and INVEST User Stories
 
-Application API: [OpenAPI 3.0.3](../api/openapi.yaml) and [contract guide / story mapping](../api/README.md). Backend implementation and contract acceptance tests remain pending.
+Application API: [OpenAPI 3.0.3](../api/openapi.yaml) and [contract guide / story mapping](../api/README.md). Phase 3 is complete and accepted for the in-memory/mock scope. Recorded test evidence and subsequent production gates are documented in the [Phase 3 verification](../ui-ux/phase-3-verification.md).
 
-Version 1.1 · 2026-09-15 · **Requirements for the proposed solution, not implemented capabilities.**
+Version 1.1 · 2026-09-15 · **Requirements for the proposed solution. What is implemented, and how far each story has been verified, is tracked in the [Phase 3 verification](../ui-ux/phase-3-verification.md) rather than here.**
 
 ## 1. Basis and scope
 
@@ -198,7 +198,9 @@ Priority **M** means required to accept the v1 workflow; **S** means desirable a
 
 ## 5. Minimum acceptance data
 
-These are fixtures to create during test implementation, **not existing CV files or completed tests**. Use synthetic data; random prototype scores are not expected results.
+These are fixtures to build in test code, **not existing CV files**. Use synthetic data; random prototype scores are not expected results.
+
+AT-01 to AT-10 now have automated tests under `backend/tests/`; the scoring cases run against the deterministic engine and the run cases against the in-memory repositories. AT-09 uses a synthetic ReactJS CV to verify canonical React alias resolution and a stub extraction adapter whose fabricated quote is rejected before any snapshot can be scored. Judging extraction *quality* on real documents still needs a real provider and parser. Passing these tests is not the acceptance gate on its own — see [phase-3-verification.md](../ui-ux/phase-3-verification.md) for what each quality question still owes.
 
 | ID | Data | Expected result / story |
 |---|---|---|

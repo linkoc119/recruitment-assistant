@@ -2,7 +2,7 @@
 
 Version 1.0 · 2026-09-15
 
-These specifications describe target behavior. Routes are proposals; screen IDs and requirement references are stable design identifiers. Shared interaction, accessibility, and responsive requirements are defined in [Interaction and UI/UX Rules](interaction-rules.md).
+These specifications describe target behavior. The routes here are the canonical paths; the hash routes the frontend actually serves are listed in [Screen Hierarchy §2.2](screen-hierarchy.md#22-delivered-routes), and six of them are shorter than the canonical path. Screen IDs and requirement references are stable design identifiers. Shared interaction, accessibility, and responsive requirements are defined in [Interaction and UI/UX Rules](interaction-rules.md).
 
 ## Shared screen anatomy
 
@@ -175,16 +175,22 @@ Show selected, accepted, ready, processing, duplicate, new-version, and failed c
 
 | Attribute | Specification |
 |---|---|
-| Purpose | Confirm frozen inputs, start a first run or rescore, and monitor it to a terminal state |
+| Purpose | Monitor a run that already exists, from queued to a terminal state |
 | Stories / use cases | US-07, US-08, US-15 / UC-06, UC-07, UC-14 |
-| Entry | CV Workspace; active-run link; rescore confirmation from SCR-09 |
+| Entry | Opened with a run ID after SCR-04 starts an initial run or SCR-03/09 starts a rescore; also the active-run link from SCR-01/04/06 |
 | Exit | SCR-06 after publication; SCR-08 for completed/failed history |
-| Primary action | Start screening or Open published ranking, depending on state |
+| Primary action | Open published ranking once the run publishes; the screen itself starts nothing |
 | Main rules/NFR | BR-RUN-01, BR-RUN-02, BR-RUN-03, BR-RUN-04, BR-RSC-01, BR-RSC-02; Q03, Q04, Q05, Q08, Q10 |
 
-### Pre-start state
+### Pre-start review — on the starting screen, not here
 
-Show a review card with position, run type (initial/rescore), approved criteria revision, scoring policy, CV count, excluded failures/duplicates, and source run for rescoring. Link each item back to its workspace.
+SCR-05 has no pre-start state: it is reached with a run that already exists. The review below belongs to whichever screen issues the start command — **SCR-04** for an initial run, where the CV selection is made, and **SCR-03/SCR-09** for a rescore, beside the revision being applied.
+
+The delivered screens show this review in a modal before sending the command. “Go back” closes it without creating a run; “Confirm and start” is the only action that sends the idempotent command. While that command is pending, the initiating button remains disabled. A server-side stale revision or source-run response keeps the recruiter on the starting screen so the current state can be reloaded and reviewed again.
+
+Show a review card with position, run type (initial/rescore), approved criteria revision, scoring policy, CV count, excluded failures/duplicates, and source run for rescoring. The accepted Phase 3 navigation uses “Go back” to close the review and return to its starting workspace.
+
+Acceptance decision, 2026-09-21: the delivered review is accepted for the in-memory/mock milestone. Links on each summary item are not a remaining Phase 3 requirement.
 
 The confirmation states:
 
@@ -207,7 +213,7 @@ Show run status, start time, elapsed time, and counts for total, pending, proces
 | Failed rescore | Previous ranking remains current; inspect errors/history |
 | Interrupted/recovering | State that recovery is in progress; do not create a replacement run from reload |
 
-Repeated start submissions show the existing logical run. Technical queue/lease/retry details do not appear in user copy.
+Repeated start submissions show the existing logical run: the start command carries an idempotency key, and a second active run is refused with `409 active_run`. Technical queue/lease/retry details do not appear in user copy.
 
 ---
 
@@ -331,7 +337,7 @@ Only two published runs from this position can be selected. With fewer than two 
 | Purpose | Create approved revision N+1 without changing an earlier revision or starting a run automatically |
 | Stories / use cases | US-14 / UC-13 |
 | Entry | Criteria workspace, Ranking, or Run History |
-| Exit | SCR-05 rescore review after approval; cancel to source context |
+| Exit | Approve and start the rescore on SCR-09, then follow it in SCR-05; cancel to source context |
 | Primary action | Approve new revision |
 | Secondary actions | Add/remove/reset criterion; cancel |
 | Main rules/NFR | BR-CRI-01, BR-CRI-02, BR-CRI-03, BR-CRI-04, BR-CRI-05, BR-RSC-01; Q08 |
@@ -346,7 +352,7 @@ Reuse the criterion editor from SCR-03, but add:
 - policy-v1 notices for changes that do not affect score;
 - explicit statement that current rankings remain based on their original revision.
 
-After approval, show revision N+1 and route to SCR-05 for a separate rescore confirmation. If the base revision became stale, reject overwrite and offer to reload/compare the newer revision.
+After approval, show revision N+1 and keep the rescore as a separate, explicit second action on this screen; starting it routes to SCR-05 to follow the run. If the base revision became stale, reject overwrite and offer to reload/compare the newer revision.
 
 ---
 

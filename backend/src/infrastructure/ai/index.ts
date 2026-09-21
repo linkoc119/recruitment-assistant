@@ -82,6 +82,12 @@ export const CANONICAL_SKILLS: readonly string[] = [
   "Scrum",
 ];
 
+/** Aliases accepted by dictionary version `dict-v1`; extraction always emits the canonical name. */
+export const CANONICAL_SKILL_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  React: ["ReactJS", "React.js"],
+  "Node.js": ["NodeJS", "Node.js"],
+};
+
 const MANDATORY_MARKERS = ["required", "must have", "mandatory", "bắt buộc", "yêu cầu"];
 const EVIDENCED_USE_MARKERS = ["using", "used", "built", "build", "developed", "develop", "implemented", "implement", "worked with", "wrote"];
 const DEGREE_MARKERS: Array<[RegExp, DegreeLevel]> = [
@@ -130,7 +136,7 @@ export class MockAiExtractionService implements AiExtractionService {
     const text = input.segments.map((s) => s.text).join(" ");
 
     for (const skill of CANONICAL_SKILLS) {
-      const pattern = new RegExp(`\\b${escapeRegExp(skill)}\\b`, "i");
+      const pattern = skillPattern(skill);
       const evidence = findEvidence(input.segments, input.jobId, "jd", pattern);
       if (!evidence) continue;
       const mandatory = MANDATORY_MARKERS.some((marker) => evidence.quote.toLowerCase().includes(marker) || containsNear(text, skill, marker));
@@ -182,7 +188,7 @@ export class MockAiExtractionService implements AiExtractionService {
     this.callCounts.extractCv += 1;
     const skills: CvSkillFact[] = [];
     for (const skill of CANONICAL_SKILLS) {
-      const pattern = new RegExp(`\\b${escapeRegExp(skill)}\\b`, "i");
+      const pattern = skillPattern(skill);
       const evidence = findEvidence(input.segments, input.resumeId, "cv", pattern);
       if (!evidence) continue;
       const segment = input.segments.find((s) => s.segment_id === evidence.segment_id);
@@ -229,6 +235,13 @@ export class MockAiExtractionService implements AiExtractionService {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function skillPattern(canonicalName: string): RegExp {
+  const names = [canonicalName, ...(CANONICAL_SKILL_ALIASES[canonicalName] ?? [])]
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp);
+  return new RegExp(`\\b(?:${names.join("|")})\\b`, "i");
 }
 
 function containsNear(text: string, skill: string, marker: string): boolean {

@@ -21,7 +21,7 @@ import type { SkillRepository } from "../../infrastructure/db/repositories/skill
 import type { IdempotencyStore } from "../../infrastructure/idempotency/index.ts";
 import { fingerprintOf } from "../../infrastructure/idempotency/index.ts";
 import type {
-  DegreeLevel,
+  ResumeSnapshot,
   ItemStatus,
   JobRequirement,
   MatchStatus,
@@ -162,11 +162,29 @@ export async function startRun(
 
   try {
     const run = await deps.runRepo.transaction(jobId, async (_tx) => {
+      // The read above happened before this lock, and publication commits the
+      // new `published_run_id` under the same lock. A run published while this
+      // command queued would leave that copy pointing at the previous run, so
+      // every precondition below reads the job as committed *now*.
+      const current = await deps.positionRepo.get(jobId);
+      if (!current) throw notFound("Job");
+
       const activeRun = await deps.runRepo.findActiveForJob(jobId);
       if (activeRun) throw new ActiveRunError();
 
-      const criteriaVersion = await deps.criteriaRepo.getApproved(jobId, input.criteria_revision);
+      const approved = await deps.criteriaRepo.listApproved(jobId);
+      const criteriaVersion = approved.find((v) => v.revision === input.criteria_revision);
       if (!criteriaVersion) throw new DomainError("resource_not_found", "Criteria revision not found.");
+
+      // API §4.3/§4.5: both modes run the *latest* approved revision. Anything
+      // older is a stale command from a client that has not refreshed.
+      const latest = approved[approved.length - 1];
+      if (latest && criteriaVersion.revision !== latest.revision) {
+        throw new DomainError(
+          "stale_criteria",
+          `Criteria revision ${input.criteria_revision} is not the latest approved revision (${latest.revision}).`,
+        );
+      }
 
       let resumeIds: string[];
 
@@ -180,6 +198,23 @@ export async function startRun(
         const baseRun = await deps.runRepo.findScoped(jobId, input.base_run_id);
         if (!baseRun) throw notFound("Base run");
 
+        // API §4.5: the source must be the run that is published right now.
+        if (current.published_run_id !== baseRun.id) {
+          throw new DomainError(
+            "run_not_current",
+            "Base run is not the currently published run for this position.",
+          );
+        }
+
+        // API §4.5: the revision must be newly approved *relative to that run*.
+        const baseCriteria = approved.find((v) => v.id === baseRun.criteria_version_id);
+        if (baseCriteria && criteriaVersion.revision <= baseCriteria.revision) {
+          throw new DomainError(
+            "invalid_run_selection",
+            `Rescore requires a criteria revision newer than the published run's revision ${baseCriteria.revision}.`,
+          );
+        }
+
         // BR-RSC-01: take exactly the successful (resume_id, snapshot_id) pairs.
         const baseItems = await deps.runRepo.listItems(input.base_run_id);
         const successfulItems = baseItems.filter((i) => i.status === "succeeded");
@@ -192,20 +227,18 @@ export async function startRun(
         if (input.base_run_id) {
           throw new DomainError("invalid_run_selection", "base_run_id must not be specified for an initial run.");
         }
+        // API §4.3: "Initial selection is explicit, nonempty". Never fall back
+        // to every parsed CV — the selected set is part of the command, and
+        // silently widening it would freeze snapshots the caller never chose.
+        if (!input.resume_ids || input.resume_ids.length === 0) {
+          throw new DomainError("invalid_run_selection", "resume_ids is required for an initial run.");
+        }
         const parsedResumes = await deps.resumeRepo.list(jobId, (r) => r.status === "parsed");
-        if (input.resume_ids && input.resume_ids.length > 0) {
-          // Validate all are parsed.
-          for (const id of input.resume_ids) {
-            const r = parsedResumes.find((pr) => pr.id === id);
-            if (!r) throw new DomainError("invalid_run_selection", `Resume ${id} is not in parsed state or not in this job.`);
-          }
-          resumeIds = input.resume_ids;
-        } else {
-          resumeIds = parsedResumes.map((r) => r.id);
+        for (const id of input.resume_ids) {
+          const r = parsedResumes.find((pr) => pr.id === id);
+          if (!r) throw new DomainError("invalid_run_selection", `Resume ${id} is not in parsed state or not in this job.`);
         }
-        if (resumeIds.length === 0) {
-          throw new DomainError("invalid_run_selection", "No parsed CVs available to start a run.");
-        }
+        resumeIds = input.resume_ids;
       }
 
       const newRun = await deps.runRepo.create({
@@ -285,15 +318,19 @@ export async function executeRun(
     }
   }
 
-  const finalStatus: RunStatus = anyError ? "completed_with_errors" : "completed";
-  await deps.runRepo.setStatus(run.id, lease.owner, lease.leaseToken, finalStatus);
+  const finishedItems = await deps.runRepo.listItems(run.id);
+  const noSuccess = !finishedItems.some(i => i.status === "succeeded");
+  const failed = noSuccess || (run.mode === "rescore" && anyError);
+  const finalStatus: RunStatus = failed ? "failed" : anyError ? "completed_with_errors" : "completed";
+  await deps.runRepo.setStatus(run.id, lease.owner, lease.leaseToken, finalStatus,
+    failed ? (run.mode === "rescore" ? "rescore_partial_failure" : "no_successful_items") : undefined);
 }
 
 async function scoreItem(
   deps: RunDeps,
   run: ScreeningRun,
   resumeId: string,
-  snapshot: { id: string; extraction: { supported_months: number; education: Array<{ degree_level: DegreeLevel | null }>; as_of_date: string } },
+  snapshot: ResumeSnapshot,
   requirements: JobRequirement[],
 ): Promise<void> {
   const skillFacts = await deps.resumeRepo.listSkillFacts(snapshot.id);
@@ -397,7 +434,9 @@ async function scoreItem(
       reason: c.criterionPassed ? "Criterion met." : "Criterion not met.",
       score_contribution: toDecimalString(c.contribution, 10).replace(/0+$/, "").replace(/\.$/, "") || "0",
       displayed_contribution: contribution?.displayed ?? "0.00",
-      evidence: (req?.kind === "skill" && skillFact?.evidence) ? skillFact.evidence : [],
+      evidence: req?.kind === "skill" ? skillFact?.evidence ?? []
+        : req?.kind === "experience" ? snapshot.extraction.employment.filter(p => p.start_month && p.end_month_exclusive).flatMap(p => p.evidence)
+        : req?.kind === "education" ? highestEdu?.evidence ?? [] : [],
     };
   });
   await deps.screeningRepo.createDetails(screening.id, details);
@@ -409,7 +448,7 @@ export async function publishRun(
   lease: { owner: string; leaseToken: string },
 ): Promise<void> {
   const run = await deps.runRepo.findScoped(ctx.jobId, ctx.runId);
-  if (!run || run.status !== "completed") return;
+  if (!run || (run.status !== "completed" && run.status !== "completed_with_errors")) return;
 
   const items = await deps.runRepo.listItems(run.id);
   const successfulItems = items.filter((i) => i.status === "succeeded");

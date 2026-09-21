@@ -14,8 +14,12 @@ export const runItemStatusSchema = z.enum(["pending", "processing", "succeeded",
  * run-creation invariants (active-run lock, resume readiness) that also need
  * repository state and belong together.
  *
- * `resume_ids` uniqueness (`uniqueItems: true`) IS pure shape validation, so
- * it stays here.
+ * `resume_ids` uniqueness (`uniqueItems: true`) and its bounds (`minItems: 1`,
+ * `maxItems: 200`) ARE pure shape validation, so they stay here. That splits
+ * the two near-identical inputs on purpose: `resume_ids: []` violates the
+ * declared schema and is 400 `invalid_request`, while an absent `resume_ids`
+ * is a valid body that breaks the initial-mode rule and is 422
+ * `invalid_run_selection`. API README section 4.3 documents the pair.
  */
 export const runInputSchema = z
   .object({

@@ -126,15 +126,41 @@ test("POST screening-runs starts a run (202), and a second start while it is act
   const job = await createJob(makePositionDeps(), { title: "A", level: null, jd_raw_text: "jd" });
   const skill = await skillRepository.upsertByName("TypeScript");
   const revision = await approveSkillCriteria(job.id, skill.id);
-  await createParsedResume(job.id);
+  const resumeId = await createParsedResume(job.id);
 
-  const first = await POST(postReq(job.id, { mode: "initial", criteria_revision: revision }, "start-run-1"), ctxFor(job.id));
+  const first = await POST(postReq(job.id, { mode: "initial", criteria_revision: revision, resume_ids: [resumeId] }, "start-run-1"), ctxFor(job.id));
   assert.equal(first.status, 202);
   const firstBody = (await first.json()) as { id: string; status: string };
   assert.equal(firstBody.status, "queued");
 
-  const second = await POST(postReq(job.id, { mode: "initial", criteria_revision: revision }, "start-run-2"), ctxFor(job.id));
+  const second = await POST(postReq(job.id, { mode: "initial", criteria_revision: revision, resume_ids: [resumeId] }, "start-run-2"), ctxFor(job.id));
   assert.equal(second.status, 409);
   const secondBody = (await second.json()) as { code: string };
   assert.equal(secondBody.code, "active_run");
+});
+
+test("POST screening-runs rejects mode=initial without resume_ids (invalid_run_selection)", async () => {
+  const job = await createJob(makePositionDeps(), { title: "A", level: null, jd_raw_text: "jd" });
+  const skill = await skillRepository.upsertByName("TypeScript");
+  const revision = await approveSkillCriteria(job.id, skill.id);
+  await createParsedResume(job.id);
+
+  const res = await POST(postReq(job.id, { mode: "initial", criteria_revision: revision }, "start-run-no-ids"), ctxFor(job.id));
+  assert.equal(res.status, 422);
+  const body = (await res.json()) as { code: string };
+  assert.equal(body.code, "invalid_run_selection");
+});
+
+test("POST screening-runs rejects an empty resume_ids array as a schema violation (400)", async () => {
+  const job = await createJob(makePositionDeps(), { title: "A", level: null, jd_raw_text: "jd" });
+  const skill = await skillRepository.upsertByName("TypeScript");
+  const revision = await approveSkillCriteria(job.id, skill.id);
+  await createParsedResume(job.id);
+
+  // openapi.yaml RunInput declares `minItems: 1`, so [] never reaches the
+  // domain: it is a malformed body, not a cross-field rule violation.
+  const res = await POST(postReq(job.id, { mode: "initial", criteria_revision: revision, resume_ids: [] }, "start-run-empty"), ctxFor(job.id));
+  assert.equal(res.status, 400);
+  const body = (await res.json()) as { code: string };
+  assert.equal(body.code, "invalid_request");
 });

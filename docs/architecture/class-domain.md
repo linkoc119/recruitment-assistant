@@ -1,6 +1,6 @@
 # CLS-01 — Class: domain model
 
-**Status:** proposed; these types do not exist in the current code.
+**Status:** proposed. Domain types now exist under `backend/src/domain`; the names and shapes here are design labels and do not map one to one onto the implemented modules.
 
 **Scope:** the TypeScript domain types under `backend/src/domain`, derived from the [14-table schema](../database-design.md) and the [OpenAPI schemas](../api/openapi.yaml). Behaviour lives in the services of [CLS-02](class-services.md); this view is the data these services operate on.
 

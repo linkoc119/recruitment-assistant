@@ -55,7 +55,7 @@ flowchart TD
     K --> M
     L --> M
     M --> N{At least one valid CV and approved criteria?}
-    N -- Yes --> O[Continue to SCR-05]
+    N -- Yes --> O[Select CVs in SCR-04 and start the run]
     N -- No --> A
 ```
 
@@ -72,10 +72,10 @@ Key rules:
 
 ```mermaid
 flowchart LR
-    A[SCR-05 Readiness summary] --> B{Inputs ready?}
+    A[SCR-04 Select CVs] --> B{Inputs ready?}
     B -- No --> C[Link to missing criteria or CV work]
-    B -- Yes --> D[Confirm frozen criteria and CV set]
-    D --> E[Run queued/running]
+    B -- Yes --> D[Start run with the explicit CV selection]
+    D --> E[SCR-05: run queued/running]
     E --> F[Show total, pending, processing, succeeded, failed]
     F --> G{Run outcome}
     G -- No CV succeeded --> H[Failed; no new ranking]
@@ -86,7 +86,7 @@ flowchart LR
     K --> L[SCR-06 Published Ranking]
 ```
 
-Repeated start actions do not create multiple logical runs. Reloading or returning to SCR-05 resumes the same visible run. A failed file remains distinct from failed mandatory eligibility.
+The run is created by SCR-04, and SCR-05 is opened for the run that already exists; it never submits one. Repeated start actions do not create multiple logical runs, because the start command carries an idempotency key. Reloading or returning to SCR-05 resumes the same visible run. A failed file remains distinct from failed mandatory eligibility.
 
 ## UF-04 — Review evidence and record a decision
 
@@ -126,10 +126,10 @@ flowchart TD
     C --> D{Valid set?}
     D -- No --> C
     D -- Yes --> E[Approve revision N+1]
-    E --> F[SCR-05 Rescore readiness]
-    F --> G[Show source run, fixed CV set, new revision]
-    G --> H[Confirm rescore]
-    H --> I[R2 queued/running; R1 remains published]
+    E --> F[Show source run, server-derived CV set, new revision]
+    F --> G[Confirm rescore in SCR-09]
+    G --> H[SCR-05: R2 queued/running; R1 remains published]
+    H --> I[Follow progress]
     I --> J{Every required CV succeeded?}
     J -- No --> K[Mark R2 failed; keep R1 current]
     J -- Yes --> L[Publish complete R2]

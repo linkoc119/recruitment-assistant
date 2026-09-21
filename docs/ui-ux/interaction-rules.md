@@ -4,7 +4,7 @@ Version 1.0 · 2026-09-15
 
 ## 1. Purpose
 
-This document defines shared interaction behavior for the target recruitment screening product. It applies to every screen in the position workspace and provides implementation rules for a later frontend redesign.
+This document defines shared interaction behavior for the target recruitment screening product. It applies to every screen in the position workspace. The frontend rebuild implemented these rules; how far each one is verified is recorded in the [Phase 3 verification](phase-3-verification.md).
 
 The rules prioritize traceability, evidence visibility, predictable system feedback, and safe recruiter decisions.
 

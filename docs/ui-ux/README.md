@@ -1,12 +1,12 @@
 # Part 2 — Information Architecture and Screen Design
 
-Version 1.0 · 2026-09-15 · **Target product design; frontend implementation may differ today.**
+Version 1.0 · 2026-09-15 · **Target product design. All ten screens are now built and wired to the API; where the delivered routes differ from the canonical paths, the [screen hierarchy](screen-hierarchy.md#22-delivered-routes) records the delivered binding.**
 
 ## Purpose
 
 This document set defines how recruiters navigate and use the JD-based CV screening and ranking workflow before the frontend is restructured. It expands the interface where the workflow needs a distinct user goal, while remaining inside F01–F06 and US-01–US-17.
 
-The design is intentionally independent of the current seven-route prototype. Existing routes and screens are migration inputs, not constraints on the target information architecture.
+The design is intentionally independent of the original seven-route prototype, which was removed from the repository in commit `9cafcbf` (2026-09-17). Its routes and screens were migration inputs, not constraints on this information architecture.
 
 ## Scope
 
@@ -42,6 +42,8 @@ Excluded work may appear only under future extension points. It has no route, na
 | [Interaction and UI/UX Rules](interaction-rules.md) | Shared behavior, feedback, accessibility, responsive layout, tables, forms, and dialogs |
 | [UI Traceability](traceability.md) | Story-to-flow-to-screen coverage and implementation handoff status |
 | [Implementation Plan](implementation-plan.md) | Build sequencing, fixture rules, API-contract decisions, and per-screen backend dependency |
+| [UI Improvement Plan](ui-improvement-plan.md) | Phase 1 presentation sub-plan for `frontend/`: ordered design-review fixes (Vietnamese) |
+| [Phase 3 Integration Verification](phase-3-verification.md) | Confirmed Phase 3 acceptance for the in-memory/mock scope, recorded test evidence, and subsequent production gates |
 
 ## Sources and precedence
 
@@ -50,7 +52,7 @@ Excluded work may appear only under future extension points. It has no route, na
 3. [Non-functional Requirements](../requirements/non-functional-requirements.md) define quality targets Q01–Q11.
 4. [Use Cases](../requirements/use-cases.md) define actors, preconditions, outcomes, and alternate flows.
 5. [arc42](../architecture/arc42.md) defines policy v1 and proposed system behavior.
-6. The current `index.html` prototype is evidence of an existing UI concept only.
+6. The removed `index.html` prototype is evidence of an earlier UI concept only; it is no longer in the repository.
 
 When sources conflict, the requirements and arc42 policy take precedence over prototype labels, sample scores, navigation, and mock state.
 
@@ -67,4 +69,4 @@ When sources conflict, the requirements and arc42 policy take precedence over pr
 
 ## Deliverable status
 
-The documentation is suitable for product review, wireframing, frontend route planning, and API/data-contract design. It does not claim that the current prototype implements the specified screens or states, and no screen in this set can be completed by presentation code alone — see the [Implementation Plan](implementation-plan.md).
+The documentation is suitable for product review, wireframing, frontend route planning, and API/data-contract design. The rebuilt frontend now implements all ten screens against the API; which acceptance criteria that does and does not satisfy is recorded in the [Phase 3 verification](phase-3-verification.md). No screen in this set can be completed by presentation code alone — see the [Implementation Plan](implementation-plan.md).

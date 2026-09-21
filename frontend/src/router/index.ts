@@ -1,6 +1,7 @@
 import type { RouteDefinition, RouteParams, ScreenModule } from "./types.js";
 import { resolveDefaultLanding } from "./default-landing.js";
 import { updateShell } from "../shell/index.js";
+import { canLeave } from "../lib/screen.js";
 
 function pathToRegex(path: string): { pattern: RegExp; paramNames: string[] } {
   const paramNames: string[] = [];
@@ -18,7 +19,8 @@ function route(path: string, load: () => Promise<ScreenModule>): RouteDefinition
   return { pattern, paramNames, load };
 }
 
-// screen-hierarchy.md §2.1 — canonical IA path -> hash route -> SCR-xx screen.
+// screen-hierarchy.md §2.2 — the delivered hash routes, and how they differ
+// from the canonical IA paths in §2. This list is the authority for both.
 const routes: RouteDefinition[] = [
   route("/positions", () => import("../screens/scr-01-position-list/index.js")),
   route("/positions/new", () => import("../screens/scr-02-position-jd-form/index.js")),
@@ -38,6 +40,8 @@ const routes: RouteDefinition[] = [
 ];
 
 let current: ScreenModule | null = null;
+let generation = 0;
+let lastPath = "";
 
 function matchRoute(hashPath: string): { def: RouteDefinition; params: RouteParams } | null {
   for (const def of routes) {
@@ -57,21 +61,33 @@ async function render(hashPath: string): Promise<void> {
   const container = document.getElementById("app");
   if (!container) return;
 
+  if (hashPath === lastPath && current) return;
+  if (current && !canLeave()) { window.location.hash = `#${lastPath}`; return; }
+  const version = ++generation;
+  current?.unmount();
+  current = null;
+  lastPath = hashPath;
   const defaultLanding = await resolveDefaultLanding();
+  if (version !== generation) return;
   const targetPath = hashPath === "/" ? defaultLanding : hashPath;
-  const matched = matchRoute(targetPath) ?? matchRoute(defaultLanding);
-  if (!matched) return;
-
-  updateShell(targetPath);
-
-  if (current) {
-    current.unmount();
-    current = null;
+  const [pathname, search = ""] = targetPath.split("?");
+  let matched;
+  try { matched = matchRoute(pathname); } catch { matched = null; }
+  if (!matched) { container.textContent = "Page not found. Select Job Positions to continue."; return; }
+  const query = new URLSearchParams(search);
+  for (const key of ["run", "left", "right"]) {
+    const value = query.get(key);
+    if (value === null) continue;
+    if (!/^[1-9][0-9]*$/.test(value)) { container.textContent = "Invalid run reference. Open Run History to select a run."; return; }
+    matched.params[key] = value;
   }
 
+  updateShell(pathname);
+
   const mod = await matched.def.load();
+  if (version !== generation) return;
   current = mod;
-  mod.mount(container, matched.params);
+  await mod.mount(container, matched.params);
 }
 
 function currentHashPath(): string {

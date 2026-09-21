@@ -2,7 +2,7 @@
 
 **Runtime/API update (2026-09-16):** [Next.js and TypeScript](nextjs-backend.md) supersedes earlier Python/FastAPI and in-process worker choices in this document. Business policies remain unchanged. [OpenAPI 3.0.3](../api/openapi.yaml) defines canonical HTTP behavior; the [API guide](../api/README.md#8-persistence-mapping-and-implementation-prerequisites) records operational storage gaps.
 
-Version 1.0 · 2026-09-14 · **Proposed design; the backend is not implemented**.
+Version 1.0 · 2026-09-14 · **Proposed design. The backend now exists on in-memory repositories and mock extraction; PostgreSQL, the file store and the AI integration do not.**
 
 This document set covers only the screening subsystem and the functions that directly support it. The existing prototype is HTML/CSS/JS with sample data. Every API, transaction, background job, and operational requirement described below describes a future solution; none of it claims that the current application already satisfies it. This is a design detailed enough to discuss and to prepare an implementation — not a production quality certification report.
 
@@ -112,9 +112,8 @@ The solution keeps the underlying formulas of the v2 design but additionally fix
 
 | Exists today | Correspondence / limitation |
 |---|---|
-| `index.html`, `css/` | The shell and interface of the WEB prototype |
-| `js/app.js` | Navigation, state, rendering, and simulated interaction in one file; not the C3 backend |
-| `js/data.js` | Sample data, not PostgreSQL or a durable repository |
+| `frontend/` | The WEB container: a vanilla TypeScript SPA over ten screens, calling the API through a same-origin proxy |
+| `backend/` | The API container and, inside the same process, the WORKER; process-local repositories stand in for PostgreSQL and the CV store |
 | DBML and DDL in Markdown | A data design; no running database exists in the project |
 | The AI/re-scoring progress in the UI | A simulated scenario; the proposed pipeline and formula are not executed |
 | The "Semantic Matching" bar in the UI | A sample value shown as though it were a real measurement, while policy v1 returns `semantic_score = null`. It does not enter the total: c1's total of 92 matches `0.55*95 + 0.30*90 + 0.15*85` exactly |
@@ -156,7 +155,7 @@ Under US-01 AC-4, CRIT manages position metadata through DATA. New positions sta
 
 [Deployment — internal trial](deployment.md) places WEB in the browser; static files on Nginx; the API, PostgreSQL, and the S3 store on one trial server; the AI outside; and backups off the server. This is a proposed trial configuration with no high availability.
 
-The prototype still runs directly from `index.html` or a static HTTP server. Adding this document set creates no infrastructure, connects no accounts, runs no migrations, and deploys no services.
+What runs today is the rebuilt frontend against one local Node process serving the API and its in-process worker. That is not the configuration above: no infrastructure is provisioned, no accounts are connected, no migrations are run, and no services are deployed.
 
 ## 8. Cross-cutting Concepts
 

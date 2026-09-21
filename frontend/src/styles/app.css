@@ -889,3 +889,19 @@ textarea.form-control {
 .progress-bar-fill.fill-danger {
   background: var(--color-danger);
 }
+
+/* Live API feedback and keyboard-accessible decision confirmation. */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.confirmation-dialog { max-width:480px; width:calc(100% - 40px); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:var(--space-6); color:var(--color-text-primary); background:var(--color-surface); }
+.confirmation-dialog::backdrop { background:rgba(15,23,42,.4); }
+.confirmation-dialog p { margin:var(--space-4) 0; }
+.run-review-dialog { max-width:640px; }
+.review-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-3); margin:var(--space-4) 0; }
+.review-grid div { padding:var(--space-3); border:1px solid var(--color-border-subtle); border-radius:var(--radius-md); background:var(--color-canvas); }
+.review-grid dt { color:var(--color-text-muted); font-size:var(--font-size-xs); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.review-grid dd { margin:var(--space-1) 0 0; font-weight:600; overflow-wrap:anywhere; }
+.review-statements { margin:var(--space-3) 0 var(--space-5); padding-left:var(--space-5); }
+.review-statements li + li { margin-top:var(--space-2); }
+@media (max-width:600px) { .review-grid { grid-template-columns:1fr; } .confirmation-dialog { padding:var(--space-4); } }
+.knockout-divider td { background:var(--color-surface); border-top:2px solid var(--color-border); font-weight:600; }
+#screen-message:not(:empty) { padding:var(--space-4); margin-bottom:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-md); }

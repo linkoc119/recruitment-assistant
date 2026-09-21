@@ -1,6 +1,6 @@
 # C1 — System Context: CV Screening and Ranking against a JD
 
-**Status:** proposed architecture; the backend and the AI integration are not implemented.
+**Status:** proposed architecture. The backend is implemented on in-memory repositories; the AI integration is not, and extraction is mocked.
 
 **Scope:** one screening subsystem, not the entire HR system.
 

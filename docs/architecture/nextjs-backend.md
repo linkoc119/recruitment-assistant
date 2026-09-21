@@ -12,7 +12,7 @@ Use a self-hosted Node.js server for requests and a separately supervised Node.j
 
 Next.js supports Route Handlers for backend endpoints; some hosting environments constrain execution lifetime and shared process state. The separate durable worker is this project's design response to Q05. See [Next.js backend guide](https://nextjs.org/docs/app/guides/backend-for-frontend). A Node.js self-hosted deployment supports the full framework and permits explicit proxy configuration; see [self-hosting](https://nextjs.org/docs/app/guides/self-hosting).
 
-A static HTML export alone cannot host this API. The existing vanilla frontend remains a prototype; choosing Next.js for the API does not claim a completed React migration. Serve future UI/API behind one origin, or configure a restricted development origin explicitly.
+A static HTML export alone cannot host this API. The frontend is vanilla TypeScript served as static files; choosing Next.js for the API does not claim a completed React migration. Serve UI and API behind one origin, or configure a restricted development origin explicitly. Today the backend sends no CORS headers, and the frontend dev server supplies the single origin by proxying `/api` to it.
 
 ## Operational baseline
 

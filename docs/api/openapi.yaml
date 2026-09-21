@@ -6,8 +6,8 @@ info:
   license:
     name: Project documentation
 servers:
-- url: http://localhost:3000/api
-  description: Planned local Next.js server; not an existing service.
+- url: http://127.0.0.1:3100/api
+  description: Local Next.js server, as started by the documented development command.
 tags:
 - name: Positions
   description: Positions operations within the screening subsystem.

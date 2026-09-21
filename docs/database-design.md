@@ -4,7 +4,7 @@ Version 3.1 · 2026-09-17 · Proposed schema, not a deployed database.
 
 [DBML source](../sang-loc-xep-hang-v2.dbml) · [ERD PNG](database-design-erd.png)
 
-The retained v2 filename is a stable repository link. The current model has 14 tables and covers the screening subsystem only. DBML defines columns, enums, checks, indexes and composite foreign keys. This document specifies the cross-row invariants required when implementing PostgreSQL migrations and services. No backend or applied migration is claimed.
+The retained v2 filename is a stable repository link. The current model has 14 tables and covers the screening subsystem only. DBML defines columns, enums, checks, indexes and composite foreign keys. This document specifies the cross-row invariants required when implementing PostgreSQL migrations and services. The backend exists but runs on process-local repositories; no PostgreSQL instance is deployed and no migration is applied.
 
 ## Tables and requirement coverage
 

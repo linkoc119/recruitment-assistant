@@ -1,6 +1,6 @@
 # SEQ-01 - JD setup, durable extraction and initial screening
 
-**Updated 2026-09-17. Proposed behavior, not implemented.** API and worker are separate processes. PostgreSQL stores extraction jobs and screening runs; the shared domain/repository code is called inside each process, never across their boundary. Public API paths and responses remain governed by [OpenAPI](../api/openapi.yaml).
+**Updated 2026-09-20. The behaviour below is implemented and tested; the topology is still proposed.** The worker currently runs inside the API process and both share process-local repositories. The separation drawn here — API and worker as separate processes, PostgreSQL storing extraction jobs and screening runs, and the shared domain/repository code called inside each process but never across their boundary — remains the target. Public API paths and responses remain governed by [OpenAPI](../api/openapi.yaml).
 
 [Open the SVG](diagrams/sequence-01-screening.svg)
 

@@ -1,6 +1,6 @@
 # Architecture — CV Screening and Ranking against a JD
 
-**Current runtime decision:** [Next.js and TypeScript](nextjs-backend.md) supersedes earlier Python/FastAPI and in-process worker labels. [OpenAPI 3.0.3](../api/openapi.yaml) and the [API guide](../api/README.md) define canonical HTTP behavior. Backend implementation is pending.
+**Current runtime decision:** [Next.js and TypeScript](nextjs-backend.md) supersedes earlier Python/FastAPI and in-process worker labels. [OpenAPI 3.0.3](../api/openapi.yaml) and the [API guide](../api/README.md) define canonical HTTP behavior. The backend is implemented on in-memory repositories and mock extraction; PostgreSQL, a persistent file store and a real AI service are not. A file store exists as `InMemoryFileStore`, which satisfies the same interface but keeps uploaded bytes only for the lifetime of the process; what is missing is the persistent/production one.
 
 Version 1.0 · 2026-09-14
 
@@ -10,7 +10,7 @@ This document set designs a **proposed, production-intended solution** for a sin
 
 It is not a design for the whole recruitment system. Interviews, offers, executive reporting, HR administration, the candidate portal, and account/permission management are out of scope. The recruiter is the direct user; a separate department-head approval process has not been designed.
 
-**The repository currently contains only an HTML/CSS/JavaScript prototype with in-memory sample data.** The backend, the API, a running PostgreSQL instance, the file store, the AI integration, and the background processing described in the diagrams below are all unimplemented. The technology choices are design proposals, not descriptions of existing source code.
+**The repository now contains a Next.js/TypeScript backend and a rebuilt TypeScript frontend; the original HTML/CSS/JavaScript prototype was removed in commit `9cafcbf` (2026-09-17).** The API surface, the domain logic and the background processing described below exist and are covered by tests, but they run on process-local repositories, a worker hosted inside the API process, and a mock extractor. A running PostgreSQL instance, the file store and the AI integration remain unimplemented, so the persistence, durability and extraction properties in these diagrams are still proposals rather than descriptions of running infrastructure.
 
 ## Reading guide
 
@@ -64,8 +64,8 @@ The three sequence diagrams are exported with the Mermaid CLI, with their source
 
 1. This design set is a new architecture proposal for the selected scope; the rules settled in arc42 are the basis for a future implementation.
 2. The [14-table DBML](../../sang-loc-xep-hang-v2.dbml), [ERD](../database-design-erd.png), and [database design](../database-design.md) describe requirements-aligned persistence, snapshots and durable runs. Additional partial indexes and transaction rules are specified for future implementation; no database or migration is deployed.
-3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the current prototype has 7 screens and the current proposed data model has 14 tables.
-4. The [interface code](../../js/app.js) and [sample data](../../js/data.js) are evidence of the current state. The sample scores are not a correctness test suite for the proposed algorithm.
+3. The interface prompt and the project summary (two internal documents, not included in the repository) define the prototype constraints. The "5 screens / 12 tables" figures in the older documents are historical; the removed prototype had 7 screens, the frontend has 10, and the current proposed data model has 14 tables.
+4. The frontend under [`frontend/`](../../frontend/) and the backend under [`backend/`](../../backend/) are the evidence of the current state; the HTML/CSS/JavaScript prototype these documents were first written against was removed in commit `9cafcbf` (2026-09-17). Sample scores produced by the mock extractor are not a correctness test suite for the proposed algorithm.
 
 ## Methodological sources
 

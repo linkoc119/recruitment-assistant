@@ -63,7 +63,26 @@ The routes above are canonical information-architecture paths. The rebuilt front
 | `/positions/{position}/criteria/draft` | `#/positions/{position}/criteria/draft` |
 | `/positions/{position}/runs/{run}/results/{result}` | `#/positions/{position}/runs/{run}/results/{result}` |
 
-The binding is one rule applied to every row of the inventory, not a second route list to maintain. These are target routes: the existing prototype still uses the Vietnamese hash routes listed in section 6, which the rebuild replaces. The binding is an implementation decision for a static deployment and does not change the information architecture: a later deployment able to rewrite paths may bind the same canonical paths to the History API without changing screen IDs, hierarchy, entry rules, or this document.
+The binding is one rule applied to every row of the inventory, not a second route list to maintain. It is an implementation decision for a static deployment and does not change the information architecture: a later deployment able to rewrite paths may bind the same canonical paths to the History API without changing screen IDs, hierarchy, entry rules, or this document.
+
+### 2.2 Delivered routes
+
+The rebuild is done, and it replaced the prototype's Vietnamese hash routes (section 6), which are no longer in the repository. Six of its routes are shorter than the canonical paths above. Screen IDs and the hierarchy are unchanged, so the difference is route syntax only. Entry rules did move: the default landing order in section 5 was rewritten to match the delivered SCR-01 row action. `frontend/src/router/index.ts` is the authority for what the application actually answers.
+
+| ID | Canonical path | Delivered hash route |
+|---|---|---|
+| SCR-01 | `/positions` | `#/positions` |
+| SCR-02 | `/positions/new`, `/positions/{position}/edit` | unchanged |
+| SCR-03 | `/positions/{position}/criteria/draft` | `#/positions/{position}/criteria` |
+| SCR-04 | `/positions/{position}/cvs` | `#/positions/{position}/cv-workspace` |
+| SCR-05 | `/positions/{position}/screening`, `/positions/{position}/runs/{run}` | `#/positions/{position}/screening-runs/{run}` |
+| SCR-06 | `/positions/{position}/ranking` | unchanged |
+| SCR-07 | `/positions/{position}/runs/{run}/results/{result}` | `#/positions/{position}/candidates/{result}?run={run}` |
+| SCR-08 | `/positions/{position}/runs` | unchanged |
+| SCR-09 | `/positions/{position}/criteria/revisions/new` | `#/positions/{position}/criteria/new-revision` |
+| SCR-10 | `/positions/{position}/runs/compare` | `#/positions/{position}/comparison` |
+
+SCR-07 is the one difference that is more than spelling: it carries its run context in a `run` query parameter instead of the path, and falls back to the position's published run when that parameter is absent. The context is still explicit in every link that leads there.
 
 ## 3. Hierarchy decisions
 
@@ -75,9 +94,14 @@ SCR-02 is a real form rather than an alert or inline mock. It provides enough ro
 
 AI suggestion is a starting state inside SCR-03, not a separate destination. The recruiter can compare proposed criteria with JD evidence, edit them, enter criteria manually after AI failure, and approve revision 1 in one workspace.
 
-### Combine run start and progress
+### Where a run is started, and where it is watched
 
-SCR-05 first presents a readiness summary and confirmation. After submission, the same screen becomes the progress/status view for that run. This avoids creating a destination that exists only for one button click.
+SCR-05 is the progress/status view for a run that already exists. It has no readiness summary and no submit step: a run is created before the recruiter ever reaches it, and SCR-05 is opened with that run's ID. An earlier draft of this document combined start and progress on SCR-05; the delivered frontend does not, because the two modes start from different contexts and need different confirmations.
+
+- **Initial** starts on SCR-04, where the CV selection is made — the API requires that selection to be explicit ([API guide](../api/README.md) section 4.3), so the screen that holds the CV list is the only one that can submit it.
+- **Rescore** starts on SCR-03 or SCR-09, next to the approved revision being applied, since the server derives the CV set from the published run rather than from anything the recruiter picks.
+
+Both then navigate to SCR-05 for that run.
 
 ### Keep candidate detail contextual
 
@@ -100,12 +124,12 @@ They can share layout components but should not be hidden as states of one large
 | SCR-01 | Product start or back from a workspace | Open/create a position |
 | SCR-02 | Create action or edit-position action | Save and continue to SCR-03; cancel to prior context |
 | SCR-03 | New/edited JD, workspace Criteria tab, AI failure fallback | Approve and continue to SCR-04; save draft/stay |
-| SCR-04 | Approved criteria or workspace CVs tab | Start screening via SCR-05; remain for file recovery |
-| SCR-05 | Ready CV set, active run, rescore request, direct run link | Published SCR-06; failed run remains inspectable |
+| SCR-04 | Approved criteria or workspace CVs tab | Start the run here, then follow it in SCR-05; remain for file recovery |
+| SCR-05 | A run that exists: just started from SCR-04 or SCR-03/09, an active-run link, or a direct run link | Published SCR-06; failed run remains inspectable |
 | SCR-06 | Workspace Ranking tab or successful publication | SCR-07, SCR-08, or criteria revision |
 | SCR-07 | Candidate/result link from SCR-06 or SCR-08 | Back to the exact source run/ranking context |
 | SCR-08 | Workspace Run History tab | Historical SCR-07, SCR-09, or SCR-10 |
-| SCR-09 | “Create new revision” from criteria/history | Confirm rescore in SCR-05; cancel without publication |
+| SCR-09 | “Create new revision” from criteria/history | Approve and start the rescore here, then follow it in SCR-05; cancel without publication |
 | SCR-10 | Compare action after selecting two eligible runs | Open either run/result; return to history |
 
 ## 5. Guard and fallback rules
@@ -125,15 +149,16 @@ Opening a position from SCR-01 lands on the **first** matching destination below
 |---|---|---|
 | 1 | A published run exists | SCR-06, with a banner to SCR-05 when a newer run is also active |
 | 2 | An active run exists and nothing is published yet | SCR-05 |
-| 3 | An approved criteria revision and at least one CV ready for screening | SCR-05 |
-| 4 | An approved criteria revision without a CV ready for screening | SCR-04 |
-| 5 | No approved criteria revision | SCR-03 |
+| 3 | An approved criteria revision, with no published and no active run | SCR-04, where the CVs are selected and the first run is started |
+| 4 | No approved criteria revision | SCR-03 |
 
-A published run always takes precedence over an active run: the usable published ranking is never replaced by a progress screen, which is the same guarantee the preceding SCR-06 rule makes. The row action in SCR-01 and this order must always agree.
+A published run always takes precedence over an active run: the usable published ranking is never replaced by a progress screen, which is the same guarantee the preceding SCR-06 rule makes.
+
+Row 3 does not branch on whether CVs are ready. An earlier version of this table sent “approved criteria + at least one CV ready” to SCR-05, but the delivered row action in [`frontend/src/screens/scr-01-position-list/index.ts`](../../frontend/src/screens/scr-01-position-list/index.ts) goes to SCR-04 in both cases, and that is the behavior of record. It is also the only workable destination: with no run started there is nothing for SCR-05 to report, and an initial run requires an explicit CV selection ([API guide](../api/README.md) section 4.3), which is made on SCR-04. The row action in SCR-01 and this order must always agree; when they diverge, the code is corrected only if it contradicts a rule elsewhere in this document, otherwise this table follows the code.
 
 ## 6. Relationship to the current prototype
 
-The current seven screens can migrate into this hierarchy:
+The prototype's seven screens mapped into this hierarchy as follows. The rebuilt frontend completed that migration, and the prototype was removed from the repository in commit `9cafcbf` (2026-09-17), so this table now records the migration rather than planning it.
 
 | Current route | Target destination |
 |---|---|
@@ -145,6 +170,6 @@ The current seven screens can migrate into this hierarchy:
 | `#chi-tiet/:id` | SCR-07 with explicit run/result context |
 | `#chinh-tieu-chi` | Split into SCR-08, SCR-09, and SCR-10 |
 
-This mapping guides a later frontend change. It does not require preserving the current hash routes or page composition.
+This mapping guided the frontend rebuild. It did not require preserving the prototype's hash routes or page composition, and the delivered routes are listed in section 2.2.
 
 Back to the [UI/UX index](README.md).

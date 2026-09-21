@@ -1,4 +1,4 @@
-import { jobList, extraPositionMetadata } from "../fixtures/scr-01-position-list.js";
+import { getJob, type Model } from "../lib/api.js";
 import { esc } from "../lib/html.js";
 
 export interface NavItem {
@@ -49,7 +49,9 @@ const navItems: NavItem[] = [
   }
 ];
 
-const DEFAULT_POSITION_ID = "1";
+const DEFAULT_POSITION_ID = "";
+let selectedJob: Model<"Job"> | undefined;
+let requestController: AbortController | undefined;
 
 /**
  * Route params carry the real position id; "/positions" itself has none.
@@ -58,12 +60,12 @@ const DEFAULT_POSITION_ID = "1";
  * the next slash" — this value flows straight into href attributes below.
  */
 function resolvePositionId(currentPath: string): string {
-  const match = /^\/positions\/([A-Za-z0-9_-]+)/.exec(currentPath);
+  const match = /^\/positions\/([1-9][0-9]*)(?:\/|$)/.exec(currentPath);
   return match ? match[1] : DEFAULT_POSITION_ID;
 }
 
 function resolvePositionJob(positionId: string) {
-  return jobList.items.find(j => j.id === positionId) ?? jobList.items[0];
+  return selectedJob?.id === positionId ? selectedJob : undefined;
 }
 
 export function mountShell(sidebarEl: HTMLElement, topbarEl: HTMLElement): void {
@@ -101,6 +103,7 @@ function renderNavItems(currentPath: string): string {
   let currentSection = "";
 
   for (const item of navItems) {
+    if (!positionId && item.id !== "positions") continue;
     if (item.section && item.section !== currentSection) {
       currentSection = item.section;
       html += `<div class="sidebar-section-label">${item.section}</div>`;
@@ -146,18 +149,32 @@ function isItemActive(item: NavItem, currentPath: string): boolean {
 
 function renderContextCard(positionId: string): string {
   const job = resolvePositionJob(positionId);
-  const meta = extraPositionMetadata[job.id] ?? { last_screened: "Not screened yet" };
+  if (!job) return '<div class="sidebar-context-card">Select a position to open its workspace.</div>';
   return `
     <div class="sidebar-context-card">
       <div class="sidebar-context-badge">Active Position</div>
       <div class="sidebar-context-title">${esc(job.title)} • ${esc(job.level ?? "—")}</div>
-      <div class="sidebar-context-sub">${esc(job.ready_cv_count)} CVs • ${esc(meta.last_screened)}</div>
+      <div class="sidebar-context-sub">${esc(job.readiness.ready_cv_count)} ready CVs</div>
     </div>
   `;
 }
 
 export function updateShell(currentPath: string): void {
   const positionId = resolvePositionId(currentPath);
+  requestController?.abort();
+  requestController = new AbortController();
+  selectedJob = undefined;
+  if (positionId) {
+    const signal = requestController.signal;
+    void getJob(positionId, signal).then(job => {
+      if (signal.aborted) return;
+      selectedJob = job;
+      const footer = document.getElementById("sidebar-footer-container");
+      if (footer) footer.innerHTML = renderContextCard(positionId);
+      const breadcrumb = document.getElementById("topbar-breadcrumb");
+      if (breadcrumb) breadcrumb.innerHTML = getBreadcrumbHtml(currentPath);
+    }).catch(() => {});
+  }
 
   const container = document.getElementById("sidebar-nav-container");
   if (container) {
@@ -178,7 +195,7 @@ export function updateShell(currentPath: string): void {
 function getBreadcrumbHtml(path: string): string {
   const positionId = resolvePositionId(path);
   const job = resolvePositionJob(positionId);
-  const positionLink = `<a href="#/positions/${positionId}/ranking">${esc(job.title)}</a>`;
+  const positionLink = `<a href="#/positions/${positionId}/ranking">${esc(job?.title ?? "Position")}</a>`;
 
   if (path === "/positions" || path === "/") {
     return `
@@ -262,6 +279,6 @@ function getBreadcrumbHtml(path: string): string {
   return `
     <a href="#/positions">Job Positions</a>
     <span class="separator">/</span>
-    <span class="current">${esc(job.title)} — Screening & Ranking</span>
+    <span class="current">${esc(job?.title ?? "Position")} — Screening & Ranking</span>
   `;
 }

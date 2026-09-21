@@ -2,7 +2,7 @@
 
 **Runtime/API update (2026-09-16):** This view reflects the [Next.js backend decision](nextjs-backend.md): `API` (Next.js Route Handlers) and `WORKER` (Node.js/TypeScript) are separate processes, coordinated only through a lease/command table in PostgreSQL, with no message broker. [OpenAPI](../api/openapi.yaml) defines canonical HTTP behavior; business invariants are unchanged.
 
-**Status:** proposed; these components do not exist in the current code.
+**Status:** proposed decomposition. The API and worker it describes are implemented under `backend/`, though on process-local storage and with the worker hosted inside the API process. The component names here are design labels, not module names in the code.
 
 **Scope:** opens up `API` and `WORKER` from C2.
 

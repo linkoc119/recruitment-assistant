@@ -82,7 +82,8 @@ Changing the position changes the complete workspace context. No screen may disp
 | Position setup | Position metadata, original JD, readiness | SCR-01, SCR-02, SCR-03 |
 | Criteria management | Draft suggestion, manual editing, validation, approval, revision summary | SCR-03, SCR-09 |
 | CV preparation | Upload queue, accepted/rejected files, duplicate/version status, parse status | SCR-04 |
-| Screening execution | Input summary, start confirmation, run progress, per-item failures | SCR-05 |
+| Run start | Input summary and start confirmation | SCR-04 for an initial run, SCR-03/SCR-09 for a rescore |
+| Screening execution | Run progress and per-item failures | SCR-05 |
 | Result review | Published ranking, eligibility groups, score, evidence, human decision | SCR-06, SCR-07 |
 | Change analysis | Criteria revision, rescore status, historical runs, comparison | SCR-08, SCR-09, SCR-10 |
 

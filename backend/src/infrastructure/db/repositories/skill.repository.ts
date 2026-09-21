@@ -40,11 +40,18 @@ export class SkillRepository implements Repository<Skill> {
     return [...tables.skills.values()].find((s) => s.name.toLowerCase() === needle) ?? null;
   }
 
-  async upsertByName(name: string, category: string | null = null): Promise<Skill> {
+  async upsertByName(name: string, category: string | null = null, aliases: readonly string[] = []): Promise<Skill> {
     const existing = await this.findByCanonicalName(name);
-    if (existing) return existing;
+    if (existing) {
+      if (aliases.length && aliases.some(alias => !existing.aliases.includes(alias))) {
+        const updated = { ...existing, aliases: [...new Set([...existing.aliases, ...aliases])] };
+        tables.skills.set(existing.id, updated);
+        return updated;
+      }
+      return existing;
+    }
     const id = nextId("skills");
-    const skill: Skill = { id, name, category, aliases: [] };
+    const skill: Skill = { id, name, category, aliases: [...aliases] };
     tables.skills.set(id, skill);
     return skill;
   }

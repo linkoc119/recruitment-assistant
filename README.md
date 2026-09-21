@@ -4,9 +4,9 @@ API contract: [OpenAPI 3.0.3](docs/api/openapi.yaml) · [API guide and requireme
 
 An explainable recruitment assistant concept for resume screening and candidate ranking based on Job Descriptions (JD). It aims to reduce manual screening effort and make results inspectable through evidence; the prototype does not establish real-world AI accuracy or bias reduction.
 
-The repository contains a **TypeScript API implementation with in-memory repositories and mock AI**, a new fixture-driven frontend covering all ten target screens, and the original standalone HTML/CSS/JavaScript prototype. Scoring is deterministic backend code; AI is used only as an extraction interface. Real PDF/DOCX parsing, AI-provider calls, database persistence and a frontend connected to the live API remain unfinished.
+The repository contains a **TypeScript API with in-memory repositories and mock extraction** and a frontend connected to that API across ten screens. The original standalone HTML/CSS/JavaScript prototype was removed in commit `9cafcbf` (2026-09-17) and remains only in Git history. Scoring is deterministic backend code; AI is used only as an extraction interface. The local workflow uses a single Node process for API and background jobs.
 
-> **Design documentation:** [Architecture](docs/architecture/README.md) covers C1–C3, arc42, deployment, and sequence diagrams. [UI/UX design](docs/ui-ux/README.md) covers the target information architecture, screen hierarchy, flows, and screen specifications. Both describe the selected JD-based CV screening and ranking workflow; the current prototype does not yet implement all specified behavior.
+> **Design documentation:** [Architecture](docs/architecture/README.md) covers C1–C3, arc42, deployment, and sequence diagrams. [UI/UX design](docs/ui-ux/README.md) covers the target information architecture, screen hierarchy, flows, and screen specifications. Both describe the selected JD-based CV screening and ranking workflow. The API and all ten screens are implemented; PostgreSQL, real document parsing and the AI provider are not, so the specified behavior is not fully met yet — see the [Phase 3 verification](docs/ui-ux/phase-3-verification.md).
 
 ---
 
@@ -37,7 +37,7 @@ The system architecture is derived from a 7-branch recruitment mindmap, isolatin
 
 ### Use Case Diagram — Screening & Ranking
 
-The use cases below follow the proposed arc42 scope and policy v1. The requirements are documented as [17 INVEST user stories with acceptance criteria](docs/requirements/README.md), with a [use-case catalog and migration from the earlier diagram](docs/requirements/use-cases.md). They describe target behaviour, not verified prototype capabilities.
+The use cases below follow the proposed arc42 scope and policy v1. The requirements are documented as [17 INVEST user stories with acceptance criteria](docs/requirements/README.md), with a [use-case catalog and migration from the earlier diagram](docs/requirements/use-cases.md). They describe target behaviour. How far the implementation has been verified against them is recorded in the [Phase 3 verification](docs/ui-ux/phase-3-verification.md).
 
 ![Use Case Diagram](docs/use-case-diagram.svg)
 
@@ -150,7 +150,7 @@ Ranking reads `jobs.published_run_id`. Publication switches this pointer and com
 
 ## 5. Frontend — Screen-by-Screen
 
-The screenshots below are the current `frontend/` SPA (vanilla TypeScript, hash router, typed fixtures) — ten screens (SCR-01–SCR-10), documented in [UI/UX specifications](docs/ui-ux/screen-specifications.md). It is fixture-driven, not yet wired to the real API.
+The screenshots below illustrate the presentation baseline for the `frontend/` SPA (vanilla TypeScript, hash router), covering ten screens (SCR-01–SCR-10) documented in [UI/UX specifications](docs/ui-ux/screen-specifications.md). Live data and action states come from the API.
 
 ### 5.1 SCR-01 — Job Positions (`#/positions`)
 Entry point. Lists open positions with their CV counts, shortlist counts and screening status, so the recruiter picks a job before anything else happens.
@@ -244,21 +244,12 @@ Files, jobs, decisions and idempotency records disappear when their process/stor
 ### 6.2 New frontend
 
 ```bash
-npm run build -w @app/frontend
-python -m http.server 8080 --directory frontend
+npm run dev -w @app/frontend
 ```
 
-Open `http://localhost:8080`. This serves the ten-screen UI described in [§5](#5-frontend--screen-by-screen), built against typed fixtures — it is not yet wired to the backend API. Python is only needed for this example static server; another static HTTP server can be used.
+Open `http://127.0.0.1:8080` with the backend running on port 3100. The frontend calls `/api` through its local server, which proxies requests to `http://127.0.0.1:3100`. Set `API_ORIGIN` to change the backend address and `PORT` to change the frontend port. This proxy is a local development server.
 
-### 6.3 Original standalone prototype
-
-Open root **`index.html`** directly in a browser, or serve the root directory:
-
-```bash
-python -m http.server 8080
-```
-
-Open `http://localhost:8080`. Only this legacy demo needs no npm install/build; it uses its own sample data and does not call the API.
+Run `npm run watch -w @app/frontend` in another terminal when editing TypeScript, then reload the browser. Run `npm test -w @app/frontend` for API-client tests. The UI reads positions, criteria, CVs, runs and results from the backend; polling updates background work, and historical links retain their run IDs. Restarting the in-memory backend clears its data.
 
 ---
 
@@ -278,16 +269,12 @@ recruitment-assistant/
 │   ├── tests/                  # Unit, worker and direct-handler integration tests
 │   ├── scripts/verify-http.mjs # Main workflow against a running Next server
 │   └── worker/                 # Extraction/screening/rescore tasks and polling code
-├── frontend/                   # New vanilla TypeScript SPA: ten fixture-driven screens
-├── index.html                   # Single-Page Application shell with hash router & modals
+├── frontend/                   # Vanilla TypeScript SPA, HTTP client and local API proxy
+│   ├── index.html               # SPA shell loaded by every hash route
+│   ├── src/                     # Ten screens, router, shell, styles and the API client
+│   └── scripts/dev.mjs          # Static server on 8080 that proxies /api to the backend
 ├── README.md                    # System documentation, mindmap & architectural specifications
 ├── sang-loc-xep-hang-v2.dbml    # DBML source of the 14-table relational schema
-├── css/
-│   ├── tokens.css               # Design system variables (colors, typography, spacing)
-│   └── app.css                  # Application layouts, responsive tables & animations
-├── js/
-│   ├── data.js                  # Relational mock database (jobs, criteria, 42 CVs, scores)
-│   └── app.js                   # In-memory reactive state manager, router & screen renderers
 └── docs/
     ├── api/                     # OpenAPI contract and API guide
     ├── requirements/            # User stories, business rules and extraction contract

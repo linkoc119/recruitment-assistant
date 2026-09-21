@@ -75,7 +75,7 @@ API records a durable command in the database and returns `202 Accepted` with a 
 
 No message broker (Redis, RabbitMQ, SQS, ...) is introduced: the PostgreSQL command/lease table already serving the rest of this design is the coordination mechanism. WORKER is a Node.js/TypeScript process, not a hidden or future component — it is drawn above alongside API.
 
-The current prototype implements only the interface corresponding to `WEB`, using `js/data.js` and state variables in place of the connections above.
+Today `WEB` and `API` both exist, but `WORKER` runs inside the API process rather than as the separate process drawn above, and the Screening Database and CV Store are process-local stand-ins rather than PostgreSQL and S3. The removed HTML/CSS/JavaScript prototype implemented only `WEB`, with sample data and state variables in place of every connection above.
 
 Next: [C3 — opening up API and WORKER](c3-components.md), [Deployment](deployment.md), [arc42](arc42.md).
 

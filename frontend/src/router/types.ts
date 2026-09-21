@@ -3,7 +3,7 @@ export interface RouteParams {
 }
 
 export interface ScreenModule {
-  mount(container: HTMLElement, params: RouteParams): void;
+  mount(container: HTMLElement, params: RouteParams): void | Promise<void>;
   unmount(): void;
 }
 

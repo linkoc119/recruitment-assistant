@@ -22,6 +22,8 @@ import type {
   Resume,
   ResumeExtractionJob,
   ResumeSnapshot,
+  Evidence,
+  SourceSegment,
 } from "../types/index.ts";
 
 export interface CandidateDeps {
@@ -301,6 +303,7 @@ export async function extractResume(
     const segments = segmentText(rawText);
 
     const cvResult = await deps.ai.extractCv({ resumeId: ctx.resumeId, segments });
+    validateCvEvidence(ctx.resumeId, segments, cvResult);
 
     // Normalise employment to months-v1: parse YYYY-MM bounds from raw dates.
     const employmentPeriods = cvResult.employment.map((e) => {
@@ -358,15 +361,43 @@ export async function extractResume(
     await deps.extractionRepo.markSucceeded(ctx.extractionJobId, lease.owner, lease.leaseToken, snapshot.id);
     return snapshot;
   } catch (err) {
-    const isExhausted = extractionJob.attempts >= extractionJob.max_attempts;
+    const invalidEvidence = err instanceof DomainError && err.code === "invalid_evidence";
+    const isExhausted = invalidEvidence || extractionJob.attempts >= extractionJob.max_attempts;
     if (isExhausted) {
-      await deps.extractionRepo.markFailed(ctx.extractionJobId, lease.owner, lease.leaseToken, "extraction_failed");
-      await deps.resumeRepo.setStatus(ctx.resumeId, "parse_failed", "extraction_failed");
+      const code = invalidEvidence ? "invalid_evidence" : "extraction_failed";
+      await deps.extractionRepo.markFailed(ctx.extractionJobId, lease.owner, lease.leaseToken, code);
+      await deps.resumeRepo.setStatus(ctx.resumeId, "parse_failed", code);
     } else {
       const retryAt = new Date(Date.now() + 30_000).toISOString();
       await deps.extractionRepo.requeue(ctx.extractionJobId, lease.owner, lease.leaseToken, retryAt);
     }
     return null;
+  }
+}
+
+function validateCvEvidence(
+  resumeId: string,
+  segments: SourceSegment[],
+  result: Awaited<ReturnType<AiExtractionService["extractCv"]>>,
+): void {
+  const facts = [...result.skills, ...result.employment, ...result.education];
+  for (const fact of facts) {
+    if (fact.evidence.length === 0) throw new DomainError("invalid_evidence", "Every extracted CV fact must cite source text.");
+    for (const evidence of fact.evidence) validateEvidence(resumeId, segments, evidence);
+  }
+}
+
+function validateEvidence(resumeId: string, segments: SourceSegment[], evidence: Evidence): void {
+  const segment = segments.find(item => item.segment_id === evidence.segment_id);
+  if (!segment || evidence.source !== "cv" || evidence.source_id !== resumeId ||
+      evidence.page !== segment.page || evidence.paragraph !== segment.paragraph) {
+    throw new DomainError("invalid_evidence", "CV evidence does not identify its captured source segment.");
+  }
+  const start = evidence.start_offset - segment.start_offset;
+  const end = evidence.end_offset - segment.start_offset;
+  const codePoints = Array.from(segment.text);
+  if (start < 0 || end <= start || end > codePoints.length || codePoints.slice(start, end).join("") !== evidence.quote) {
+    throw new DomainError("invalid_evidence", "CV evidence quote does not match the captured source text.");
   }
 }
 

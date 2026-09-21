@@ -115,6 +115,9 @@ export interface DecisionDto {
 }
 
 export interface RankingQuery {
+  search?: string;
+  passed_mandatory?: boolean;
+  decision?: DecisionStatus;
   run_id?: string;
   decision_epoch?: number;
   offset: number;
@@ -137,6 +140,7 @@ async function assembleRankRow(
   if (!resume) return null;
   const candidate = await deps.resumeRepo.getCandidate(resume.candidate_id);
   if (!candidate) return null;
+  const snapshot = await deps.resumeRepo.getSnapshot(screening.resume_id, screening.snapshot_id);
 
   const details = await deps.screeningRepo.listDetails(screening.id);
   const requirements = await deps.criteriaRepo.listRequirements(screening.criteria_version_id);
@@ -165,7 +169,7 @@ async function assembleRankRow(
     resume_id: screening.resume_id,
     snapshot_id: screening.snapshot_id,
     candidate_id: candidate.id,
-    candidate_name: candidate.full_name,
+    candidate_name: snapshot?.extraction.candidate.full_name ?? null,
     file_name: resume.file_name,
     resume_version: resume.version,
     rank: screening.rank_in_job,
@@ -236,9 +240,14 @@ export async function queryRanking(
     return Number(a.resume_id) - Number(b.resume_id);
   });
 
-  const total = sorted.length;
-  const page = sorted.slice(query.offset, query.offset + query.limit);
-  const rows = (await Promise.all(page.map((s) => assembleRankRow(deps, s)))).filter((r): r is RankRowDto => r !== null);
+  const assembled = (await Promise.all(sorted.map(s => assembleRankRow(deps, s)))).filter((r): r is RankRowDto => r !== null);
+  const search = query.search?.trim().toLowerCase();
+  const filtered = assembled.filter(r =>
+    (query.passed_mandatory === undefined || r.passed_mandatory === query.passed_mandatory) &&
+    (!query.decision || r.status === query.decision) &&
+    (!search || `${r.candidate_name ?? ""} ${r.file_name}`.toLowerCase().includes(search)));
+  const total = filtered.length;
+  const rows = filtered.slice(query.offset, query.offset + query.limit);
 
   const criteriaVersion = (await import("../../infrastructure/db/store.ts")).tables.criteria_versions.get(run.criteria_version_id);
   const runItems = await deps.runRepo.listItems(run.id);
@@ -308,7 +317,7 @@ export async function getResult(
     snapshot_id: screening.snapshot_id,
     criteria_revision: criteriaVersion?.revision ?? 0,
     resume_version: resume.version,
-    candidate: { id: candidate.id, full_name: candidate.full_name, email: candidate.email, phone: candidate.phone },
+    candidate: { id: candidate.id, full_name: snapshot?.extraction.candidate.full_name ?? null, email: snapshot?.extraction.candidate.email ?? null, phone: snapshot?.extraction.candidate.phone ?? null },
     policy_version: run.policy_version,
     result_version: screening.result_version,
     status: screening.status,
@@ -340,56 +349,51 @@ export async function recordDecision(
   ctx: { jobId: string; runId: string; resultId: string },
   input: RecordDecisionInput,
 ): Promise<DecisionDto> {
-  const job = await deps.positionRepo.get(ctx.jobId);
-  if (!job) throw notFound("Job");
+  return deps.screeningRepo.transaction(ctx.jobId, async tx => {
+    const job = await deps.positionRepo.get(ctx.jobId);
+    if (!job) throw notFound("Job");
 
-  const run = await deps.runRepo.findScoped(ctx.jobId, ctx.runId);
-  if (!run) throw notFound("Run");
+    const run = await deps.runRepo.findScoped(ctx.jobId, ctx.runId);
+    if (!run) throw notFound("Run");
 
-  const screening = await deps.screeningRepo.getForRun(ctx.jobId, ctx.runId, ctx.resultId);
-  if (!screening) throw notFound("Result");
+    const screening = await deps.screeningRepo.getForRun(ctx.jobId, ctx.runId, ctx.resultId);
+    if (!screening) throw notFound("Result");
 
-  // Published pointer check (BR-DEC-01): can only decide on the current published run.
-  if (job.published_run_id !== run.id) {
-    throw new DomainError("run_not_current", "Decisions can only be recorded on the currently published run.");
-  }
-
-  // Version check.
-  if (screening.result_version !== input.expected_result_version) {
-    // No-op replay: same decision at the exact same version is allowed.
-    if (screening.status === input.decision && screening.result_version === input.expected_result_version) {
-      return toDecisionDto(screening);
+    // Published pointer check (BR-DEC-01): can only decide on the current published run.
+    if (job.published_run_id !== run.id) {
+      throw new DomainError("run_not_current", "Decisions can only be recorded on the currently published run.");
     }
-    throw new StaleResultError();
-  }
 
-  // Transition validity (BR-DEC-05/06): only `scored` can be decided; already-decided at current version = replay.
-  if (screening.status === input.decision) {
-    return toDecisionDto(screening); // No-op: same state at same version.
-  }
-  if (screening.status === "shortlisted" || screening.status === "rejected") {
-    throw new DomainError("decision_final", "This result has already been decided and cannot be changed.");
-  }
-  if (screening.status !== "scored") {
-    throw new DomainError("invalid_request", `Cannot decide on a result with status '${screening.status}'.`);
-  }
-
-  // BR-DEC-03: shortlisting someone who failed mandatory requires explicit confirmation.
-  if (input.decision === "shortlisted" && !screening.passed_mandatory && !input.confirm_failed_mandatory) {
-    throw new DomainError("confirmation_required", "Candidate did not pass mandatory criteria. Set confirm_failed_mandatory: true to proceed.");
-  }
-
-  await deps.screeningRepo.transaction(ctx.jobId, async (tx) => {
-    // Increment the run's decision_epoch to invalidate ranking page cursors.
-    const latestRun = await deps.runRepo.findScoped(ctx.jobId, ctx.runId);
-    if (latestRun) {
-      const updatedRun = { ...latestRun, decision_epoch: latestRun.decision_epoch + 1 };
-      await deps.runRepo.saveGuarded(tx, updatedRun, (c) => c !== null && c.decision_epoch === latestRun.decision_epoch);
+    // Version check.
+    if (screening.result_version !== input.expected_result_version) {
+      // No-op replay: same decision at the exact same version is allowed.
+      if (screening.status === input.decision && screening.result_version === input.expected_result_version) {
+        return toDecisionDto(screening);
+      }
+      throw new StaleResultError();
     }
+
+    // Transition validity (BR-DEC-05/06): only `scored` can be decided; already-decided at current version = replay.
+    if (screening.status === input.decision) {
+      return toDecisionDto(screening); // No-op: same state at same version.
+    }
+    if (screening.status === "shortlisted" || screening.status === "rejected") {
+      throw new DomainError("decision_final", "This result has already been decided and cannot be changed.");
+    }
+    if (screening.status !== "scored") {
+      throw new DomainError("invalid_request", `Cannot decide on a result with status '${screening.status}'.`);
+    }
+
+    // BR-DEC-03: shortlisting someone who failed mandatory requires explicit confirmation.
+    if (input.decision === "shortlisted" && !screening.passed_mandatory && !input.confirm_failed_mandatory) {
+      throw new DomainError("confirmation_required", "Candidate did not pass mandatory criteria. Set confirm_failed_mandatory: true to proceed.");
+    }
+
+    const updated = await deps.screeningRepo.recordDecision(ctx.resultId, input.expected_result_version, input.decision);
+    await deps.runRepo.saveGuarded(tx, { ...run, decision_epoch: run.decision_epoch + 1 },
+      current => current !== null && current.decision_epoch === run.decision_epoch);
+    return toDecisionDto(updated);
   });
-
-  const updated = await deps.screeningRepo.recordDecision(ctx.resultId, input.expected_result_version, input.decision);
-  return toDecisionDto(updated);
 }
 
 function toDecisionDto(screening: Screening): DecisionDto {

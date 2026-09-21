@@ -1,10 +1,10 @@
 # API contract — CV screening and ranking
 
-Version 1.0 · 2026-09-16 · Design contract; backend implementation and integration tests are pending.
+Version 1.0 · 2026-09-16 · Design contract. All 26 operations are implemented on in-memory repositories and mock extraction, with unit tests and an HTTP integration script; PostgreSQL, real PDF/DOCX parsing and the AI provider are not.
 
 ## 1. Scope and sources
 
-[openapi.yaml](openapi.yaml) is the OpenAPI **3.0.3** contract for the Next.js/TypeScript backend. Import it into Swagger Editor or render it with Swagger UI. The documented localhost server is a proposed address, not a running API. Examples contain synthetic data.
+[openapi.yaml](openapi.yaml) is the OpenAPI **3.0.3** contract for the Next.js/TypeScript backend. Import it into Swagger Editor or render it with Swagger UI. The documented localhost server is the address the implemented API listens on when started with the command in the [README](../../README.md). Examples contain synthetic data.
 
 The contract implements [US-01–US-17](../requirements/README.md), [business rules](../requirements/business-rules.md), [Q01–Q11](../requirements/non-functional-requirements.md), [D-01–D-05](../requirements/decisions.md) and the [screen specifications](../ui-ux/screen-specifications.md). Business rules and accepted decisions take precedence over older illustrative endpoint names in architecture diagrams. The YAML defines HTTP paths, schemas and responses; this guide defines transactional and cross-field invariants that OpenAPI cannot fully express.
 
@@ -102,6 +102,8 @@ Resume states: `uploaded → parsing → parsed` or `parse_failed`. Worker valid
 
 Start with a fresh idempotency key. Validate latest approved revision and the selected parsed CVs in this position. Initial selection is explicit, nonempty and at most 200 unique resume IDs; preserve each explicitly selected CV version as its own snapshot identity. Lock the position, enforce one active run, assign a monotonically increasing round, freeze criteria/policy/CV snapshots and commit durable run/items **before** returning 202. Round allocation includes failed attempts. `initial` means an explicitly selected screening set and can also be used for a later new CV batch; it is distinct from criteria-only rescore.
 
+Rejections use the vocabulary in section 2. Body shape is checked first, against `RunInput` as declared in `openapi.yaml`: a wrong type, an unknown field, duplicate resume IDs, more than 200 of them, or `resume_ids: []` (the schema declares `minItems: 1`) is `400 invalid_request` and never reaches the business rules. Past that gate, an unknown revision or base run is `404 resource_not_found`; a revision that is approved but no longer the latest is `409 stale_criteria`; an already active run is `409 active_run`; and the cross-field rules of section 10 are `422 invalid_run_selection` — an initial run with `resume_ids` absent or carrying `base_run_id`, a resume that is not parsed or belongs to another position. An absent `resume_ids` is schema-valid and fails the business rule; an empty one fails the schema, which is why the two differ. A rejected command mutates nothing either way, so it leaves no run behind.
+
 Poll run/items (suggested two-second interval while visible; back off on failure). Counters are read from one consistent state and sum to total. Resume pending work after process restart using expiring leases; result uniqueness prevents duplicate item results. Technical failures stay in run items, outside the ranking table.
 
 | Run state | Meaning / publication |
@@ -134,7 +136,7 @@ Decision transaction checks current publication, then expected result version, t
 {"mode":"rescore","criteria_revision":2,"base_run_id":"31"}
 ```
 
-The source must be the current published run and the criteria revision must be newly approved relative to that run and current at command acceptance. Do not accept resume_ids for rescore. Freeze exactly the source's successful resume/snapshot identities, its policy, normalization version and extraction as_of_date. Never call AI or recalculate Present dates during criteria-only rescoring. New results start `scored`.
+The source must be the current published run and the criteria revision must be newly approved relative to that run and current at command acceptance. Do not accept resume_ids for rescore. A `base_run_id` that is not the position's published run is `409 run_not_current`; a revision that is not newer than the published run's own revision, a missing `base_run_id`, a rescore carrying `resume_ids`, and a source run with no successful items are all `422 invalid_run_selection`. Freeze exactly the source's successful resume/snapshot identities, its policy, normalization version and extraction as_of_date. Never call AI or recalculate Present dates during criteria-only rescoring. New results start `scored`.
 
 Publish only if **every** required source item succeeds. Otherwise keep the previous published run and all its decisions. Published historical runs remain readable. Comparison requires two distinct published runs in the same position; align by exact resume/snapshot pair, show an absent side explicitly with null score/rank, and calculate right-minus-left deltas only for present pairs. Changing CV version produces separate rows. Comparison reads both sides and decisions in one consistent database snapshot.
 

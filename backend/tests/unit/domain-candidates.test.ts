@@ -169,6 +169,58 @@ test("extractResume commits a snapshot, skill facts and marks the resume parsed"
   assert.equal(finishedJob?.status, "succeeded");
 });
 
+test("AT-09: ReactJS resolves to canonical React as evidenced, listed-only or missing", async () => {
+  const deps = makeDeps();
+  const job = await createJob(makePositionDeps(), { title: "A", level: null, jd_raw_text: "React required" });
+  const uploaded = await uploadBatch(deps, job.id, {
+    files: [pdf("Built customer interfaces using ReactJS in production."), pdf("Skills: ReactJS"), pdf("Python only")],
+    manifest: [
+      { client_file_id: "f1", file_index: 0, identity_mode: "new_candidate" },
+      { client_file_id: "f2", file_index: 1, identity_mode: "new_candidate" },
+      { client_file_id: "f3", file_index: 2, identity_mode: "new_candidate" },
+    ],
+  });
+  const usages: Array<"evidenced_use" | "listed_only" | undefined> = [];
+  for (const [index, item] of uploaded.items.entries()) {
+    const resumeId = item.resume_id as string;
+    const extractionJob = await deps.extractionRepo.findActiveForResume(resumeId);
+    const owner = `worker-at09-alias-${index}`;
+    const claimed = await extractionRepository.claim(extractionJob!.id, owner);
+    const snapshot = await extractResume(deps, { extractionJobId: extractionJob!.id, jobId: job.id, resumeId }, { owner, leaseToken: claimed!.lease_token });
+    assert.ok(snapshot);
+    const react = (await resumeRepository.listSkillFacts(snapshot!.id)).find(fact => fact.canonical_name === "React");
+    usages.push(react?.usage);
+    if (react) assert.equal(react.evidence[0]?.quote, "ReactJS");
+  }
+  assert.deepEqual(usages, ["evidenced_use", "listed_only", undefined]);
+});
+
+test("AT-09: a fabricated extraction quote is rejected without creating a snapshot", async () => {
+  const fabricatedAi: AiExtractionService = {
+    extractJd: async () => ({ schema_version: "extraction-v1", criteria: [] }),
+    extractCv: async ({ resumeId }) => ({
+      schema_version: "extraction-v1",
+      skills: [{ name: "React", usage: "evidenced_use", evidence: [{ source: "cv", source_id: resumeId, segment_id: "p1", quote: "ReactJS", start_offset: 0, end_offset: 7, page: null, paragraph: 1 }] }],
+      employment: [], education: [],
+    }),
+  };
+  const deps = makeDeps(fabricatedAi);
+  const job = await createJob(makePositionDeps(), { title: "A", level: null, jd_raw_text: "React required" });
+  const uploaded = await uploadBatch(deps, job.id, {
+    files: [pdf("No matching skill appears in this CV.")],
+    manifest: [{ client_file_id: "f1", file_index: 0, identity_mode: "new_candidate" }],
+  });
+  const resumeId = uploaded.items[0].resume_id as string;
+  const extractionJob = await deps.extractionRepo.findActiveForResume(resumeId);
+  const claimed = await extractionRepository.claim(extractionJob!.id, "worker-at09-fabricated");
+  const snapshot = await extractResume(deps, { extractionJobId: extractionJob!.id, jobId: job.id, resumeId }, { owner: "worker-at09-fabricated", leaseToken: claimed!.lease_token });
+
+  assert.equal(snapshot, null);
+  assert.equal(await resumeRepository.getLatestSnapshot(resumeId), null);
+  assert.equal((await resumeRepository.getResume(resumeId))?.error_code, "invalid_evidence");
+  assert.equal((await extractionRepository.findScoped(job.id, extractionJob!.id))?.error_code, "invalid_evidence");
+});
+
 test("extractResume marks the resume parse_failed once MAX_ATTEMPTS is exhausted", async () => {
   const failingAi: AiExtractionService = {
     extractJd: async () => ({ schema_version: "extraction-v1", criteria: [] }),

@@ -1,8 +1,8 @@
 # Durable CV extraction jobs
 
-**Decision accepted: 2026-09-17. Design only; migrations and worker implementation remain outstanding.**
+**Decision accepted: 2026-09-17. The worker task and the extraction repository are implemented on process-local storage; the PostgreSQL migrations remain outstanding.**
 
-Use `resume_extraction_jobs` for extraction work and retain `screening_runs` / `screening_run_items` for scoring. API and worker remain separate processes sharing PostgreSQL, with no broker. This extends the domain schema to 14 tables; it does not close the other storage gaps in [API §8](../api/README.md#8-persistence-mapping-and-implementation-prerequisites).
+Use `resume_extraction_jobs` for extraction work and retain `screening_runs` / `screening_run_items` for scoring. The target topology is API and worker as separate processes sharing PostgreSQL, with no broker; today the worker runs inside the API process and both share process-local repositories. This extends the domain schema to 14 tables; it does not close the other storage gaps in [API §8](../api/README.md#8-persistence-mapping-and-implementation-prerequisites).
 
 ## Identity and deduplication
 

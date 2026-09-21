@@ -2,7 +2,7 @@
 
 **Runtime/API update (2026-09-16):** Technology/process labels and illustrative endpoints in this view and its SVG predate the [Next.js backend decision](nextjs-backend.md). That decision and [OpenAPI](../api/openapi.yaml) supersede those details; business invariants remain applicable.
 
-**Status:** proposed behaviour. **Preconditions:** a published run exists. **Outcome:** the user can verify the scores; a decision is written only against the exact result being viewed, and only while it is not stale.
+**Status:** implemented and tested against the in-memory store; proposed for the production topology. **Preconditions:** a published run exists. **Outcome:** the user can verify the scores; a decision is written only against the exact result being viewed, and only while it is not stale.
 
 [Open the SVG](diagrams/sequence-02-review.svg) to zoom in or embed it in a report.
 

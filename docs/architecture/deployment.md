@@ -94,7 +94,7 @@ A single server is a single point of failure. No high availability or automatic 
 
 ## How it runs today
 
-The current prototype is opened directly as `index.html`, or served by a static HTTP server as described in the [README](../../README.md). It does not use Nginx, Next.js, a separate worker process, PostgreSQL, S3, or the AI service shown in the proposal above. None of this infrastructure is needed to run the existing demo.
+What runs today does not match the proposal above. The frontend runs against one local Node process that serves the Next.js API and hosts the worker in-process, with the frontend dev server proxying `/api` to it; see the [README](../../README.md). That arrangement uses no Nginx, no separate worker process, no PostgreSQL, no S3 and no AI service, and needs none of them.
 
 Related: [C2 — the containers being deployed](c2-containers.md), [operations and quality goals in arc42](arc42.md#9-architecture-decisions).
 
