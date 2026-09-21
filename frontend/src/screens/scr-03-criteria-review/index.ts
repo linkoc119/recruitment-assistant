@@ -1,5 +1,6 @@
 import { ApiError, allPages, command, getJob, jobPath, request, type Model } from "../../lib/api.js";
 import { confirmAction, confirmRunStart, screen, esc, header, button, link, table, goto } from "../../lib/screen.js";
+import { createDraftSync } from "../../lib/draft-sync.js";
 type Criterion = Model<"CriterionInput">;
 const input = (c: Criterion): Criterion => ({ criterion_key: c.criterion_key, kind: c.kind, label: c.label, skill_id: c.skill_id ?? null, req_type: c.req_type, weight: c.weight, min_years: c.min_years ?? null, min_degree: c.min_degree ?? null, source: c.source, jd_evidence: c.jd_evidence ?? [] });
 const view = screen(async v => {
@@ -21,8 +22,15 @@ const view = screen(async v => {
     publishedRun = await request<Model<"Run">>(`${base}/screening-runs/${job.published_run_id}`, { signal: v.signal });
     if (revision && revision.revision > publishedRun.criteria_revision) approved = revision;
   }
-  let savedCriteria = draft?.job_version === job.version ? JSON.stringify(criteria) : "";
   const saveCommand = command(), suggestCommand = command(), approvalCommand = command(), runCommand = command();
+  const sync = createDraftSync<Criterion[], Model<"CriteriaDraft">>({
+    read: () => criteria,
+    onDirty: value => v.dirty(value),
+    send: payload => saveCommand<Model<"CriteriaDraft">>(`${base}/criteria-draft`,
+      { expected_draft_version: draft?.version ?? 0, expected_revision: job.criteria_revision ?? 0, expected_job_version: job.version, criteria: payload },
+      v.signal, "PUT").then(saved => { draft = saved; return saved; }),
+  });
+  sync.setBaseline(draft?.job_version === job.version ? criteria : null);
   const degrees = ["vocational", "college", "bachelor", "master", "doctorate"] as const;
   const baseline = structuredClone(criteria);
   const jd = historical ? revision!.jd_snapshot : job.jd_raw_text;
@@ -42,10 +50,8 @@ const view = screen(async v => {
     if (start) start.disabled = approved === null;
   }
   async function save() {
-    if (draft && savedCriteria === JSON.stringify(criteria)) return;
-    draft = await saveCommand<Model<"CriteriaDraft">>(`${base}/criteria-draft`, { expected_draft_version: draft?.version ?? 0, expected_revision: job.criteria_revision ?? 0, expected_job_version: job.version, criteria }, v.signal, "PUT");
-    savedCriteria = JSON.stringify(criteria);
-    v.dirty(false); v.message("Draft saved. Approval is a separate action.");
+    const saved = await sync.save();
+    if (saved) v.message("Draft saved. Approval is a separate action.");
   }
   function render() {
     v.html(header(historical ? `JD & Screening Criteria — Revision ${revision!.revision}` : rescore ? "JD & Screening Criteria — New Revision" : "JD & Screening Criteria", historical ? "Read-only approved snapshot" : job.title,
@@ -82,8 +88,9 @@ const view = screen(async v => {
     v.action("#approve", async () => {
       if (!valid()) { v.message("Every weight must be positive and the total exactly 100.", true); return; }
       await save();
+      if (sync.isDirty()) { v.message("The criteria changed while the draft was being saved. Save again, then approve.", true); return; }
       approved = await approvalCommand<Model<"CriteriaRevision">>(`${base}/criteria-revisions`, { expected_draft_version: draft!.version, expected_revision: job.criteria_revision ?? 0, expected_job_version: job.version }, v.signal);
-      job.criteria_revision = approved.revision; draft = null; v.dirty(false);
+      job.criteria_revision = approved.revision; draft = null; sync.setBaseline(null); v.dirty(false);
       if (!rescore) goto(`/positions/${job.id}/cv-workspace`);
       else { render(); v.message("Revision approved. Start rescore when ready; the published ranking stays visible until it succeeds."); }
     });

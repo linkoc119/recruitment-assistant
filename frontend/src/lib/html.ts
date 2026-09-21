@@ -54,6 +54,76 @@ export function emptyStateRow(colspan: number, message: string, actionHtml = "")
  * to spell this out as a literal string alongside the run/job it describes;
  * this keeps the format in one place so it stays derived from fixture data.
  */
+/**
+ * Screening-run status labels, per docs/ui-ux/information-architecture.md §5
+ * "Status vocabulary" — internal state strings (`queued`, `running`, ...)
+ * are stored/API values, not UI copy.
+ */
+const RUN_STATUS_LABELS: Record<string, string> = {
+  queued: "Waiting to start",
+  running: "Screening",
+  completed: "Completed",
+  completed_with_errors: "Completed with file errors",
+  failed: "Run failed",
+};
+export function runStatusLabel(status: string): string {
+  return RUN_STATUS_LABELS[status] ?? status;
+}
+
+const RUN_ITEM_STATUS_LABELS: Record<string, string> = {
+  pending: "Pending",
+  processing: "Processing",
+  succeeded: "Succeeded",
+  failed: "Failed",
+};
+export function runItemStatusLabel(status: string): string {
+  return RUN_ITEM_STATUS_LABELS[status] ?? status;
+}
+
+const RUN_ITEM_PHASE_LABELS: Record<string, string> = {
+  extraction: "Extraction",
+  scoring: "Scoring",
+};
+export function runItemPhaseLabel(phase: string | null): string {
+  if (!phase) return "—";
+  return RUN_ITEM_PHASE_LABELS[phase] ?? phase;
+}
+
+/**
+ * Elapsed time between two ISO timestamps ("now" when `endIso` is null), as
+ * "12m 34s" / "1h 02m" / "45s". Whole seconds only — sub-second precision is
+ * not meaningful for a screening run's progress.
+ */
+export function formatElapsed(startIso: string, endIso: string | null): string {
+  const start = new Date(startIso).getTime();
+  const end = endIso ? new Date(endIso).getTime() : Date.now();
+  const totalSeconds = Math.max(0, Math.round((end - start) / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+  if (minutes > 0) return `${minutes}m ${String(seconds).padStart(2, "0")}s`;
+  return `${seconds}s`;
+}
+
+/**
+ * Recruiter-readable text for screening-run and run-item error codes.
+ * Distinct from lib/api.ts `errorText`, which covers HTTP `ApiError` codes
+ * from the request client, not domain error codes stored on a run/item.
+ * Unknown codes fall back to a generic message instead of leaking the raw
+ * code, per interaction-rules.md §4.3 (no internal identifiers in error
+ * copy) and §5.2 (no queue/lease/retry detail in user-facing copy).
+ */
+const RUN_ERROR_MESSAGES: Record<string, string> = {
+  scoring_failed: "This CV could not be scored. Its extracted content may be incomplete — try reprocessing it from Candidates.",
+  rescore_partial_failure: "Rescoring stopped because not every CV in the source run succeeded. The previous published ranking is still current.",
+  no_successful_items: "No CV in this run could be scored, so no ranking was published. Check the CVs from Candidates.",
+};
+export function runErrorText(code: string | null): string {
+  if (!code) return "";
+  return RUN_ERROR_MESSAGES[code] ?? "This item could not be completed. Check it from Candidates or retry.";
+}
+
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
   const datePart = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
